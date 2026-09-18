@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>تسجيل بلاغ عطل فوري</title>
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@500;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>body { font-family: 'Tajawal', sans-serif; }</style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex items-center justify-center p-4">
+
+  <div class="w-full max-w-md bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-2xl space-y-6">
+    <div class="text-center space-y-2">
+      <div class="w-16 h-16 bg-gradient-to-tr from-sky-500 to-indigo-600 rounded-2xl mx-auto flex items-center justify-center text-white text-2xl shadow-lg shadow-sky-500/20">
+        <i class="fa-solid fa-qrcode"></i>
+      </div>
+      <h2 class="text-2xl font-black text-white">تسجيل بلاغ صيانة</h2>
+      <p class="text-xs text-slate-400">قسم الحاسب الآلي - النظام الذكي</p>
+    </div>
+
+    <div class="bg-slate-950 border border-slate-800 rounded-2xl p-4 flex items-center justify-around text-center">
+      <div>
+        <span class="text-xs text-slate-400 block font-medium">رقم المعمل</span>
+        <span class="text-xl font-black text-sky-400">معمل {{ lab }}</span>
+      </div>
+      <div class="h-8 w-px bg-slate-800"></div>
+      <div>
+        <span class="text-xs text-slate-400 block font-medium">رقم المقعد</span>
+        <span class="text-xl font-black text-emerald-400">مقعد {{ seat }}</span>
+      </div>
+    </div>
+
+    <form action="/submit_ticket" method="POST" class="space-y-4">
+      <input type="hidden" name="lab" value="{{ lab }}">
+      <input type="hidden" name="seat" value="{{ seat }}">
+
+      <div>
+        <label class="block text-xs font-bold text-slate-300 mb-1.5">وصف العطل أو المشكلة بدقة:</label>
+        <textarea name="issue" rows="4" required
+                  placeholder="مثال: الشاشة زرقاء، كابل الشبكة تالف، نظام التشغيل لا يقلع، فأرة التحكم لا تعمل..."
+                  class="w-full bg-slate-950 border border-slate-700 rounded-xl p-3.5 text-sm text-white focus:outline-none focus:border-sky-500 placeholder-slate-500 transition resize-none"></textarea>
+      </div>
+
+      <button type="submit" class="w-full bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-600 hover:to-indigo-700 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-sky-500/25 transition transform active:scale-95 flex items-center justify-center gap-2">
+        <i class="fa-solid fa-paper-plane"></i> إرسال تذكرة الصيانة فوراً
+      </button>
+    </form>
+
+    <div class="text-center">
+      <a href="/login" class="text-xs text-sky-400 hover:text-sky-300 transition">دخول المشرف وفني الصيانة ←</a>
+    </div>
+  </div>
+
+</body>
+</html>
