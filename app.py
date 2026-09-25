@@ -421,12 +421,16 @@ DASHBOARD_TEMPLATE = """
                         <text x="462" y="648" class="svg-text-title">معمل (6)</text>
                     </g>
 
-                    <!-- معمل 10 (كيابل الألياف الضوئية) -->
+                    <!-- كيابل الألياف الضوئية: غرفة مستقلة عن معمل 10 -->
+                    <rect x="520" y="600" width="70" height="85" class="svg-room" />
+                    <text x="555" y="635" class="svg-facility-text">كيابل</text>
+                    <text x="555" y="651" class="svg-facility-text">الألياف</text>
+                    <text x="555" y="667" class="svg-facility-text">الضوئية</text>
+
+                    <!-- معمل 10 مستقل -->
                     <g onclick="switchLab(10)" id="lab-node-10" class="cursor-pointer">
-                        <rect x="520" y="600" width="140" height="85" class="svg-lab" rx="3" />
-                        <text x="590" y="637" class="svg-text-title">معمل (10)</text>
-                        <text x="590" y="652" class="svg-text-sub">كيابل الألياف</text>
-                        <text x="590" y="666" class="svg-text-sub">الضوئية</text>
+                        <rect x="595" y="600" width="65" height="85" class="svg-lab" rx="3" />
+                        <text x="627" y="645" class="svg-text-title">معمل (10)</text>
                     </g>
 
                     <!-- ================= 4. الضلع الأيمن الخارجي ================= -->
