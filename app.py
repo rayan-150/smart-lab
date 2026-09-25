@@ -4,7 +4,7 @@ from flask import Flask, render_template_string, request, redirect, url_for, ses
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 app = Flask(__name__)
-app.secret_key = "lab_maintenance_smart_system_secure_key_2026"
+app.secret_key = "smart_lab_secret_key_2026_super_safe"
 
 def init_db():
     conn = sqlite3.connect(os.path.join(BASE_DIR, 'maintenance.db'))
@@ -17,7 +17,7 @@ def init_db():
             reporter_name TEXT,
             issue_category TEXT,
             issue TEXT,
-            status TEXT DEFAULT 'جديد',
+            status TEXT DEFAULT 'مفتوح',
             replaced_parts TEXT DEFAULT 'لا يوجد',
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
@@ -33,79 +33,60 @@ USERS = {
     "trainer": {"password": "123", "role": "مدرب قسم الحاسب", "name": "مدرب حاسب"}
 }
 
-# --- قوالب الواجهات الاحترافية ---
-
+# --- قالب تسجيل الدخول ---
 LOGIN_TEMPLATE = """
 <!DOCTYPE html>
 <html dir="rtl" lang="ar">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>تسجيل الدخول | النظام الذكي لإدارة صيانة المعامل</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
-  <style>
-    body { font-family: 'Tajawal', sans-serif; }
-    .neon-border { box-shadow: 0 0 25px rgba(6, 182, 212, 0.25); }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تسجيل الدخول | نظام إدارة صيانة المعامل</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <style>body { font-family: 'Tajawal', sans-serif; }</style>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
-  <div class="absolute -top-40 -right-40 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none"></div>
-  <div class="absolute -bottom-40 -left-40 w-96 h-96 bg-blue-600/10 rounded-full blur-3xl pointer-events-none"></div>
-
-  <div class="w-full max-w-md bg-slate-900/90 border border-slate-800 rounded-3xl p-8 backdrop-blur-xl neon-border relative z-10">
-    <div class="text-center mb-8">
-      <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 text-3xl mb-4">
-        <i class="fa-solid fa-microchip"></i>
-      </div>
-      <h1 class="text-2xl font-extrabold text-white tracking-wide">منصة صيانة المعامل الذكية</h1>
-      <p class="text-xs text-cyan-400/90 font-medium mt-1">مبادرة نوعية | قسم الحاسب الآلي</p>
-    </div>
-
-    {% if error %}
-    <div class="mb-5 p-3.5 bg-rose-500/10 border border-rose-500/30 rounded-xl text-rose-400 text-xs flex items-center gap-2">
-      <i class="fa-solid fa-circle-exclamation text-sm"></i>
-      <span>{{ error }}</span>
-    </div>
-    {% endif %}
-
-    <form method="POST" class="space-y-4">
-      <div>
-        <label class="block text-xs font-semibold text-slate-300 mb-1.5">اسم المستخدم</label>
-        <div class="relative">
-          <span class="absolute inset-y-0 right-0 flex items-center pr-3.5 text-slate-500"><i class="fa-regular fa-user"></i></span>
-          <input type="text" name="username" value="admin" required class="w-full bg-slate-950/60 border border-slate-700/80 rounded-xl py-2.5 pr-10 pl-4 text-sm text-white focus:outline-none focus:border-cyan-400 transition">
+<body class="bg-slate-950 text-slate-200 min-h-screen flex items-center justify-center p-4">
+    <div class="max-w-md w-full bg-slate-900/80 border border-slate-800 rounded-3xl p-8 backdrop-blur shadow-2xl">
+        <div class="text-center mb-6">
+            <div class="w-14 h-14 bg-cyan-500/20 border border-cyan-400/40 rounded-2xl flex items-center justify-center mx-auto text-cyan-400 text-2xl mb-3 shadow-lg shadow-cyan-500/10">
+                <i class="fa-solid fa-microchip"></i>
+            </div>
+            <h2 class="text-xl font-black text-white">نظام صيانة حواسيب المعامل</h2>
+            <p class="text-xs text-cyan-400 mt-1">قسم الحاسب الآلي وتقنية المعلومات</p>
         </div>
-      </div>
 
-      <div>
-        <label class="block text-xs font-semibold text-slate-300 mb-1.5">كلمة المرور</label>
-        <div class="relative">
-          <span class="absolute inset-y-0 right-0 flex items-center pr-3.5 text-slate-500"><i class="fa-solid fa-lock"></i></span>
-          <input type="password" name="password" value="123" required class="w-full bg-slate-950/60 border border-slate-700/80 rounded-xl py-2.5 pr-10 pl-4 text-sm text-white focus:outline-none focus:border-cyan-400 transition">
+        {% if error %}
+        <div class="bg-red-950/50 border border-red-800/80 text-red-300 text-xs p-3 rounded-xl mb-4 text-center">
+            {{ error }}
         </div>
-      </div>
+        {% endif %}
 
-      <button type="submit" class="w-full mt-2 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold py-3 rounded-xl transition duration-200 shadow-lg shadow-cyan-500/20 text-sm flex items-center justify-center gap-2">
-        <i class="fa-solid fa-arrow-right-to-bracket"></i>
-        <span>تسجيل الدخول للنظام</span>
-      </button>
-    </form>
-
-    <div class="mt-6 pt-5 border-t border-slate-800 text-center">
-      <span class="text-xs text-slate-500">الحسابات التجريبية المتاحة:</span>
-      <div class="flex justify-center gap-3 mt-2 text-[11px] text-cyan-400/90 font-mono">
-        <span>admin : 123</span>
-        <span>•</span>
-        <span>tech : 123</span>
-      </div>
+        <form method="POST" action="/login" class="space-y-4">
+            <div>
+                <label class="block text-xs font-semibold text-slate-300 mb-1">اسم المستخدم</label>
+                <div class="relative">
+                    <span class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-slate-500"><i class="fa-solid fa-user"></i></span>
+                    <input type="text" name="username" required placeholder="admin" class="w-full bg-slate-950/80 border border-slate-700 focus:border-cyan-400 rounded-xl py-2.5 pr-10 pl-3 text-xs text-white focus:outline-none transition">
+                </div>
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-slate-300 mb-1">كلمة المرور</label>
+                <div class="relative">
+                    <span class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-slate-500"><i class="fa-solid fa-lock"></i></span>
+                    <input type="password" name="password" required placeholder="123" class="w-full bg-slate-950/80 border border-slate-700 focus:border-cyan-400 rounded-xl py-2.5 pr-10 pl-3 text-xs text-white focus:outline-none transition">
+                </div>
+            </div>
+            <button type="submit" class="w-full py-2.5 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-bold rounded-xl text-xs shadow-lg shadow-cyan-500/20 transition duration-200 mt-2">
+                دخول إلى لوحة التحكم
+            </button>
+        </form>
     </div>
-  </div>
 </body>
 </html>
 """
 
+# --- قالب لوحة التحكم بالمخطط المعماري الواقعي ---
 DASHBOARD_TEMPLATE = """
 <!DOCTYPE html>
 <html dir="rtl" lang="ar">
@@ -143,15 +124,6 @@ DASHBOARD_TEMPLATE = """
             background: rgba(15, 23, 42, 0.45);
             color: #64748b;
         }
-        .pulse-danger {
-            animation: pulse-ring 1.8s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-        }
-        @keyframes pulse-ring {
-            0%, 100% { opacity: 1; transform: scale(1); box-shadow: 0 0 0 rgba(239, 68, 68, 0.7); }
-            50% { opacity: 0.85; transform: scale(1.02); box-shadow: 0 0 10px rgba(239, 68, 68, 0); }
-        }
-        .custom-scroll::-webkit-scrollbar { width: 5px; height: 5px; }
-        .custom-scroll::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
     </style>
 </head>
 <body class="bg-slate-950 text-slate-200 min-h-screen flex flex-col">
@@ -164,7 +136,7 @@ DASHBOARD_TEMPLATE = """
             </a>
             <div class="flex items-center gap-2 bg-slate-800/60 border border-slate-700/60 px-3 py-1.5 rounded-xl text-xs">
                 <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                <span class="font-bold text-slate-200">{{ session.get('name', 'ريان المحيطيب (مشرف الصيانة التقنية)') }}</span>
+                <span class="font-bold text-slate-200">{{ session.get('name', 'ريان المحيطيب') }} ({{ session.get('role', 'مشرف') }})</span>
             </div>
         </div>
         <div class="text-left flex items-center gap-3">
@@ -180,39 +152,39 @@ DASHBOARD_TEMPLATE = """
 
     <main class="flex-1 p-6 space-y-6 max-w-[1600px] mx-auto w-full">
 
-        <!-- مؤشرات الأداء -->
+        <!-- مؤشرات الأداء السريعة -->
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div class="bg-slate-900/60 border border-slate-800/80 p-4 rounded-2xl flex justify-between items-center">
                 <div class="text-right">
                     <span class="text-xs text-slate-400 font-medium">إجمالي بلاغات المعامل</span>
-                    <div class="text-2xl font-black text-white mt-1">{{ total_tickets if total_tickets is defined else 0 }}</div>
+                    <div class="text-2xl font-black text-white mt-1">{{ total_tickets }}</div>
                 </div>
                 <div class="w-10 h-10 rounded-xl bg-cyan-950/60 border border-cyan-500/30 flex items-center justify-center text-cyan-400"><i class="fa-solid fa-clipboard-list"></i></div>
             </div>
             <div class="bg-slate-900/60 border border-slate-800/80 p-4 rounded-2xl flex justify-between items-center">
                 <div class="text-right">
                     <span class="text-xs text-slate-400 font-medium">أعطال نشطة حالياً</span>
-                    <div class="text-2xl font-black text-red-400 mt-1">{{ active_tickets if active_tickets is defined else 0 }}</div>
+                    <div class="text-2xl font-black text-red-400 mt-1">{{ active_tickets }}</div>
                 </div>
                 <div class="w-10 h-10 rounded-xl bg-red-950/60 border border-red-500/30 flex items-center justify-center text-red-400"><i class="fa-solid fa-triangle-exclamation"></i></div>
             </div>
             <div class="bg-slate-900/60 border border-slate-800/80 p-4 rounded-2xl flex justify-between items-center">
                 <div class="text-right">
                     <span class="text-xs text-slate-400 font-medium">قيد الفحص والإصلاح</span>
-                    <div class="text-2xl font-black text-amber-400 mt-1">{{ pending_tickets if pending_tickets is defined else 0 }}</div>
+                    <div class="text-2xl font-black text-amber-400 mt-1">{{ pending_tickets }}</div>
                 </div>
                 <div class="w-10 h-10 rounded-xl bg-amber-950/60 border border-amber-500/30 flex items-center justify-center text-amber-400"><i class="fa-solid fa-screwdriver-wrench"></i></div>
             </div>
             <div class="bg-slate-900/60 border border-slate-800/80 p-4 rounded-2xl flex justify-between items-center">
                 <div class="text-right">
                     <span class="text-xs text-slate-400 font-medium">الجاهزية التشغيلية</span>
-                    <div class="text-2xl font-black text-emerald-400 mt-1">100.0%</div>
+                    <div class="text-2xl font-black text-emerald-400 mt-1">{{ operational_rate }}%</div>
                 </div>
                 <div class="w-10 h-10 rounded-xl bg-emerald-950/60 border border-emerald-500/30 flex items-center justify-center text-emerald-400"><i class="fa-solid fa-shield-halved"></i></div>
             </div>
         </div>
 
-        <!-- شبكة المقاعد + المخطط الهندسي -->
+        <!-- شبكة المقاعد + المخطط الهندسي التفاعلي -->
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
 
             <!-- مقاعد المعمل الـ 27 -->
@@ -239,19 +211,19 @@ DASHBOARD_TEMPLATE = """
                 </div>
             </div>
 
-            <!-- المخطط المعماري الكامل للقسم -->
+            <!-- المخطط المعماري الكامل للقسم (المطابق للورقة) -->
             <div class="lg:col-span-8 bg-slate-900/60 border border-slate-800/80 rounded-2xl p-5 flex flex-col">
                 <div class="flex justify-between items-center mb-4">
                     <span class="text-[11px] text-slate-400">اضغط على أي معمل لعرض شبكة مقاعده الـ 27 المباشرة</span>
                     <h2 class="font-bold text-sm text-white flex items-center gap-2">
-                        المخطط المعماري لجناح قسم الحاسب (رادار الطابق) <i class="fa-solid fa-map-location-dot text-cyan-400"></i>
+                        المخطط المعماري لجناح قسم الحاسب (رادار الطابق الواقعي) <i class="fa-solid fa-map-location-dot text-cyan-400"></i>
                     </h2>
                 </div>
 
-                <!-- إطار المخطط -->
+                <!-- إطار المخطط الهندسي -->
                 <div class="blueprint-canvas rounded-xl p-4 border border-cyan-950 flex-1 flex flex-col justify-between gap-2 overflow-x-auto min-w-[700px]">
 
-                    <!-- 1. الحلقة الخارجية: الضلع العلوي -->
+                    <!-- 1. الحلقة الخارجية: الضلع العلوي (الشمالي) -->
                     <div class="grid grid-cols-7 gap-1.5 text-center text-xs">
                         <div class="facility-card p-2 rounded-lg">شبكات الحاسب</div>
                         <div onclick="switchLab(26)" id="lab-node-26" class="lab-card p-2 rounded-lg"><div class="font-bold text-cyan-300">معمل (26)</div><div class="text-[9px] text-emerald-400 font-semibold">✓ سليم</div></div>
@@ -262,9 +234,9 @@ DASHBOARD_TEMPLATE = """
                         <div class="facility-card p-2 rounded-lg text-amber-300"><i class="fa-solid fa-stairs"></i> درج</div>
                     </div>
 
-                    <!-- 2. الجزء الأوسط -->
+                    <!-- 2. الجزء الأوسط: الضلع الأيسر + الفناء المفتوح + الضلع الأيمن -->
                     <div class="grid grid-cols-12 gap-2 my-1">
-                        <!-- الضلع الأيسر الخارجي (المدخل) -->
+                        <!-- الضلع الأيسر الخارجي (المدخل ومعمل 1) -->
                         <div class="col-span-2 flex flex-col gap-1.5 text-center text-xs">
                             <div class="facility-card p-1.5 rounded">مستودع</div>
                             <div class="facility-card p-1.5 rounded"><i class="fa-solid fa-restroom"></i> دورة مياه</div>
@@ -274,7 +246,7 @@ DASHBOARD_TEMPLATE = """
                             <div class="facility-card p-2 rounded border-emerald-500/40 text-emerald-400 font-bold text-[11px]"><i class="fa-solid fa-door-open"></i> المدخل</div>
                         </div>
 
-                        <!-- الحلقة الداخلية المحيطة بالفناء -->
+                        <!-- الحلقة الداخلية المحيطة بالفناء المفتوح -->
                         <div class="col-span-8 border border-cyan-900/60 rounded-xl p-2.5 bg-slate-950/70 flex flex-col justify-between gap-2">
                             <!-- علوي داخلي -->
                             <div class="grid grid-cols-4 gap-1.5 text-center text-xs">
@@ -327,7 +299,7 @@ DASHBOARD_TEMPLATE = """
                         </div>
                     </div>
 
-                    <!-- 3. الحلقة الخارجية: الضلع السفلي -->
+                    <!-- 3. الحلقة الخارجية: الضلع السفلي (الجنوبي) -->
                     <div class="grid grid-cols-7 gap-1.5 text-center text-xs">
                         <div onclick="switchLab(2)" id="lab-node-2" class="lab-card p-2 rounded-lg"><div class="font-bold text-cyan-300">معمل (2)</div><div class="text-[9px] text-emerald-400 font-semibold">✓ سليم</div></div>
                         <div onclick="switchLab(3)" id="lab-node-3" class="lab-card p-2 rounded-lg"><div class="font-bold text-cyan-300">معمل (3)</div><div class="text-[9px] text-emerald-400 font-semibold">✓ سليم</div></div>
@@ -343,13 +315,56 @@ DASHBOARD_TEMPLATE = """
 
         </div>
 
-        <!-- جدول تذاكر الصيانة -->
+        <!-- جدول تذاكر الصيانة الرقمي -->
         <div class="bg-slate-900/60 border border-slate-800/80 rounded-2xl p-5">
             <h3 class="font-bold text-sm text-white mb-4 flex items-center gap-2">
                 تذاكر الأعطال ومسار الصيانة الرقمي <i class="fa-solid fa-list-check text-cyan-400"></i>
             </h3>
-            <div class="text-center p-8 text-xs text-slate-500 border border-slate-800/60 rounded-xl bg-slate-950/40">
-                لا توجد بلاغات مسجلة حالياً في النظام. جميع الحواسيب والمعامل تعمل بكفاءة.
+            <div class="overflow-x-auto">
+                <table class="w-full text-right text-xs text-slate-300">
+                    <thead class="bg-slate-950 text-slate-400 uppercase font-semibold border-b border-slate-800">
+                        <tr>
+                            <th class="p-3">رقم التذكرة</th>
+                            <th class="p-3">الموقع</th>
+                            <th class="p-3">المُبلّغ</th>
+                            <th class="p-3">النوع والتفاصيل</th>
+                            <th class="p-3">الحالة الحالية</th>
+                            <th class="p-3">إجراء الفني</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-800/60">
+                        {% for t in tickets %}
+                        <tr class="hover:bg-slate-800/40">
+                            <td class="p-3 font-mono font-bold text-cyan-400">#{{ t[0] }}</td>
+                            <td class="p-3 font-semibold">معمل ({{ t[1] }}) - مقعد {{ t[2] }}</td>
+                            <td class="p-3">{{ t[3] }}</td>
+                            <td class="p-3">{{ t[4] }} - <span class="text-slate-400">{{ t[5] }}</span></td>
+                            <td class="p-3">
+                                {% if t[6] == 'مفتوح' %}
+                                <span class="bg-red-500/10 text-red-400 border border-red-500/30 px-2 py-0.5 rounded-full font-bold">مفتوح</span>
+                                {% elif t[6] == 'قيد الإصلاح' %}
+                                <span class="bg-amber-500/10 text-amber-400 border border-amber-500/30 px-2 py-0.5 rounded-full font-bold">قيد الإصلاح</span>
+                                {% else %}
+                                <span class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded-full font-bold">تم الحل</span>
+                                {% endif %}
+                            </td>
+                            <td class="p-3">
+                                <form method="POST" action="/update_status/{{ t[0] }}" class="inline-flex gap-1.5">
+                                    <select name="status" onchange="this.form.submit()" class="bg-slate-950 border border-slate-700 text-[11px] rounded px-2 py-1 text-slate-300">
+                                        <option value="مفتوح" {% if t[6] == 'مفتوح' %}selected{% endif %}>مفتوح</option>
+                                        <option value="قيد الإصلاح" {% if t[6] == 'قيد الإصلاح' %}selected{% endif %}>قيد الإصلاح</option>
+                                        <option value="تم الحل" {% if t[6] == 'تم الحل' %}selected{% endif %}>تم الحل</option>
+                                    </select>
+                                </form>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="6" class="text-center p-8 text-xs text-slate-500">لا توجد بلاغات مسجلة حالياً في النظام. جميع الحواسيب والمعامل تعمل بكفاءة.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
             </div>
         </div>
 
@@ -387,6 +402,71 @@ DASHBOARD_TEMPLATE = """
 </body>
 </html>
 """
+
+# --- المسارات والوظائف (Routes) ---
+
+@app.route('/')
+def home():
+    if 'user' not in session:
+        return redirect(url_for('login'))
+    return redirect(url_for('dashboard'))
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    error = None
+    if request.method == 'POST':
+        user = request.form.get('username')
+        pwd = request.form.get('password')
+        if user in USERS and USERS[user]['password'] == pwd:
+            session['user'] = user
+            session['name'] = USERS[user]['name']
+            session['role'] = USERS[user]['role']
+            return redirect(url_for('dashboard'))
+        else:
+            error = "اسم المستخدم أو كلمة المرور غير صحيحة"
+    return render_template_string(LOGIN_TEMPLATE, error=error)
+
+@app.route('/logout')
+def logout():
+    session.clear()
+    return redirect(url_for('login'))
+
+@app.route('/dashboard')
+def dashboard():
+    if 'user' not in session:
+        return redirect(url_for('login'))
+
+    conn = sqlite3.connect(os.path.join(BASE_DIR, 'maintenance.db'))
+    cursor = conn.cursor()
+    cursor.execute('SELECT * FROM tickets ORDER BY id DESC')
+    tickets = cursor.fetchall()
+    conn.close()
+
+    total = len(tickets)
+    active = sum(1 for t in tickets if t[6] == 'مفتوح')
+    pending = sum(1 for t in tickets if t[6] == 'قيد الإصلاح')
+    op_rate = 100.0 if total == 0 else round(((total - active) / total) * 100, 1)
+
+    return render_template_string(
+        DASHBOARD_TEMPLATE,
+        tickets=tickets,
+        total_tickets=total,
+        active_tickets=active,
+        pending_tickets=pending,
+        operational_rate=op_rate
+    )
+
+@app.route('/update_status/<int:ticket_id>', methods=['POST'])
+def update_status(ticket_id):
+    if 'user' not in session:
+        return redirect(url_for('login'))
+    new_status = request.form.get('status')
+    conn = sqlite3.connect(os.path.join(BASE_DIR, 'maintenance.db'))
+    cursor = conn.cursor()
+    cursor.execute('UPDATE tickets SET status = ? WHERE id = ?', (new_status, ticket_id))
+    conn.commit()
+    conn.close()
+    return redirect(url_for('dashboard'))
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
