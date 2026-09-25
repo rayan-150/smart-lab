@@ -1,384 +1,488 @@
 <!DOCTYPE html>
-<html dir="rtl" lang="ar">
+<html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>النظام الذكي لإدارة ومتابعة صيانة حواسيب المعامل</title>
+  <title>نظام إدارة صيانة المعامل الذكية | لوحة التحكم</title>
+  <!-- Google Fonts: Tajawal -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&display=swap" rel="stylesheet">
+  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
   <script>
     tailwind.config = {
-      theme: { extend: { fontFamily: { sans: ['Tajawal', 'sans-serif'] } } }
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              dark: '#0a0f1d',
+              card: '#111827',
+              border: '#1f293d',
+              cyan: '#06b6d4',
+              accent: '#3b82f6',
+              danger: '#ef4444',
+              warning: '#f59e0b',
+              success: '#10b981'
+            }
+          },
+          fontFamily: {
+            tajawal: ['Tajawal', 'sans-serif']
+          }
+        }
+      }
     }
   </script>
+
   <style>
-    @keyframes pulse-ring {
-      0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.8); }
-      70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
-      100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+    body {
+      font-family: 'Tajawal', sans-serif;
+      background-color: #080d1a;
+      color: #f3f4f6;
     }
-    .broken-lab {
-      animation: pulse-ring 1.8s infinite;
-      border-color: #ef4444 !important;
-      background: rgba(239, 68, 68, 0.18) !important;
+    .blueprint-grid {
+      background-image: radial-gradient(rgba(6, 182, 212, 0.1) 1px, transparent 0);
+      background-size: 24px 24px;
     }
-    .seat-broken {
-      animation: pulse-ring 1.6s infinite;
-      border-color: #ef4444 !important;
-      background: #fef2f2 !important;
-      color: #b91c1c !important;
+    .pulse-danger {
+      box-shadow: 0 0 15px rgba(239, 68, 68, 0.6);
+      animation: pulseAlert 1.8s infinite;
+    }
+    .pulse-warning {
+      box-shadow: 0 0 15px rgba(245, 158, 11, 0.6);
+      animation: pulseWarning 1.8s infinite;
+    }
+    @keyframes pulseAlert {
+      0%, 100% { border-color: rgba(239, 68, 68, 0.9); }
+      50% { border-color: rgba(239, 68, 68, 0.3); }
+    }
+    @keyframes pulseWarning {
+      0%, 100% { border-color: rgba(245, 158, 11, 0.9); }
+      50% { border-color: rgba(245, 158, 11, 0.3); }
+    }
+    .room-card {
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .room-card:hover {
+      transform: translateY(-2px);
+      filter: brightness(1.15);
     }
   </style>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen font-sans antialiased">
+<body class="min-h-screen flex flex-col antialiased selection:bg-brand-cyan selection:text-black">
 
-  <!-- الشريط العلوي -->
-  <header class="bg-slate-900/90 backdrop-blur border-b border-slate-800 sticky top-0 z-50">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
-      <div class="flex items-center space-x-4 space-x-reverse">
-        <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-sky-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-sky-500/20">
-          <i class="fa-solid fa-microchip text-2xl text-white"></i>
+  <!-- شريط التنقل العلوي -->
+  <header class="bg-brand-card/80 backdrop-blur-md border-b border-brand-border sticky top-0 z-50 px-4 lg:px-8 py-3.5">
+    <div class="max-w-7xl mx-auto flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-500 to-blue-600 flex items-center justify-center text-white shadow-lg shadow-cyan-500/20">
+          <i class="fa-solid fa-microchip text-xl"></i>
         </div>
         <div>
-          <div class="flex items-center gap-2">
-            <h1 class="text-xl font-black text-white tracking-wide">النظام الذكي لصيانة المعامل</h1>
-            <span class="bg-sky-500/20 text-sky-400 text-xs px-2.5 py-0.5 rounded-full font-bold border border-sky-500/30">قسم الحاسب الآلي</span>
-          </div>
-          <p class="text-xs text-slate-400 font-medium">متابعة مكانية وتوجيه ذكي للأعطال عبر المخطط المعماري</p>
+          <h1 class="text-lg font-black text-white tracking-wide">نظام إدارة صيانة المعامل الذكية</h1>
+          <p class="text-xs text-gray-400">المخطط المعماري الميداني للقسم</p>
         </div>
       </div>
-      
-      <div class="flex items-center gap-3">
-        <!-- معلومات المستخدم المسجل -->
-        <div class="hidden sm:flex items-center gap-2 bg-slate-800/60 border border-slate-700/60 px-3.5 py-1.5 rounded-xl text-xs">
-          <div class="w-7 h-7 rounded-lg bg-sky-500/20 text-sky-400 flex items-center justify-center font-bold">
-            <i class="fa-solid fa-user-check"></i>
-          </div>
-          <div class="text-right">
-            <p class="font-bold text-white leading-none">{{ user_name }}</p>
-            <span class="text-[10px] text-sky-400">{{ user_role }}</span>
-          </div>
-        </div>
 
-        <a href="/logout" class="bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5">
-          <i class="fa-solid fa-arrow-right-from-bracket"></i> خروج
-        </a>
+      <div class="flex items-center gap-4">
+        <div class="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gray-900/60 border border-brand-border text-xs text-gray-300">
+          <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping"></span>
+          <span>الاتصال السحابي متصل</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <div class="text-left hidden md:block">
+            <p class="text-sm font-bold text-gray-200">{{ session.get('user', 'المسؤول') }}</p>
+            <p class="text-[10px] text-cyan-400 font-semibold">{{ session.get('role', 'Admin') }}</p>
+          </div>
+          <a href="/logout" class="p-2 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 transition-colors" title="تسجيل الخروج">
+            <i class="fa-solid fa-arrow-right-from-bracket"></i>
+          </a>
+        </div>
       </div>
     </div>
   </header>
 
-  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-    
-    <!-- مؤشرات الأداء الرقمية الذكية (KPIs) -->
-    <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-      <div class="bg-slate-900/70 border border-slate-800 p-5 rounded-2xl shadow-xl flex items-center justify-between">
+  <!-- المحتوى الرئيسي -->
+  <main class="flex-1 max-w-7xl w-full mx-auto p-4 lg:p-8 space-y-6">
+
+    <!-- الإحصائيات السريعة -->
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+      <div class="bg-brand-card border border-brand-border rounded-2xl p-4 flex items-center justify-between">
         <div>
-          <p class="text-xs text-slate-400 font-bold uppercase tracking-wider">الجاهزية التشغيلية للمعمل المختار</p>
-          <h3 class="text-3xl font-black text-white mt-1">{{ readiness_rate }}%</h3>
-          <p class="text-[11px] text-emerald-400 mt-1 font-semibold flex items-center gap-1">
-            <i class="fa-solid fa-shield-check"></i> معمل {{ selected_lab }}
-          </p>
+          <p class="text-xs text-gray-400 font-medium">إجمالي المعامل</p>
+          <p class="text-2xl font-black text-white mt-1">18</p>
         </div>
-        <div class="w-13 h-13 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center text-2xl p-3">
-          <i class="fa-solid fa-gauge-high"></i>
+        <div class="w-10 h-10 rounded-xl bg-blue-500/10 text-blue-400 flex items-center justify-center border border-blue-500/20">
+          <i class="fa-solid fa-network-wired"></i>
         </div>
       </div>
-
-      <div class="bg-slate-900/70 border border-slate-800 p-5 rounded-2xl shadow-xl flex items-center justify-between">
+      <div class="bg-brand-card border border-brand-border rounded-2xl p-4 flex items-center justify-between">
         <div>
-          <p class="text-xs text-slate-400 font-bold uppercase tracking-wider">الأعطال النشطة حالياً</p>
-          <h3 class="text-3xl font-black text-red-400 mt-1">{{ active_tickets_count }}</h3>
-          <p class="text-[11px] text-slate-400 mt-1">تتطلب فحص فني مباشر</p>
+          <p class="text-xs text-gray-400 font-medium">الأجهزة الجاهزة</p>
+          <p class="text-2xl font-black text-emerald-400 mt-1" id="stat-ready">--</p>
         </div>
-        <div class="w-13 h-13 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 flex items-center justify-center text-2xl p-3">
-          <i class="fa-solid fa-triangle-exclamation"></i>
-        </div>
-      </div>
-
-      <div class="bg-slate-900/70 border border-slate-800 p-5 rounded-2xl shadow-xl flex items-center justify-between">
-        <div>
-          <p class="text-xs text-slate-400 font-bold uppercase tracking-wider">أعطال تم إصلاحها</p>
-          <h3 class="text-3xl font-black text-sky-400 mt-1">{{ done_tickets_count }}</h3>
-          <p class="text-[11px] text-slate-400 mt-1">سجل رقمي موثق بالكامل</p>
-        </div>
-        <div class="w-13 h-13 rounded-xl bg-sky-500/10 border border-sky-500/20 text-sky-400 flex items-center justify-center text-2xl p-3">
+        <div class="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center border border-emerald-500/20">
           <i class="fa-solid fa-circle-check"></i>
         </div>
       </div>
-
-      <div class="bg-slate-900/70 border border-slate-800 p-5 rounded-2xl shadow-xl flex items-center justify-between">
+      <div class="bg-brand-card border border-brand-border rounded-2xl p-4 flex items-center justify-between">
         <div>
-          <p class="text-xs text-slate-400 font-bold uppercase tracking-wider">المعامل المغطاة</p>
-          <h3 class="text-3xl font-black text-indigo-400 mt-1">18 معمل</h3>
-          <p class="text-[11px] text-slate-400 mt-1">من معمل 1 حتى 27 بالمخطط</p>
+          <p class="text-xs text-gray-400 font-medium">بلاغات نشطة</p>
+          <p class="text-2xl font-black text-red-400 mt-1" id="stat-issues">--</p>
         </div>
-        <div class="w-13 h-13 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 flex items-center justify-center text-2xl p-3">
-          <i class="fa-solid fa-building"></i>
+        <div class="w-10 h-10 rounded-xl bg-red-500/10 text-red-400 flex items-center justify-center border border-red-500/20">
+          <i class="fa-solid fa-triangle-exclamation"></i>
         </div>
       </div>
-    </section>
-
-    <!-- المخطط المعماري التفاعلي لقسم الحاسب الآلي -->
-    <section class="bg-slate-900/80 border border-slate-800 p-6 rounded-3xl shadow-2xl space-y-6">
-      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-800">
+      <div class="bg-brand-card border border-brand-border rounded-2xl p-4 flex items-center justify-between">
         <div>
-          <h2 class="text-lg font-black text-white flex items-center gap-2">
-            <i class="fa-solid fa-map-location-dot text-sky-400"></i>
-            المخطط الجغرافي المعماري لقسم الحاسب الآلي (تحديد مكان البلاغ)
+          <p class="text-xs text-gray-400 font-medium">قيد المعالجة</p>
+          <p class="text-2xl font-black text-amber-400 mt-1" id="stat-progress">--</p>
+        </div>
+        <div class="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-400 flex items-center justify-center border border-amber-500/20">
+          <i class="fa-solid fa-screwdriver-wrench"></i>
+        </div>
+      </div>
+    </div>
+
+    <!-- بطاقة المخطط المعماري التفاعلي -->
+    <div class="bg-brand-card border border-brand-border rounded-3xl p-5 lg:p-7 shadow-2xl relative overflow-hidden">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-brand-border">
+        <div>
+          <h2 class="text-xl font-bold text-white flex items-center gap-2.5">
+            <i class="fa-solid fa-compass-drafting text-brand-cyan"></i>
+            المخطط الميداني للقسم (Floor Blueprint)
           </h2>
-          <p class="text-xs text-slate-400 mt-1">
-            اضغط على أي معمل لعرض مقاعده وفحص أجهزته. الغرف ذات الوميض الأحمر تحتوي على بلاغات أعطال نشطة.
-          </p>
+          <p class="text-xs text-gray-400 mt-1">تخطيط مطابق للواقع: انقر على أي معمل لمشاهدة شبكة الأجهزة والتحكم بالصيانة</p>
         </div>
-        
-        <div class="flex flex-wrap items-center gap-4 text-xs font-bold">
-          <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-emerald-500"></span> معمل جاهز وسليم</span>
-          <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-red-500 animate-pulse"></span> معمل به عطل مسجل</span>
-          <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-slate-700"></span> مكاتب وخدمات</span>
+        <div class="flex items-center flex-wrap gap-3 text-xs">
+          <span class="inline-flex items-center gap-1.5 text-gray-300"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span> جاهز</span>
+          <span class="inline-flex items-center gap-1.5 text-gray-300"><span class="w-2.5 h-2.5 rounded-full bg-red-500"></span> بلاغ عطل</span>
+          <span class="inline-flex items-center gap-1.5 text-gray-300"><span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span> صيانة جارية</span>
+          <span class="inline-flex items-center gap-1.5 text-gray-400"><span class="w-2.5 h-2.5 rounded bg-gray-700"></span> مرافق إدارية</span>
         </div>
       </div>
 
-      <!-- محاكاة المخطط الهندسي للقسم -->
-      <div class="bg-slate-950 p-6 rounded-2xl border border-slate-800/80 max-w-5xl mx-auto space-y-4">
-        
-        <!-- الصف العلوي (شمال المخطط) -->
-        <div class="grid grid-cols-5 gap-3 text-center text-xs">
-          <div class="bg-amber-500/10 border border-amber-500/30 p-2.5 rounded-xl text-amber-300 font-bold flex flex-col items-center justify-center">
-            <i class="fa-solid fa-wrench mb-1"></i> ورشة الصيانة
-          </div>
-          <div class="bg-slate-800/50 border border-slate-700/60 p-2.5 rounded-xl text-slate-400 font-medium flex items-center justify-center">
-            مستودع
-          </div>
-          {% set has_issue_24 = 24 in broken_labs %}
-          <a href="/dashboard?lab=24" class="p-3 rounded-xl border text-center transition block font-bold {{ 'broken-lab text-red-300' if has_issue_24 else ('bg-sky-500/20 border-sky-400 text-sky-300 ring-2 ring-sky-500/30' if selected_lab == 24 else 'bg-slate-900 border-slate-700/80 hover:border-sky-500 text-slate-300') }}">
-            <div class="text-[11px] text-slate-400 font-normal">معمل</div>
-            <div class="text-sm font-black">24</div>
-            {% if has_issue_24 %}<span class="text-[9px] bg-red-500/30 text-red-400 px-1 rounded">عطل!</span>{% endif %}
-          </a>
-          {% set has_issue_26 = 26 in broken_labs %}
-          <a href="/dashboard?lab=26" class="p-3 rounded-xl border text-center transition block font-bold {{ 'broken-lab text-red-300' if has_issue_26 else ('bg-sky-500/20 border-sky-400 text-sky-300 ring-2 ring-sky-500/30' if selected_lab == 26 else 'bg-slate-900 border-slate-700/80 hover:border-sky-500 text-slate-300') }}">
-            <div class="text-[11px] text-slate-400 font-normal">معمل</div>
-            <div class="text-sm font-black">26</div>
-            {% if has_issue_26 %}<span class="text-[9px] bg-red-500/30 text-red-400 px-1 rounded">عطل!</span>{% endif %}
-          </a>
-          <div class="bg-slate-800/50 border border-slate-700/60 p-2.5 rounded-xl text-slate-400 font-medium flex items-center justify-center">
-            مستودع
-          </div>
-        </div>
+      <!-- مساحة الرسم الهندسي المعماري -->
+      <div class="mt-6 blueprint-grid rounded-2xl border border-cyan-900/30 p-4 lg:p-8 bg-[#0b1220]/70 overflow-x-auto">
+        <div class="min-w-[920px] max-w-[1100px] mx-auto space-y-6">
 
-        <!-- المنطقة الوسطى -->
-        <div class="grid grid-cols-12 gap-3">
-          <div class="col-span-3 space-y-2.5 text-xs">
-            <div class="bg-slate-800/50 border border-slate-700/60 p-2 rounded-xl text-center text-slate-400">
-              <i class="fa-solid fa-mosque ml-1"></i> مصلى القسم
+          <!-- 1. الحلقة الخارجية: الضلع العلوي (الشمالي) -->
+          <div class="grid grid-cols-7 gap-2">
+            <div class="bg-gray-800/40 border border-gray-700/50 rounded-xl p-3 text-center text-gray-400 text-xs flex flex-col justify-center">
+              <i class="fa-solid fa-boxes-stacked mb-1 text-gray-500"></i> مستودع
             </div>
-            <div class="bg-slate-800/50 border border-slate-700/60 p-2 rounded-xl text-center text-slate-400">
-              نظري 1
+            <button onclick="selectLab(26, 'معمل 26 (الحوسبة السحابية)')" id="lab-btn-26" class="room-card bg-cyan-950/30 border border-cyan-500/30 hover:border-cyan-400 rounded-xl p-3 text-center cursor-pointer">
+              <span class="text-[10px] text-cyan-400 block font-semibold">شبكات / سحابية</span>
+              <span class="font-extrabold text-sm text-white">معمل (26)</span>
+            </button>
+            <div class="bg-gray-800/40 border border-gray-700/50 rounded-xl p-3 text-center text-gray-400 text-xs flex flex-col justify-center">
+              <i class="fa-solid fa-bolt mb-1 text-amber-500/70"></i> أساسيات الكهرباء
             </div>
-            {% set has_issue_13 = 13 in broken_labs %}
-            <a href="/dashboard?lab=13" class="p-2.5 rounded-xl border text-center transition block font-bold {{ 'broken-lab text-red-300' if has_issue_13 else ('bg-sky-500/20 border-sky-400 text-sky-300 ring-2 ring-sky-500/30' if selected_lab == 13 else 'bg-slate-900 border-slate-700/80 hover:border-sky-500 text-slate-300') }}">
-              <span>معمل 13</span>
-              {% if has_issue_13 %}<span class="text-[9px] bg-red-500/30 text-red-400 px-1 rounded mr-1">عطل!</span>{% endif %}
-            </a>
-            {% set has_issue_11 = 11 in broken_labs %}
-            <a href="/dashboard?lab=11" class="p-2.5 rounded-xl border text-center transition block font-bold {{ 'broken-lab text-red-300' if has_issue_11 else ('bg-sky-500/20 border-sky-400 text-sky-300 ring-2 ring-sky-500/30' if selected_lab == 11 else 'bg-slate-900 border-slate-700/80 hover:border-sky-500 text-slate-300') }}">
-              <span>معمل 11</span>
-              {% if has_issue_11 %}<span class="text-[9px] bg-red-500/30 text-red-400 px-1 rounded mr-1">عطل!</span>{% endif %}
-            </a>
-            <div class="bg-slate-800/40 border border-slate-700/40 p-2 rounded-xl text-center text-slate-500 text-[11px]">
-              دورة مياه
+            <button onclick="selectLab(24, 'معمل 24 (أساسيات الحاسب)')" id="lab-btn-24" class="room-card bg-cyan-950/30 border border-cyan-500/30 hover:border-cyan-400 rounded-xl p-3 text-center cursor-pointer">
+              <span class="text-[10px] text-cyan-400 block font-semibold">أساسيات الحاسب</span>
+              <span class="font-extrabold text-sm text-white">معمل (24)</span>
+            </button>
+            <div class="bg-gray-800/40 border border-gray-700/50 rounded-xl p-3 text-center text-gray-400 text-xs flex flex-col justify-center">
+              <i class="fa-solid fa-boxes-stacked mb-1 text-gray-500"></i> مستودع
+            </div>
+            <div class="bg-gray-800/40 border border-gray-700/50 rounded-xl p-3 text-center text-gray-400 text-xs flex flex-col justify-center">
+              <i class="fa-solid fa-microchip mb-1 text-gray-500"></i> أساسيات الإلكترونيات
+            </div>
+            <div class="bg-gray-800/60 border border-gray-700/60 rounded-xl p-3 text-center text-amber-300 text-xs flex flex-col justify-center font-bold">
+              <i class="fa-solid fa-stairs mb-1"></i> درج رئيسي
             </div>
           </div>
 
-          <div class="col-span-6 bg-slate-900/60 border border-slate-800 p-3.5 rounded-2xl space-y-3 flex flex-col justify-between">
-            <div class="grid grid-cols-3 gap-2 text-center text-xs">
-              {% for lab_num in [27, 23, 22] %}
-                {% set has_issue = lab_num in broken_labs %}
-                <a href="/dashboard?lab={{ lab_num }}" class="p-2 rounded-xl border transition font-bold {{ 'broken-lab text-red-300' if has_issue else ('bg-sky-500/20 border-sky-400 text-sky-300 ring-2 ring-sky-500/30' if selected_lab == lab_num else 'bg-slate-950 border-slate-800 hover:border-sky-500 text-slate-300') }}">
-                  معمل {{ lab_num }}
-                  {% if has_issue %}<span class="block text-[9px] text-red-400 font-black">عطل!</span>{% endif %}
-                </a>
-              {% endfor %}
-            </div>
-
-            <div class="bg-slate-950/80 border border-slate-800/80 rounded-xl p-4 text-center my-1">
-              <div class="text-xs font-black text-slate-300 flex items-center justify-center gap-2 mb-2">
-                <i class="fa-solid fa-tree text-emerald-400"></i> الفناء الداخلي المفتوح لقسم الحاسب
+          <!-- وسط المبنى: الضلع الغربي الخارجي + الحلقة الداخلية بالفناء + الضلع الشرقي الخارجي -->
+          <div class="grid grid-cols-12 gap-3 items-stretch">
+            
+            <!-- أ) الواجهة الغربية الخارجية (المدخل والمرافق) -->
+            <div class="col-span-2 flex flex-col justify-between gap-2">
+              <div class="bg-gray-800/40 border border-gray-700/50 rounded-xl p-2.5 text-center text-gray-400 text-xs">
+                <i class="fa-solid fa-boxes-stacked block text-gray-500 mb-1"></i> مستودع
               </div>
-              <div class="grid grid-cols-3 gap-2 text-[11px] font-bold text-slate-400">
-                <div class="bg-slate-900/90 border border-slate-800 p-2 rounded-lg"><i class="fa-solid fa-user-tie block mb-1 text-sky-400"></i> رئيس القسم</div>
-                <div class="bg-slate-900/90 border border-slate-800 p-2 rounded-lg"><i class="fa-solid fa-users block mb-1 text-indigo-400"></i> شؤون المتدربين</div>
-                <div class="bg-slate-900/90 border border-slate-800 p-2 rounded-lg"><i class="fa-solid fa-laptop-code block mb-1 text-emerald-400"></i> التدريب الإلكتروني</div>
+              <div class="bg-gray-800/40 border border-gray-700/50 rounded-xl p-2.5 text-center text-blue-300 text-xs">
+                <i class="fa-solid fa-restroom block text-blue-400 mb-1"></i> دورة مياه المتدربين
+              </div>
+              <div class="bg-gray-800/60 border border-gray-700/60 rounded-xl p-2 text-center text-amber-300 text-xs font-bold">
+                <i class="fa-solid fa-stairs block mb-1"></i> درج
+              </div>
+              <div class="bg-cyan-900/20 border border-cyan-800/40 rounded-xl p-3 text-center text-white text-xs border-dashed">
+                <i class="fa-solid fa-door-open block text-cyan-400 text-base mb-1"></i>
+                <span class="font-bold">المدخل الرئيسي المزدوج</span>
+              </div>
+              <div class="bg-gray-800/40 border border-gray-700/50 rounded-xl p-2.5 text-center text-gray-300 text-xs">
+                <i class="fa-solid fa-id-card-clip block text-cyan-400 mb-1"></i> منسق رايات
+              </div>
+              <button onclick="selectLab(1, 'معمل 1')" id="lab-btn-1" class="room-card bg-cyan-950/30 border border-cyan-500/30 hover:border-cyan-400 rounded-xl p-3 text-center cursor-pointer">
+                <span class="text-[10px] text-cyan-400 block font-semibold">حاسب</span>
+                <span class="font-extrabold text-sm text-white">معمل (1)</span>
+              </button>
+            </div>
+
+            <!-- ب) الحلقة الداخلية المحيطة بالفناء الأوسط -->
+            <div class="col-span-8 bg-black/40 border-2 border-dashed border-cyan-700/40 rounded-2xl p-4 flex flex-col justify-between gap-3 shadow-inner">
+              
+              <!-- الحلقة الداخلية: الضلع الشمالي -->
+              <div class="grid grid-cols-4 gap-2">
+                <button onclick="selectLab(27, 'معمل 27')" id="lab-btn-27" class="room-card bg-cyan-950/40 border border-cyan-500/40 hover:border-cyan-400 rounded-lg p-2.5 text-center">
+                  <span class="font-bold text-xs text-white">معمل (27)</span>
+                </button>
+                <div class="bg-amber-950/20 border border-amber-500/30 rounded-lg p-2.5 text-center text-amber-300 text-xs flex items-center justify-center gap-1">
+                  <i class="fa-solid fa-toolbox text-amber-400"></i> غرفة صيانة
+                </div>
+                <button onclick="selectLab(23, 'معمل 23')" id="lab-btn-23" class="room-card bg-cyan-950/40 border border-cyan-500/40 hover:border-cyan-400 rounded-lg p-2.5 text-center">
+                  <span class="font-bold text-xs text-white">معمل (23)</span>
+                </button>
+                <button onclick="selectLab(22, 'معمل 22')" id="lab-btn-22" class="room-card bg-cyan-950/40 border border-cyan-500/40 hover:border-cyan-400 rounded-lg p-2.5 text-center">
+                  <span class="font-bold text-xs text-white">معمل (22)</span>
+                </button>
+              </div>
+
+              <!-- الحلقة الداخلية: الأجنحة الجانبية + الفناء الأوسط المفتوح -->
+              <div class="grid grid-cols-6 gap-2 items-stretch py-1">
+                
+                <!-- ضلع الحلقة الداخلية الغربي (مكاتب إدارية) -->
+                <div class="col-span-1 flex flex-col justify-between gap-1.5 text-[10px]">
+                  <div class="bg-gray-800/40 border border-gray-700 rounded p-1.5 text-center text-gray-400">تهوية</div>
+                  <div class="bg-blue-950/30 border border-blue-600/30 rounded p-2 text-center text-blue-300 font-medium">مكتب التدريب الإلكتروني</div>
+                  <div class="bg-indigo-950/40 border border-indigo-500/40 rounded p-2 text-center text-indigo-300 font-bold">مكتب رئيس القسم</div>
+                  <div class="bg-blue-950/30 border border-blue-600/30 rounded p-2 text-center text-blue-300 font-medium">شؤون المتدربين</div>
+                  <div class="bg-gray-800/40 border border-gray-700 rounded p-1.5 text-center text-gray-400">تهوية</div>
+                </div>
+
+                <!-- الفناء الأوسط المفتوح (Atrium) -->
+                <div class="col-span-4 bg-gradient-to-b from-cyan-950/20 via-blue-950/10 to-slate-900/30 rounded-xl border border-cyan-500/20 flex flex-col items-center justify-center p-6 text-center">
+                  <div class="w-14 h-14 rounded-full bg-cyan-500/10 border border-cyan-400/30 flex items-center justify-center text-cyan-400 mb-2">
+                    <i class="fa-solid fa-tree text-2xl text-emerald-400/80"></i>
+                  </div>
+                  <h3 class="text-sm font-extrabold text-cyan-200 tracking-wider">الفناء الداخلي الأوسط (البهو)</h3>
+                  <p class="text-[11px] text-gray-400 mt-1">فناء مفتوح يربط أجنحة القسم ومعامل التدريب</p>
+                </div>
+
+                <!-- ضلع الحلقة الداخلية الشرقي -->
+                <div class="col-span-1 flex flex-col justify-between gap-1.5 text-[10px]">
+                  <div class="bg-gray-800/40 border border-gray-700 rounded p-1 text-center text-gray-400">تهوية</div>
+                  <div class="bg-gray-800/30 border border-gray-700/40 rounded p-1 text-center text-gray-400">مستودع 3</div>
+                  <div class="bg-gray-800/30 border border-gray-700/40 rounded p-1 text-center text-gray-400">مستودع 2</div>
+                  <div class="bg-gray-800/30 border border-gray-700/40 rounded p-1 text-center text-gray-400">مستودع 1</div>
+                  <button onclick="selectLab(14, 'معمل 14')" id="lab-btn-14" class="room-card bg-cyan-950/40 border border-cyan-500/40 rounded p-1.5 text-center font-bold text-white">معمل 14</button>
+                  <button onclick="selectLab(12, 'معمل 12')" id="lab-btn-12" class="room-card bg-cyan-950/40 border border-cyan-500/40 rounded p-1.5 text-center font-bold text-white">معمل 12</button>
+                  <div class="bg-gray-800/40 border border-gray-700 rounded p-1 text-center text-gray-400">تهوية</div>
+                </div>
+
+              </div>
+
+              <!-- الحلقة الداخلية: الضلع الجنوبي -->
+              <div class="grid grid-cols-3 gap-2">
+                <button onclick="selectLab(10, 'معمل 10 (ألياف ضوئية)')" id="lab-btn-10" class="room-card bg-cyan-950/40 border border-cyan-500/40 hover:border-cyan-400 rounded-lg p-2.5 text-center">
+                  <span class="text-[10px] text-cyan-400 block font-semibold">كيابل ألياف ضوئية</span>
+                  <span class="font-bold text-xs text-white">معمل (10)</span>
+                </button>
+                <button onclick="selectLab(6, 'معمل 6')" id="lab-btn-6" class="room-card bg-cyan-950/40 border border-cyan-500/40 hover:border-cyan-400 rounded-lg p-2.5 text-center">
+                  <span class="font-bold text-xs text-white">معمل (6)</span>
+                </button>
+                <button onclick="selectLab(4, 'معمل 4')" id="lab-btn-4" class="room-card bg-cyan-950/40 border border-cyan-500/40 hover:border-cyan-400 rounded-lg p-2.5 text-center">
+                  <span class="font-bold text-xs text-white">معمل (4)</span>
+                </button>
+              </div>
+
+            </div>
+
+            <!-- ج) الواجهة الشرقية الخارجية -->
+            <div class="col-span-2 flex flex-col justify-between gap-2">
+              <div class="bg-emerald-950/20 border border-emerald-500/30 rounded-xl p-2.5 text-center text-emerald-300 text-xs">
+                <i class="fa-solid fa-mosque block text-emerald-400 mb-1"></i> مصلى القسم
+              </div>
+              <div class="bg-gray-800/40 border border-gray-700/50 rounded-xl p-2 text-center text-gray-400 text-xs">
+                <i class="fa-solid fa-boxes-stacked block text-gray-500 mb-0.5"></i> مستودع
+              </div>
+              <div class="bg-indigo-950/20 border border-indigo-500/30 rounded-xl p-2 text-center text-indigo-300 text-xs">
+                <i class="fa-solid fa-chalkboard-user block text-indigo-400 mb-0.5"></i> قاعة نظري 1
+              </div>
+              <div class="bg-gray-800/40 border border-gray-700/50 rounded-xl p-2 text-center text-gray-400 text-xs">
+                <i class="fa-solid fa-boxes-stacked block text-gray-500 mb-0.5"></i> مستودع
+              </div>
+              <button onclick="selectLab(13, 'معمل 13')" id="lab-btn-13" class="room-card bg-cyan-950/30 border border-cyan-500/30 hover:border-cyan-400 rounded-xl p-2.5 text-center cursor-pointer">
+                <span class="font-extrabold text-sm text-white">معمل (13)</span>
+              </button>
+              <button onclick="selectLab(11, 'معمل 11')" id="lab-btn-11" class="room-card bg-cyan-950/30 border border-cyan-500/30 hover:border-cyan-400 rounded-xl p-2.5 text-center cursor-pointer">
+                <span class="font-extrabold text-sm text-white">معمل (11)</span>
+              </button>
+              <div class="bg-gray-800/40 border border-gray-700/50 rounded-xl p-2 text-center text-blue-300 text-xs">
+                <i class="fa-solid fa-restroom block text-blue-400 mb-0.5"></i> دورة مياه
+              </div>
+              <div class="bg-gray-800/60 border border-gray-700/60 rounded-xl p-2 text-center text-amber-300 text-xs font-bold">
+                <i class="fa-solid fa-stairs block mb-0.5"></i> درج سفلي
               </div>
             </div>
 
-            <div class="grid grid-cols-5 gap-1.5 text-center text-[11px]">
-              {% for lab_num in [4, 6, 10, 12, 14] %}
-                {% set has_issue = lab_num in broken_labs %}
-                <a href="/dashboard?lab={{ lab_num }}" class="p-1.5 rounded-lg border transition font-bold {{ 'broken-lab text-red-300' if has_issue else ('bg-sky-500/20 border-sky-400 text-sky-300 ring-2 ring-sky-500/30' if selected_lab == lab_num else 'bg-slate-950 border-slate-800 hover:border-sky-500 text-slate-300') }}">
-                  م{{ lab_num }}
-                  {% if has_issue %}<span class="block text-[8px] text-red-400 font-bold">عطل!</span>{% endif %}
-                </a>
-              {% endfor %}
+          </div>
+
+          <!-- 3. الحلقة الخارجية: الضلع السفلي (الجنوبي) -->
+          <div class="grid grid-cols-7 gap-2">
+            <button onclick="selectLab(2, 'معمل 2')" id="lab-btn-2" class="room-card bg-cyan-950/30 border border-cyan-500/30 hover:border-cyan-400 rounded-xl p-3 text-center cursor-pointer">
+              <span class="font-extrabold text-sm text-white">معمل (2)</span>
+            </button>
+            <button onclick="selectLab(3, 'معمل 3')" id="lab-btn-3" class="room-card bg-cyan-950/30 border border-cyan-500/30 hover:border-cyan-400 rounded-xl p-3 text-center cursor-pointer">
+              <span class="font-extrabold text-sm text-white">معمل (3)</span>
+            </button>
+            <button onclick="selectLab(5, 'معمل 5')" id="lab-btn-5" class="room-card bg-cyan-950/30 border border-cyan-500/30 hover:border-cyan-400 rounded-xl p-3 text-center cursor-pointer">
+              <span class="font-extrabold text-sm text-white">معمل (5)</span>
+            </button>
+            <button onclick="selectLab(7, 'معمل 7')" id="lab-btn-7" class="room-card bg-cyan-950/30 border border-cyan-500/30 hover:border-cyan-400 rounded-xl p-3 text-center cursor-pointer">
+              <span class="font-extrabold text-sm text-white">معمل (7)</span>
+            </button>
+            <button onclick="selectLab(9, 'معمل 9 (الكيابل النحاسية)')" id="lab-btn-9" class="room-card bg-cyan-950/30 border border-cyan-500/30 hover:border-cyan-400 rounded-xl p-3 text-center cursor-pointer">
+              <span class="text-[10px] text-cyan-400 block font-semibold">الكيابل النحاسية</span>
+              <span class="font-extrabold text-sm text-white">معمل (9)</span>
+            </button>
+            <div class="bg-gray-800/40 border border-gray-700/50 rounded-xl p-3 text-center text-gray-400 text-xs flex flex-col justify-center">
+              <i class="fa-solid fa-boxes-stacked mb-1 text-gray-500"></i> مستودع
+            </div>
+            <div class="bg-gray-800/60 border border-gray-700/60 rounded-xl p-3 text-center text-amber-300 text-xs flex flex-col justify-center font-bold">
+              <i class="fa-solid fa-stairs mb-1"></i> درج
             </div>
           </div>
 
-          <div class="col-span-3 space-y-2.5 text-xs">
-            <div class="bg-slate-800/40 border border-slate-700/40 p-2 rounded-xl text-center text-slate-500 text-[11px]">
-              <i class="fa-solid fa-stairs ml-1"></i> درج رئيسي
-            </div>
-            <div class="bg-indigo-900/20 border border-indigo-500/40 p-2 rounded-xl text-center text-indigo-300 font-black">
-              <i class="fa-solid fa-door-open ml-1"></i> المدخل الرئيسي
-            </div>
-            <div class="bg-slate-800/50 border border-slate-700/60 p-2 rounded-xl text-center text-slate-300 font-bold">
-              منسق رايات
-            </div>
-            {% set has_issue_1 = 1 in broken_labs %}
-            <a href="/dashboard?lab=1" class="p-3.5 rounded-xl border text-center transition block font-black {{ 'broken-lab text-red-300' if has_issue_1 else ('bg-sky-500/20 border-sky-400 text-sky-300 ring-2 ring-sky-500/30' if selected_lab == 1 else 'bg-slate-900 border-slate-700/80 hover:border-sky-500 text-slate-200') }}">
-              <div class="text-xs text-sky-400">معمل رئيسي</div>
-              <div class="text-base font-black">معمل (1)</div>
-              {% if has_issue_1 %}<span class="text-[10px] bg-red-500/30 text-red-400 px-1.5 py-0.5 rounded-full mt-1 inline-block">عطل نشط!</span>{% endif %}
-            </a>
-          </div>
-        </div>
-
-        <!-- الصف السفلي -->
-        <div class="grid grid-cols-5 gap-3 text-center text-xs">
-          {% for lab_num in [2, 3, 5, 7, 9] %}
-            {% set has_issue = lab_num in broken_labs %}
-            <a href="/dashboard?lab={{ lab_num }}" class="p-3 rounded-xl border text-center transition block font-bold {{ 'broken-lab text-red-300' if has_issue else ('bg-sky-500/20 border-sky-400 text-sky-300 ring-2 ring-sky-500/30' if selected_lab == lab_num else 'bg-slate-900 border-slate-700/80 hover:border-sky-500 text-slate-300') }}">
-              <div class="text-[11px] text-slate-400 font-normal">معمل</div>
-              <div class="text-sm font-black">{{ lab_num }}</div>
-              {% if has_issue %}<span class="text-[9px] bg-red-500/30 text-red-400 px-1 rounded">عطل!</span>{% endif %}
-            </a>
-          {% endfor %}
         </div>
       </div>
-    </section>
+    </div>
 
-    <!-- المخطط التفاعلي لمقاعد المعمل المحدد حالياً -->
-    <section class="bg-slate-900/80 border border-slate-800 p-6 rounded-3xl shadow-2xl">
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+    <!-- شبكة مقاعد المعمل المختار (27 جهاز حاسب) -->
+    <div id="seats-container" class="bg-brand-card border border-brand-border rounded-3xl p-5 lg:p-7 shadow-2xl space-y-6">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-brand-border">
         <div>
-          <div class="flex items-center gap-3">
-            <h2 class="text-lg font-black text-white flex items-center gap-2">
-              <i class="fa-solid fa-desktop text-sky-400"></i>
-              توزيع مقاعد أجهزة (معمل {{ selected_lab }})
-            </h2>
-            <span class="bg-sky-500/10 text-sky-400 text-xs px-2.5 py-1 rounded-lg border border-sky-500/20 font-bold">27 محطة حاسب</span>
+          <div class="inline-block px-2.5 py-1 rounded-md bg-cyan-500/10 text-cyan-400 text-xs font-bold border border-cyan-500/20 mb-1.5">
+            المعمل النشط حالياً
           </div>
-          <p class="text-xs text-slate-400 mt-1">
-            انقر على أي مقعد أو امسح الباركود الخاص به لتسجيل بلاغ أو فحص حالته
-          </p>
+          <h3 id="current-lab-title" class="text-xl font-black text-white">معمل (1)</h3>
         </div>
-        
-        <div class="flex items-center gap-3">
-          <a href="/report?lab={{ selected_lab }}&seat=1" target="_blank" class="bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-600 hover:to-indigo-700 text-white px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-lg shadow-sky-500/20">
-            <i class="fa-solid fa-plus"></i> تسجيل بلاغ بهذا المعمل
+
+        <div class="flex items-center gap-2">
+          <a id="qr-direct-link" href="/report?lab=1&seat=1" target="_blank" class="px-3.5 py-2 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 text-cyan-400 text-xs font-bold flex items-center gap-1.5 transition-all">
+            <i class="fa-solid fa-qrcode"></i> تجربة صفحة بلاغ المعمل
           </a>
         </div>
       </div>
 
-      <!-- منصة المحاضر -->
-      <div class="mt-6 mb-8 max-w-sm mx-auto bg-slate-800/80 border border-slate-700 rounded-xl py-2.5 text-center text-xs text-slate-300 font-bold tracking-wider shadow-inner">
-        <i class="fa-solid fa-chalkboard-user ml-1 text-sky-400"></i> منصة المدرب والشاشة الرئيسية
+      <!-- شبكة الـ 27 جهاز حاسب -->
+      <div class="grid grid-cols-3 sm:grid-cols-6 lg:grid-cols-9 gap-3" id="seats-grid">
+        <!-- يتم توليد المقاعد ديناميكياً بواسطة JavaScript -->
       </div>
-
-      <!-- شبكة المقاعد من 1 إلى 27 -->
-      <div class="grid grid-cols-3 sm:grid-cols-6 md:grid-cols-9 gap-3">
-        {% for seat in range(1, 28) %}
-          {% set has_seat_issue = seat in broken_seats %}
-          <div class="relative group p-3 rounded-2xl border flex flex-col items-center justify-center gap-1.5 transition-all duration-300 select-none
-                      {{ 'seat-broken shadow-lg shadow-red-500/20' if has_seat_issue else 'bg-slate-900 border-slate-800 text-slate-300 hover:border-sky-500 hover:bg-slate-800/60' }}">
-            <i class="fa-solid fa-computer text-xl {{ 'text-red-500 animate-bounce' if has_seat_issue else 'text-slate-500 group-hover:text-sky-400' }}"></i>
-            <span class="text-xs font-black">مقعد {{ seat }}</span>
-            <span class="text-[10px] font-bold px-2 py-0.5 rounded-md {{ 'bg-red-500/20 text-red-700' if has_seat_issue else 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' }}">
-              {{ 'عطل نشط!' if has_seat_issue else 'سليم' }}
-            </span>
-          </div>
-        {% endfor %}
-      </div>
-    </section>
-
-    <!-- جدول إدارة ومتابعة تذاكر الصيانة -->
-    <section class="bg-slate-900/80 border border-slate-800 rounded-3xl shadow-2xl overflow-hidden">
-      <div class="p-6 border-b border-slate-800 flex justify-between items-center">
-        <div>
-          <h2 class="text-lg font-black text-white flex items-center gap-2">
-            <i class="fa-solid fa-clock-rotate-left text-sky-400"></i>
-            سجل بلاغات الأعطال والقطع المستبدلة
-          </h2>
-          <p class="text-xs text-slate-400 mt-1">تحديث فوري لجميع البلاغات وتوثيق أعمال الفحص الفني</p>
-        </div>
-      </div>
-
-      <div class="overflow-x-auto">
-        <table class="w-full text-sm text-right">
-          <thead class="bg-slate-950 text-slate-400 font-bold border-b border-slate-800 text-xs">
-            <tr>
-              <th class="p-4">رقم التذكرة</th>
-              <th class="p-4">الموقع على المخطط</th>
-              <th class="p-4">وصف العطل</th>
-              <th class="p-4">الحالة</th>
-              <th class="p-4">القطع المستبدلة / الإجراء</th>
-              <th class="p-4 text-center">الإجراءات</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-slate-800/80">
-            {% for t in tickets %}
-            <tr class="hover:bg-slate-800/30 transition">
-              <td class="p-4 font-mono font-bold text-sky-400">#{{ t[0] }}</td>
-              <td class="p-4 font-medium text-white">
-                <span class="bg-sky-500/10 text-sky-300 px-2.5 py-1 rounded-lg text-xs ml-1 border border-sky-500/20 font-bold">معمل {{ t[1] }}</span>
-                <span class="font-bold text-slate-200">مقعد {{ t[2] }}</span>
-              </td>
-              <td class="p-4 text-slate-300 max-w-xs text-xs font-medium">{{ t[3] }}</td>
-              <td class="p-4">
-                {% if t[4] == 'مكتمل' %}
-                  <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                    <i class="fa-solid fa-circle-check"></i> مكتمل
-                  </span>
-                {% else %}
-                  <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-red-500/10 text-red-400 border border-red-500/20">
-                    <i class="fa-solid fa-wrench animate-spin"></i> بانتظار الإصلاح
-                  </span>
-                {% endif %}
-              </td>
-              <td class="p-4 text-slate-300 text-xs font-medium">{{ t[5] }}</td>
-              <td class="p-4 text-center">
-                {% if t[4] != 'مكتمل' %}
-                <form action="/resolve/{{ t[0] }}" method="POST" class="flex items-center gap-2 justify-center">
-                  <input type="text" name="parts" placeholder="مثال: تم تغيير الرام..." required
-                         class="bg-slate-950 border border-slate-700 text-xs text-white rounded-xl px-3 py-1.5 focus:outline-none focus:border-sky-500 w-44">
-                  <button type="submit" class="bg-sky-600 hover:bg-sky-500 text-white px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1 shadow-md shadow-sky-600/30">
-                    <i class="fa-solid fa-check"></i> إغلاق
-                  </button>
-                </form>
-                {% else %}
-                  <span class="text-slate-500 text-xs"><i class="fa-solid fa-lock ml-1"></i>مؤرشف في السجل</span>
-                {% endif %}
-              </td>
-            </tr>
-            {% else %}
-            <tr>
-              <td colspan="6" class="p-8 text-center text-slate-400">
-                <i class="fa-solid fa-circle-check text-emerald-400 text-3xl mb-2 block"></i>
-                لا توجد بلاغات مسجلة حالياً! جميع معامل وأجهزة القسم في أعلى جاهزية تشغيلية.
-              </td>
-            </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      </div>
-    </section>
+    </div>
 
   </main>
 
-  <footer class="text-center py-8 text-xs text-slate-500 border-t border-slate-900 mt-12">
-    النظام الذكي لإدارة ومتابعة صيانة حواسيب المعامل © إعداد: ريان المحيطيب - إشراف: أ. محمد الدوخي
-  </footer>
+  <script>
+    let activeLab = 1;
 
+    // جلب بيانات حالة المعامل والأجهزة
+    async function loadLabStatus() {
+      try {
+        const response = await fetch('/api/status');
+        const data = await response.json();
+        
+        let totalReady = 0;
+        let totalIssues = 0;
+        let totalProgress = 0;
+
+        // مصفوفة المعامل
+        const labIds = [1, 2, 3, 4, 5, 6, 7, 9, 10, 11, 12, 13, 14, 22, 23, 24, 26, 27];
+
+        labIds.forEach(labId => {
+          const labData = data[labId] || {};
+          let labHasDanger = false;
+          let labHasWarning = false;
+
+          for (let s = 1; s <= 27; s++) {
+            const status = labData[s] ? labData[s].status : 'Ready';
+            if (status === 'Broken') {
+              labHasDanger = true;
+              totalIssues++;
+            } else if (status === 'In-Progress') {
+              labHasWarning = true;
+              totalProgress++;
+            } else {
+              totalReady++;
+            }
+          }
+
+          // تطبيق تأثيرات النبض الراداري على المخطط
+          const btn = document.getElementById(`lab-btn-${labId}`);
+          if (btn) {
+            btn.classList.remove('pulse-danger', 'pulse-warning', 'border-red-500', 'border-amber-500');
+            if (labHasDanger) {
+              btn.classList.add('pulse-danger', 'border-red-500');
+            } else if (labHasWarning) {
+              btn.classList.add('pulse-warning', 'border-amber-500');
+            }
+          }
+        });
+
+        // تحديث أرقام الإحصائيات في الأعلى
+        document.getElementById('stat-ready').innerText = totalReady;
+        document.getElementById('stat-issues').innerText = totalIssues;
+        document.getElementById('stat-progress').innerText = totalProgress;
+
+        // تحديث شبكة المقاعد للمعلم الحالي
+        renderSeats(data[activeLab] || {});
+      } catch (err) {
+        console.error("فشل في تحميل حالة المعامل:", err);
+      }
+    }
+
+    function selectLab(labNumber, title) {
+      activeLab = labNumber;
+      document.getElementById('current-lab-title').innerText = title;
+      document.getElementById('qr-direct-link').href = `/report?lab=${labNumber}&seat=1`;
+      loadLabStatus();
+      
+      // التمرير لأسفل لرؤية شبكة المقاعد بسلاسة
+      document.getElementById('seats-container').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function renderSeats(labSeats) {
+      const grid = document.getElementById('seats-grid');
+      grid.innerHTML = '';
+
+      for (let i = 1; i <= 27; i++) {
+        const seatInfo = labSeats[i] || { status: 'Ready' };
+        let statusBg = "bg-emerald-950/30 border-emerald-500/30 text-emerald-400";
+        let statusIcon = "fa-circle-check";
+        let statusLabel = "جاهز";
+
+        if (seatInfo.status === 'Broken') {
+          statusBg = "bg-red-950/40 border-red-500/60 text-red-400 animate-pulse";
+          statusIcon = "fa-triangle-exclamation";
+          statusLabel = "عطل";
+        } else if (seatInfo.status === 'In-Progress') {
+          statusBg = "bg-amber-950/40 border-amber-500/60 text-amber-400";
+          statusIcon = "fa-wrench";
+          statusLabel = "صيانة";
+        }
+
+        const seatCard = `
+          <div class="border rounded-2xl p-3 flex flex-col items-center justify-center gap-2 ${statusBg} transition-all hover:scale-105">
+            <i class="fa-solid fa-desktop text-xl"></i>
+            <span class="text-xs font-black">جهاز #${i}</span>
+            <span class="text-[10px] px-2 py-0.5 rounded-full bg-black/40 flex items-center gap-1 font-semibold">
+              <i class="fa-solid ${statusIcon}"></i> ${statusLabel}
+            </span>
+          </div>
+        `;
+        grid.insertAdjacentHTML('beforeend', seatCard);
+      }
+    }
+
+    // التحميل التلقائي والتحديث الدوري كل 10 ثوانٍ
+    loadLabStatus();
+    setInterval(loadLabStatus, 10000);
+  </script>
 </body>
 </html>
