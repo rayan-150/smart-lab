@@ -251,9 +251,10 @@ DASHBOARD_TEMPLATE = """
                     <rect x="70" y="30" width="710" height="900" fill="none" stroke="#172554" stroke-width="3" rx="8" />
 
                     <!-- ================= 1. الضلع العلوي الخارجي ================= -->
-                    <!-- مستودع علوي يسار -->
+                    <!-- شبكات الحاسب -->
                     <rect x="235" y="35" width="80" height="75" class="svg-room" />
-                    <text x="275" y="78" class="svg-facility-text">مستودع</text>
+                    <text x="275" y="72" class="svg-facility-text">شبكات</text>
+                    <text x="275" y="87" class="svg-facility-text">الحاسب</text>
 
                     <!-- معمل 26 -->
                     <g onclick="switchLab(26)" id="lab-node-26" class="cursor-pointer">
@@ -262,9 +263,10 @@ DASHBOARD_TEMPLATE = """
                         <text x="362" y="88" class="svg-text-sub">الحوسبة</text>
                     </g>
 
-                    <!-- شبكات الحاسب -->
+                    <!-- أساسيات الكهرباء -->
                     <rect x="410" y="35" width="85" height="75" class="svg-room" />
-                    <text x="452" y="78" class="svg-facility-text">شبكات الحاسب</text>
+                    <text x="452" y="72" class="svg-facility-text">أساسيات</text>
+                    <text x="452" y="87" class="svg-facility-text">الكهرباء</text>
 
                     <!-- معمل 24 -->
                     <g onclick="switchLab(24)" id="lab-node-24" class="cursor-pointer">
@@ -363,11 +365,11 @@ DASHBOARD_TEMPLATE = """
                         <text x="607" y="250" class="svg-text-title">معمل (22)</text>
                     </g>
 
-                    <!-- الجدار الداخلي الأيسر (المكاتب الإدارية) -->
+                    <!-- الجهة الغربية للفناء: تهوية، شؤون المتدربين، مكتب رئيس القسم، مكتب التدريب الإلكتروني، تهوية -->
                     <rect x="255" y="290" width="70" height="35" class="svg-room" /><text x="290" y="312" class="svg-facility-text" font-size="9">تهوية</text>
-                    <rect x="255" y="330" width="70" height="75" class="svg-room" /><text x="290" y="365" class="svg-facility-text">مكتب التدريب</text><text x="290" y="380" class="svg-facility-text">الإلكتروني</text>
+                    <rect x="255" y="330" width="70" height="75" class="svg-room" /><text x="290" y="365" class="svg-facility-text">شؤون</text><text x="290" y="380" class="svg-facility-text">المتدربين</text>
                     <rect x="255" y="410" width="70" height="80" class="svg-room" stroke="#38bdf8" /><text x="290" y="445" fill="#7dd3fc" font-size="10" font-weight="bold" text-anchor="middle">مكتب</text><text x="290" y="460" fill="#7dd3fc" font-size="10" font-weight="bold" text-anchor="middle">رئيس القسم</text>
-                    <rect x="255" y="495" width="70" height="75" class="svg-room" /><text x="290" y="532" class="svg-facility-text">شؤون</text><text x="290" y="547" class="svg-facility-text">المتدربين</text>
+                    <rect x="255" y="495" width="70" height="75" class="svg-room" /><text x="290" y="532" class="svg-facility-text">مكتب التدريب</text><text x="290" y="547" class="svg-facility-text">الإلكتروني</text>
                     <rect x="255" y="575" width="70" height="35" class="svg-room" /><text x="290" y="597" class="svg-facility-text" font-size="9">تهوية</text>
 
                     <!-- الفناء الأوسط المفتوح (Courtyard / بهو) -->
@@ -419,11 +421,12 @@ DASHBOARD_TEMPLATE = """
                         <text x="462" y="648" class="svg-text-title">معمل (6)</text>
                     </g>
 
-                    <!-- معمل 10 (كيابل ألياف ضوئية) -->
+                    <!-- معمل 10 (كيابل الألياف الضوئية) -->
                     <g onclick="switchLab(10)" id="lab-node-10" class="cursor-pointer">
                         <rect x="520" y="600" width="140" height="85" class="svg-lab" rx="3" />
-                        <text x="590" y="642" class="svg-text-title">معمل (10)</text>
-                        <text x="590" y="658" class="svg-text-sub">الألياف الضوئية</text>
+                        <text x="590" y="637" class="svg-text-title">معمل (10)</text>
+                        <text x="590" y="652" class="svg-text-sub">كيابل الألياف</text>
+                        <text x="590" y="666" class="svg-text-sub">الضوئية</text>
                     </g>
 
                     <!-- ================= 4. الضلع الأيمن الخارجي ================= -->
@@ -456,9 +459,10 @@ DASHBOARD_TEMPLATE = """
                         <text x="745" y="575" class="svg-text-title">معمل (11)</text>
                     </g>
 
-                    <!-- دورة مياه -->
+                    <!-- دورة مياه المتدربين -->
                     <rect x="715" y="620" width="60" height="60" class="svg-room" />
-                    <text x="745" y="652" class="svg-facility-text" font-size="9">دورة مياه</text>
+                    <text x="745" y="645" class="svg-facility-text" font-size="9">دورة مياه</text>
+                    <text x="745" y="660" class="svg-facility-text" font-size="9">المتدربين</text>
 
                     <!-- درج سفلي -->
                     <g>
