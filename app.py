@@ -365,11 +365,11 @@ DASHBOARD_TEMPLATE = """
                         <text x="607" y="250" class="svg-text-title">معمل (22)</text>
                     </g>
 
-                    <!-- الجهة الغربية للفناء: تهوية، شؤون المتدربين، مكتب رئيس القسم، مكتب التدريب الإلكتروني، تهوية -->
+                    <!-- الجهة الغربية للفناء: تهوية، مكتب التدريب الإلكتروني، مكتب رئيس القسم، شؤون المتدربين، تهوية -->
                     <rect x="255" y="290" width="70" height="35" class="svg-room" /><text x="290" y="312" class="svg-facility-text" font-size="9">تهوية</text>
-                    <rect x="255" y="330" width="70" height="75" class="svg-room" /><text x="290" y="365" class="svg-facility-text">شؤون</text><text x="290" y="380" class="svg-facility-text">المتدربين</text>
+                    <rect x="255" y="330" width="70" height="75" class="svg-room" /><text x="290" y="365" class="svg-facility-text">مكتب التدريب</text><text x="290" y="380" class="svg-facility-text">الإلكتروني</text>
                     <rect x="255" y="410" width="70" height="80" class="svg-room" stroke="#38bdf8" /><text x="290" y="445" fill="#7dd3fc" font-size="10" font-weight="bold" text-anchor="middle">مكتب</text><text x="290" y="460" fill="#7dd3fc" font-size="10" font-weight="bold" text-anchor="middle">رئيس القسم</text>
-                    <rect x="255" y="495" width="70" height="75" class="svg-room" /><text x="290" y="532" class="svg-facility-text">مكتب التدريب</text><text x="290" y="547" class="svg-facility-text">الإلكتروني</text>
+                    <rect x="255" y="495" width="70" height="75" class="svg-room" /><text x="290" y="532" class="svg-facility-text">شؤون</text><text x="290" y="547" class="svg-facility-text">المتدربين</text>
                     <rect x="255" y="575" width="70" height="35" class="svg-room" /><text x="290" y="597" class="svg-facility-text" font-size="9">تهوية</text>
 
                     <!-- الفناء الأوسط المفتوح (Courtyard / بهو) -->
