@@ -1,6 +1,10 @@
 import os
 import sqlite3
-from flask import Flask, render_template_string, request, redirect, url_for, session
+from io import BytesIO
+from urllib.parse import urlsplit
+
+import qrcode
+from flask import Flask, abort, render_template_string, request, redirect, send_file, url_for, session
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 app = Flask(__name__)
@@ -32,6 +36,10 @@ USERS = {
     "tech": {"password": "123", "role": "فني دعم المعامل", "name": "الدعم الفني"},
     "trainer": {"password": "123", "role": "مدرب قسم الحاسب", "name": "مدرب حاسب"}
 }
+
+# معمل واحد = رابط واحد = رمز QR واحد، بغض النظر عن عدد المقاعد داخله.
+LAB_NUMBERS = (1, 2, 3, 4, 5, 6, 7, 9, 10, 11, 12, 13, 14, 22, 23, 24, 26, 27)
+ISSUE_CATEGORIES = ('أجهزة', 'برامج', 'شبكة', 'أخرى')
 
 # --- صفحة تسجيل الدخول ---
 LOGIN_TEMPLATE = """
@@ -214,9 +222,9 @@ DASHBOARD_TEMPLATE = """
         <div class="lg:col-span-4 bg-slate-900/70 border border-slate-800 rounded-2xl p-5 flex flex-col justify-between">
             <div>
                 <div class="flex justify-between items-center mb-4">
-                    <button onclick="window.print()" class="bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 text-cyan-300 text-xs px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition">
-                        <i class="fa-solid fa-print"></i> طباعة ملصقات QR
-                    </button>
+                    <a href="{{ url_for('qr_labels') }}" class="bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 text-cyan-300 text-xs px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition">
+                        <i class="fa-solid fa-print"></i> طباعة QR المعامل
+                    </a>
                     <div class="text-right">
                         <h2 class="font-bold text-sm text-white flex items-center gap-2">
                             <span id="active-lab-title">توزيع مقاعد معمل (1)</span>
@@ -231,6 +239,9 @@ DASHBOARD_TEMPLATE = """
                 </div>
 
                 <div class="grid grid-cols-3 gap-2" id="seats-container"></div>
+                <a id="lab-report-link" href="{{ url_for('lab_report', lab_num=1) }}" class="mt-4 block rounded-xl border border-cyan-500/30 bg-cyan-500/10 p-3 text-center text-xs font-bold text-cyan-300 hover:bg-cyan-500/20">
+                    بلاغ جديد في معمل (1) — نفس الرابط الموجود في QR المعمل
+                </a>
             </div>
         </div>
 
@@ -543,7 +554,7 @@ DASHBOARD_TEMPLATE = """
                     {% for t in tickets %}
                     <tr class="hover:bg-slate-800/40">
                         <td class="p-3 font-mono font-bold text-cyan-400">#{{ t[0] }}</td>
-                        <td class="p-3 font-semibold">معمل ({{ t[1] }}) - مقعد {{ t[2] }}</td>
+                        <td class="p-3 font-semibold">معمل ({{ t[1] }}) - {% if t[2] == 0 %}منصة المدرب{% else %}مقعد {{ t[2] }}{% endif %}</td>
                         <td class="p-3">{{ t[3] }}</td>
                         <td class="p-3">{{ t[4] }} - <span class="text-slate-400">{{ t[5] }}</span></td>
                         <td class="p-3">
@@ -596,6 +607,9 @@ DASHBOARD_TEMPLATE = """
 
         function switchLab(num) {
             document.getElementById('active-lab-title').innerText = `توزيع مقاعد معمل (${num})`;
+            const reportLink = document.getElementById('lab-report-link');
+            reportLink.href = `/lab/${num}/report`;
+            reportLink.textContent = `بلاغ جديد في معمل (${num}) — نفس الرابط الموجود في QR المعمل`;
             // إزالة التحديد القديم
             document.querySelectorAll('.svg-lab').forEach(el => el.classList.remove('active-lab'));
             // تحديد المعمل الجديد
@@ -615,6 +629,136 @@ DASHBOARD_TEMPLATE = """
 """
 
 # --- المسارات والروابط (Routes) ---
+
+# يطبع المشرف بطاقة واحدة لكل معمل. كل مقاعد المعمل تشترك في رمز البطاقة نفسه.
+QR_LABELS_TEMPLATE = """
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>باركودات المعامل</title>
+    <style>
+        * { box-sizing: border-box; }
+        body { font-family: Tahoma, Arial, sans-serif; margin: 24px; color: #0f172a; background: #f1f5f9; }
+        .tools { max-width: 980px; margin: 0 auto 20px; padding: 18px; background: white; border-radius: 14px; }
+        .tools form { display: flex; gap: 10px; align-items: end; flex-wrap: wrap; }
+        .tools label { flex: 1; min-width: 260px; font-size: 14px; font-weight: bold; }
+        .tools input { width: 100%; margin-top: 7px; padding: 10px; direction: ltr; border: 1px solid #94a3b8; border-radius: 8px; }
+        .tools button, .tools a { padding: 11px 16px; border: 0; border-radius: 8px; background: #0369a1; color: white; cursor: pointer; text-decoration: none; }
+        .tools p { font-size: 13px; color: #475569; }
+        .error { color: #b91c1c !important; }
+        .labels { max-width: 980px; margin: auto; display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+        .label { text-align: center; padding: 12px 8px; min-height: 235px; border: 2px solid #0e7490; border-radius: 12px; background: white; break-inside: avoid; }
+        .label h2 { margin: 0 0 4px; font-size: 20px; }
+        .label img { width: 155px; height: 155px; display: block; margin: 0 auto; }
+        .label p { margin: 4px 0 0; font-size: 12px; }
+        @page { size: A4; margin: 10mm; }
+        @media print {
+            body { margin: 0; background: white; }
+            .tools { display: none; }
+            .labels { max-width: none; gap: 3mm; }
+            .label { min-height: 82mm; border-radius: 0; padding: 4mm; }
+            .label img { width: 43mm; height: 43mm; }
+        }
+    </style>
+</head>
+<body>
+    <div class="tools">
+        <h1>باركود واحد لكل معمل</h1>
+        <p>اكتب رابط النظام الذي يمكن للجوال فتحه قبل الطباعة، مثل http://192.168.1.10:5000. رابط localhost لا يعمل من جوال آخر.</p>
+        <form method="GET">
+            <label>رابط النظام
+                <input name="base" type="url" required value="{{ base_url }}" placeholder="http://192.168.1.10:5000">
+            </label>
+            <button type="submit">تحديث الباركودات</button>
+            {% if not error %}<button type="button" onclick="window.print()">طباعة 18 ملصقًا</button>{% endif %}
+            <a href="{{ url_for('dashboard') }}">العودة</a>
+        </form>
+        {% if error %}<p class="error">{{ error }}</p>{% endif %}
+    </div>
+    {% if not error %}
+    <div class="labels">
+        {% for lab in labs %}
+        <div class="label" id="lab-{{ lab }}">
+            <h2>معمل ({{ lab }})</h2>
+            <img src="{{ url_for('lab_qr', lab_num=lab, base=base_url) }}" alt="باركود معمل {{ lab }}">
+            <p>امسح الرمز للإبلاغ عن عطل في هذا المعمل</p>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+</body>
+</html>
+"""
+
+REPORT_TEMPLATE = """
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>بلاغ صيانة - معمل {{ lab_num }}</title>
+    <style>
+        * { box-sizing: border-box; }
+        body { background: #07101f; color: #e2e8f0; font-family: Tahoma, Arial, sans-serif; margin: 0; padding: 22px; }
+        main { max-width: 520px; margin: 30px auto; padding: 26px; background: #0f172a; border: 1px solid #155e75; border-radius: 18px; }
+        h1 { font-size: 24px; margin: 0 0 8px; }
+        p { color: #94a3b8; line-height: 1.8; }
+        label { display: block; margin: 17px 0 5px; font-size: 14px; }
+        input, select, textarea { width: 100%; padding: 12px; background: #020617; border: 1px solid #475569; border-radius: 9px; color: white; font: inherit; }
+        textarea { min-height: 110px; resize: vertical; }
+        button, a.button { display: block; width: 100%; margin-top: 22px; padding: 13px; border: 0; border-radius: 9px; background: #0891b2; color: white; text-align: center; font: inherit; font-weight: bold; text-decoration: none; cursor: pointer; }
+        .notice { padding: 12px; border-radius: 8px; background: #064e3b; color: #d1fae5; }
+        .error { padding: 12px; border-radius: 8px; background: #7f1d1d; color: white; }
+    </style>
+</head>
+<body>
+    <main>
+        <h1>بلاغ صيانة — معمل ({{ lab_num }})</h1>
+        <p>الباركود خاص بالمعمل كله. حدد رقم المقعد أو منصة المدرب في البلاغ.</p>
+        {% if success %}
+            <div class="notice">تم استلام البلاغ رقم #{{ success }} بنجاح.</div>
+            <a class="button" href="{{ url_for('lab_report', lab_num=lab_num) }}">بلاغ جديد لنفس المعمل</a>
+        {% else %}
+            {% if error %}<div class="error">{{ error }}</div>{% endif %}
+            <form method="POST">
+                <label for="seat">موقع الجهاز</label>
+                <select id="seat" name="seat_num" required>
+                    <option value="" disabled {% if not values.get('seat_num') %}selected{% endif %}>اختر المقعد</option>
+                    <option value="0" {% if values.get('seat_num') == '0' %}selected{% endif %}>منصة المدرب</option>
+                    {% for seat in seats %}<option value="{{ seat }}" {% if values.get('seat_num') == seat|string %}selected{% endif %}>مقعد {{ seat }}</option>{% endfor %}
+                </select>
+                <label for="reporter">اسم المبلّغ</label>
+                <input id="reporter" name="reporter_name" maxlength="80" required value="{{ values.get('reporter_name', '') }}">
+                <label for="category">نوع العطل</label>
+                <select id="category" name="issue_category" required>
+                    {% for category in categories %}<option value="{{ category }}" {% if values.get('issue_category') == category %}selected{% endif %}>{{ category }}</option>{% endfor %}
+                </select>
+                <label for="issue">وصف العطل</label>
+                <textarea id="issue" name="issue" maxlength="1000" minlength="5" required>{{ values.get('issue', '') }}</textarea>
+                <button type="submit">إرسال البلاغ</button>
+            </form>
+        {% endif %}
+    </main>
+</body>
+</html>
+"""
+
+
+def qr_base_url(raw_url):
+    """Keep printed QR targets on one explicit HTTP(S) origin."""
+    base = raw_url.strip().rstrip('/')
+    try:
+        parsed = urlsplit(base)
+        valid_port = parsed.port is None or 1 <= parsed.port <= 65535
+    except ValueError:
+        return None
+    if (len(base) > 200 or parsed.scheme not in ('http', 'https') or
+            not parsed.hostname or not valid_port or parsed.username or
+            parsed.password or parsed.path or parsed.query or parsed.fragment):
+        return None
+    return base
 
 @app.route('/')
 def home():
@@ -641,6 +785,76 @@ def login():
 def logout():
     session.clear()
     return redirect(url_for('login'))
+
+
+@app.route('/qr-labels')
+def qr_labels():
+    if 'user' not in session:
+        return redirect(url_for('login'))
+    requested_base = request.args.get('base', request.url_root.rstrip('/'))
+    base_url = qr_base_url(requested_base)
+    return render_template_string(
+        QR_LABELS_TEMPLATE,
+        base_url=requested_base,
+        labs=LAB_NUMBERS,
+        error=None if base_url else 'أدخل رابطًا يبدأ بـ http:// أو https:// ويتضمن عنوان الجهاز والمنفذ فقط.'
+    )
+
+
+@app.route('/qr/lab/<int:lab_num>.png')
+def lab_qr(lab_num):
+    if lab_num not in LAB_NUMBERS:
+        abort(404)
+    base_url = qr_base_url(request.args.get('base', request.url_root.rstrip('/')))
+    if base_url is None:
+        abort(400)
+    target = base_url + url_for('lab_report', lab_num=lab_num)
+    qr = qrcode.QRCode(error_correction=qrcode.constants.ERROR_CORRECT_M,
+                       box_size=8, border=4)
+    qr.add_data(target)
+    qr.make(fit=True)
+    output = BytesIO()
+    qr.make_image(fill_color='black', back_color='white').save(output, format='PNG')
+    output.seek(0)
+    return send_file(output, mimetype='image/png', max_age=0)
+
+
+@app.route('/lab/<int:lab_num>/report', methods=['GET', 'POST'])
+def lab_report(lab_num):
+    if lab_num not in LAB_NUMBERS:
+        abort(404)
+
+    error = None
+    values = request.form.to_dict(flat=True) if request.method == 'POST' else {}
+    if request.method == 'POST':
+        seat_raw = values.get('seat_num', '')
+        reporter = values.get('reporter_name', '').strip()
+        category = values.get('issue_category', '')
+        issue = values.get('issue', '').strip()
+        if not seat_raw.isdigit() or not 0 <= int(seat_raw) <= 27:
+            error = 'اختر مقعدًا صحيحًا أو منصة المدرب.'
+        elif not 1 <= len(reporter) <= 80:
+            error = 'اكتب اسم المبلّغ (حتى 80 حرفًا).'
+        elif category not in ISSUE_CATEGORIES:
+            error = 'اختر نوع العطل من القائمة.'
+        elif not 5 <= len(issue) <= 1000:
+            error = 'اكتب وصفًا للعطل من 5 إلى 1000 حرف.'
+        else:
+            with sqlite3.connect(os.path.join(BASE_DIR, 'maintenance.db')) as conn:
+                cursor = conn.execute(
+                    'INSERT INTO tickets (lab_num, seat_num, reporter_name, issue_category, issue) VALUES (?, ?, ?, ?, ?)',
+                    (lab_num, int(seat_raw), reporter, category, issue)
+                )
+                ticket_id = cursor.lastrowid
+            return redirect(url_for('lab_report', lab_num=lab_num, success=ticket_id))
+
+    success_raw = request.args.get('success', '')
+    success = int(success_raw) if success_raw.isdigit() else None
+    return render_template_string(
+        REPORT_TEMPLATE, lab_num=lab_num, seats=range(1, 28),
+        categories=ISSUE_CATEGORIES, values=values, error=error, success=success
+    )
+
 
 @app.route('/dashboard')
 def dashboard():
@@ -680,4 +894,4 @@ def update_status(ticket_id):
     return redirect(url_for('dashboard'))
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(host='0.0.0.0', port=5000, debug=False)
