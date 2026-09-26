@@ -37,7 +37,7 @@ USERS = {
     "trainer": {"password": "123", "role": "مدرب قسم الحاسب", "name": "مدرب حاسب"}
 }
 
-# معمل واحد = رابط واحد = رمز QR واحد، بغض النظر عن عدد المقاعد داخله.
+# معمل واحد = رابط واحد = رمز QR واحد، بغض النظر عن عدد الأجهزة داخله.
 LAB_NUMBERS = (1, 2, 3, 4, 5, 6, 7, 9, 10, 11, 12, 13, 14, 22, 23, 24, 26, 27)
 ISSUE_CATEGORIES = ('أجهزة', 'برامج', 'شبكة', 'أخرى')
 
@@ -215,10 +215,10 @@ DASHBOARD_TEMPLATE = """
         </div>
     </div>
 
-    <!-- شبكة المقاعد + المخطط الهندسي المطابق للورقة بالملي -->
+    <!-- شبكة الأجهزة + المخطط الهندسي المطابق للورقة بالملي -->
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
 
-        <!-- لوحة المقاعد الـ 27 (يسار) -->
+        <!-- لوحة الأجهزة الـ 27 (يسار) -->
         <div class="lg:col-span-4 bg-slate-900/70 border border-slate-800 rounded-2xl p-5 flex flex-col justify-between">
             <div>
                 <div class="flex justify-between items-center mb-4">
@@ -227,10 +227,10 @@ DASHBOARD_TEMPLATE = """
                     </a>
                     <div class="text-right">
                         <h2 class="font-bold text-sm text-white flex items-center gap-2">
-                            <span id="active-lab-title">توزيع مقاعد معمل (1)</span>
+                            <span id="active-lab-title">توزيع أجهزة معمل (1)</span>
                             <i class="fa-solid fa-network-wired text-cyan-400"></i>
                         </h2>
-                        <span class="text-[10px] text-slate-400">27 محطة تدريبية + منصة المدرب</span>
+                        <span class="text-[10px] text-slate-400">27 جهاز حاسب + جهاز المدرب</span>
                     </div>
                 </div>
 
@@ -554,7 +554,7 @@ DASHBOARD_TEMPLATE = """
                     {% for t in tickets %}
                     <tr class="hover:bg-slate-800/40">
                         <td class="p-3 font-mono font-bold text-cyan-400">#{{ t[0] }}</td>
-                        <td class="p-3 font-semibold">معمل ({{ t[1] }}) - {% if t[2] == 0 %}منصة المدرب{% else %}مقعد {{ t[2] }}{% endif %}</td>
+                        <td class="p-3 font-semibold">معمل ({{ t[1] }}) - {% if t[2] == 0 %}منصة المدرب{% else %}جهاز {{ t[2] }}{% endif %}</td>
                         <td class="p-3">{{ t[3] }}</td>
                         <td class="p-3">{{ t[4] }} - <span class="text-slate-400">{{ t[5] }}</span></td>
                         <td class="p-3">
@@ -598,7 +598,7 @@ DASHBOARD_TEMPLATE = """
                         <i class="fa-solid fa-display text-[9px]"></i>
                         <span class="font-mono">#${i}</span>
                     </div>
-                    <div class="text-[11px] font-bold text-slate-200">مقعد ${i}</div>
+                    <div class="text-[11px] font-bold text-slate-200">جهاز ${i}</div>
                     <div class="text-[9px] text-emerald-400 font-semibold">جاهز</div>
                 `;
                 container.appendChild(seat);
@@ -606,7 +606,7 @@ DASHBOARD_TEMPLATE = """
         }
 
         function switchLab(num) {
-            document.getElementById('active-lab-title').innerText = `توزيع مقاعد معمل (${num})`;
+            document.getElementById('active-lab-title').innerText = `توزيع أجهزة معمل (${num})`;
             const reportLink = document.getElementById('lab-report-link');
             reportLink.href = `/lab/${num}/report`;
             reportLink.textContent = `بلاغ جديد في معمل (${num}) — نفس الرابط الموجود في QR المعمل`;
@@ -630,7 +630,7 @@ DASHBOARD_TEMPLATE = """
 
 # --- المسارات والروابط (Routes) ---
 
-# يطبع المشرف بطاقة واحدة لكل معمل. كل مقاعد المعمل تشترك في رمز البطاقة نفسه.
+# يطبع المشرف بطاقة واحدة لكل معمل. كل أجهزة المعمل تشترك في رمز البطاقة نفسه.
 QR_LABELS_TEMPLATE = """
 <!DOCTYPE html>
 <html dir="rtl" lang="ar">
@@ -716,18 +716,18 @@ REPORT_TEMPLATE = """
 <body>
     <main>
         <h1>بلاغ صيانة — معمل ({{ lab_num }})</h1>
-        <p>الباركود خاص بالمعمل كله. حدد رقم المقعد أو منصة المدرب في البلاغ.</p>
+        <p>الباركود خاص بالمعمل كله. حدد رقم الجهاز أو منصة المدرب في البلاغ.</p>
         {% if success %}
             <div class="notice">تم استلام البلاغ رقم #{{ success }} بنجاح.</div>
             <a class="button" href="{{ url_for('lab_report', lab_num=lab_num) }}">بلاغ جديد لنفس المعمل</a>
         {% else %}
             {% if error %}<div class="error">{{ error }}</div>{% endif %}
             <form method="POST">
-                <label for="seat">موقع الجهاز</label>
+                <label for="seat">رقم الجهاز</label>
                 <select id="seat" name="seat_num" required>
-                    <option value="" disabled {% if not values.get('seat_num') %}selected{% endif %}>اختر المقعد</option>
+                    <option value="" disabled {% if not values.get('seat_num') %}selected{% endif %}>اختر الجهاز</option>
                     <option value="0" {% if values.get('seat_num') == '0' %}selected{% endif %}>منصة المدرب</option>
-                    {% for seat in seats %}<option value="{{ seat }}" {% if values.get('seat_num') == seat|string %}selected{% endif %}>مقعد {{ seat }}</option>{% endfor %}
+                    {% for seat in seats %}<option value="{{ seat }}" {% if values.get('seat_num') == seat|string %}selected{% endif %}>جهاز {{ seat }}</option>{% endfor %}
                 </select>
                 <label for="reporter">اسم المبلّغ</label>
                 <input id="reporter" name="reporter_name" maxlength="80" required value="{{ values.get('reporter_name', '') }}">
@@ -832,7 +832,7 @@ def lab_report(lab_num):
         category = values.get('issue_category', '')
         issue = values.get('issue', '').strip()
         if not seat_raw.isdigit() or not 0 <= int(seat_raw) <= 27:
-            error = 'اختر مقعدًا صحيحًا أو منصة المدرب.'
+            error = 'اختر جهازًا صحيحًا أو منصة المدرب.'
         elif not 1 <= len(reporter) <= 80:
             error = 'اكتب اسم المبلّغ (حتى 80 حرفًا).'
         elif category not in ISSUE_CATEGORIES:
