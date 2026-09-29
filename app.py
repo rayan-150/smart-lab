@@ -42,7 +42,7 @@ USERS = {
 LAB_NUMBERS = (1, 2, 3, 4, 5, 6, 7, 9, 10, 11, 12, 13, 14, 22, 23, 24, 26, 27)
 ISSUE_CATEGORIES = ('أجهزة', 'برامج', 'شبكة', 'أخرى')
 
-# --- صفحة تسجيل الدخول بالهوية الجديدة والتحسينات المتقدمة ---
+# --- صفحة تسجيل الدخول بالهوية المتطورة ---
 LOGIN_TEMPLATE = """
 <!DOCTYPE html>
 <html dir="rtl" lang="ar">
@@ -189,7 +189,7 @@ LOGIN_TEMPLATE = """
 </html>
 """
 
-# --- صفحة لوحة التحكم بالمخطط المعماري الهندسي التفاعلي بعد التدقيق ---
+# --- صفحة لوحة العمليات والمخطط الهندسي الدقيق ---
 DASHBOARD_TEMPLATE = """
 <!DOCTYPE html>
 <html dir="rtl" lang="ar">
@@ -347,7 +347,7 @@ DASHBOARD_TEMPLATE = """
             <div>
                 <div class="flex justify-between items-center mb-4">
                     <a href="{{ url_for('qr_labels') }}" class="bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 text-cyan-300 text-xs px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition">
-                        <i class="fa-solid fa-print"></i> طباعة QR المعامل
+                        <i class="fa-solid fa-print"></i> طباعة QR المعامل (A4)
                     </a>
                     <div class="text-right">
                         <h2 class="font-bold text-sm text-white flex items-center gap-2">
@@ -527,7 +527,7 @@ DASHBOARD_TEMPLATE = """
                     </g>
                     <rect x="580" y="582" width="80" height="30" class="svg-room" /><text x="620" y="602" class="svg-facility-text" font-size="9">تهوية</text>
 
-                    <!-- صف القاعات الداخلي السفلي (تطبيق المقاسات الدقيقة والموزونة هندسياً) -->
+                    <!-- صف القاعات الداخلي السفلي بالمقاسات الهندسية المضبوطة بدقة -->
                     <!-- معمل 4: العرض 98px -->
                     <g onclick="switchLab(4)" id="lab-node-4" class="cursor-pointer">
                         <rect x="255" y="600" width="98" height="85" class="svg-lab" rx="4" />
@@ -701,7 +701,7 @@ DASHBOARD_TEMPLATE = """
         </div>
     </div>
 
-    <!-- نافذة تفاصيل سريعة (Quick Modal) لتحديث التذكرة والقطع المستبدلة -->
+    <!-- نافذة تفاصيل سريعة (Quick Modal) -->
     <div id="quick-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
         <div class="bg-slate-900 border border-slate-700/80 rounded-3xl max-w-lg w-full p-6 shadow-2xl space-y-4">
             <div class="flex justify-between items-center border-b border-slate-800 pb-3">
@@ -857,60 +857,140 @@ DASHBOARD_TEMPLATE = """
 </html>
 """
 
-# --- نموذج باركودات QR الموحدة للطباعة ---
+# --- نموذج باركودات QR الموحدة (مقاس 15×15 سم على A4 - كل باركود بورقة لحاله) ---
 QR_LABELS_TEMPLATE = """
 <!DOCTYPE html>
 <html dir="rtl" lang="ar">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>باركودات المعامل</title>
+    <title>طباعة باركودات المعامل (A4 - 15x15 سم)</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
     <style>
         * { box-sizing: border-box; }
-        body { font-family: Tahoma, Arial, sans-serif; margin: 24px; color: #0f172a; background: #f1f5f9; }
-        .tools { max-width: 980px; margin: 0 auto 20px; padding: 18px; background: white; border-radius: 14px; }
+        body { font-family: 'Tajawal', Tahoma, Arial, sans-serif; margin: 0; padding: 20px; color: #0f172a; background: #f8fafc; }
+        .tools { max-width: 850px; margin: 0 auto 24px; padding: 18px 24px; background: white; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.06); }
+        .tools h1 { margin: 0 0 6px; font-size: 20px; color: #0369a1; }
+        .tools p { font-size: 13px; color: #64748b; margin: 0 0 14px; }
         .tools form { display: flex; gap: 10px; align-items: end; flex-wrap: wrap; }
-        .tools label { flex: 1; min-width: 260px; font-size: 14px; font-weight: bold; }
-        .tools input { width: 100%; margin-top: 7px; padding: 10px; direction: ltr; border: 1px solid #94a3b8; border-radius: 8px; }
-        .tools button, .tools a { padding: 11px 16px; border: 0; border-radius: 8px; background: #0369a1; color: white; cursor: pointer; text-decoration: none; }
-        .tools p { font-size: 13px; color: #475569; }
-        .error { color: #b91c1c !important; }
-        .labels { max-width: 980px; margin: auto; display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
-        .label { text-align: center; padding: 12px 8px; min-height: 235px; border: 2px solid #0e7490; border-radius: 12px; background: white; break-inside: avoid; }
-        .label h2 { margin: 0 0 4px; font-size: 20px; }
-        .label img { width: 155px; height: 155px; display: block; margin: 0 auto; }
-        .label p { margin: 4px 0 0; font-size: 12px; }
-        @page { size: A4; margin: 10mm; }
+        .tools label { flex: 1; min-width: 260px; font-size: 13px; font-weight: bold; }
+        .tools input { width: 100%; margin-top: 6px; padding: 9px 12px; direction: ltr; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 13px; }
+        .tools button, .tools a { padding: 10px 18px; border: 0; border-radius: 8px; background: #0284c7; color: white; cursor: pointer; text-decoration: none; font-weight: bold; font-size: 13px; }
+        .tools a.btn-back { background: #64748b; }
+        .error { color: #b91c1c !important; font-size: 13px; margin-top: 8px; }
+
+        /* حاوية الصفحات */
+        .pages-container { display: flex; flex-direction: column; align-items: center; gap: 20px; }
+
+        /* تمثيل ورقة A4 على الشاشة */
+        .a4-sheet {
+            width: 210mm;
+            min-height: 297mm;
+            background: white;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-sizing: border-box;
+            page-break-after: always;
+            break-after: page;
+        }
+
+        /* لوحة الباركود المربعة 15x15 سم (150mm x 150mm) */
+        .qr-card-15cm {
+            width: 150mm;
+            height: 150mm;
+            border: 3.5px solid #0369a1;
+            outline: 1.5px dashed #38bdf8;
+            outline-offset: -7px;
+            border-radius: 16px;
+            padding: 9mm 7mm 7mm;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            text-align: center;
+            box-sizing: border-box;
+            background: #ffffff;
+        }
+
+        .qr-card-header .dept-title { font-size: 11px; font-weight: 700; color: #0284c7; margin: 0 0 3px; letter-spacing: 0.5px; }
+        .qr-card-header .lab-title { font-size: 26px; font-weight: 900; color: #0f172a; margin: 0; }
+
+        .qr-image-wrapper {
+            width: 82mm;
+            height: 82mm;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 2mm;
+        }
+        .qr-image-wrapper img { width: 100%; height: 100%; object-fit: contain; }
+
+        .qr-card-footer .instruction { font-size: 12px; font-weight: 800; color: #0f172a; margin: 0 0 3px; }
+        .qr-card-footer .meta { font-size: 9px; color: #64748b; margin: 0; }
+
+        /* تنسيقات الطباعة الإجبارية - A4 ولكل باركود صفحته المستقلة */
+        @page {
+            size: A4 portrait;
+            margin: 0;
+        }
         @media print {
-            body { margin: 0; background: white; }
-            .tools { display: none; }
-            .labels { max-width: none; gap: 3mm; }
-            .label { min-height: 82mm; border-radius: 0; padding: 4mm; }
-            .label img { width: 43mm; height: 43mm; }
+            body { margin: 0; padding: 0; background: white; }
+            .tools { display: none !important; }
+            .pages-container { gap: 0; }
+            .a4-sheet {
+                width: 210mm;
+                height: 297mm;
+                margin: 0;
+                box-shadow: none;
+                page-break-after: always !important;
+                break-after: page !important;
+            }
         }
     </style>
 </head>
 <body>
     <div class="tools">
-        <h1>باركود واحد لكل معمل</h1>
-        <p>اكتب رابط النظام الذي يمكن للجوال فتحه قبل الطباعة، مثل http://192.168.1.10:5000. رابط localhost لا يعمل من جوال آخر.</p>
+        <h1>طباعة باركودات المعامل (A4 - مقاس 15 × 15 سم)</h1>
+        <p>تم ضبط كل باركود ليُطبع تلقائياً في ورقة A4 مستقلة بمقاس 15 × 15 سم في المنتصف تماماً مع إطار رسمي.</p>
         <form method="GET">
-            <label>رابط النظام
-                <input name="base" type="url" required value="{{ base_url }}" placeholder="http://192.168.1.10:5000">
+            <label>رابط النظام (الذي يفتحه جوال المتدرب عند المسح)
+                <input name="base" type="url" required value="{{ base_url }}" placeholder="https://smart-lab-k5r2.onrender.com">
             </label>
-            <button type="submit">تحديث الباركودات</button>
-            {% if not error %}<button type="button" onclick="window.print()">طباعة 18 ملصقًا</button>{% endif %}
-            <a href="{{ url_for('dashboard') }}">العودة</a>
+            <button type="submit">تحديث الرابط</button>
+            {% if not error %}
+            <button type="button" onclick="window.print()">طباعة المعامل الـ 18 (كل معمل بورقة A4)</button>
+            {% endif %}
+            <a href="{{ url_for('dashboard') }}" class="btn-back">العودة للوحة التحكم</a>
         </form>
         {% if error %}<p class="error">{{ error }}</p>{% endif %}
     </div>
+
     {% if not error %}
-    <div class="labels">
+    <div class="pages-container">
         {% for lab in labs %}
-        <div class="label" id="lab-{{ lab }}">
-            <h2>معمل ({{ lab }})</h2>
-            <img src="{{ url_for('lab_qr', lab_num=lab, base=base_url) }}" alt="باركود معمل {{ lab }}">
-            <p>امسح الرمز للإبلاغ عن عطل في هذا المعمل</p>
+        <!-- ورقة A4 مستقلة لكل معمل -->
+        <div class="a4-sheet">
+            <!-- اللوحة المربعة 15x15 سم -->
+            <div class="qr-card-15cm">
+                <div class="qr-card-header">
+                    <p class="dept-title">قسم الحاسب الآلي وتقنية المعلومات</p>
+                    <h2 class="lab-title">معمل ({{ lab }})</h2>
+                </div>
+
+                <div class="qr-image-wrapper">
+                    <img src="{{ url_for('lab_qr', lab_num=lab, base=base_url) }}" alt="باركود صيانة معمل {{ lab }}">
+                </div>
+
+                <div class="qr-card-footer">
+                    <p class="instruction">امسح الرمز بكاميرا الجوال للإبلاغ الفوري عن أي عطل</p>
+                    <p class="meta">النظام الذكي لصيانة المعامل • إشراف: أ. محمد الدوخي • إعداد: ريان المحيطيب</p>
+                </div>
+            </div>
         </div>
         {% endfor %}
     </div>
@@ -1035,7 +1115,8 @@ def lab_qr(lab_num):
     if base_url is None:
         abort(400)
     target = base_url + url_for('lab_report', lab_num=lab_num)
-    qr = qrcode.QRCode(error_correction=qrcode.constants.ERROR_CORRECT_M, box_size=8, border=4)
+    # رفع دقة الـ QR إلى box_size=12 لطباعة واضحة جداً بمقاس 15x15 سم
+    qr = qrcode.QRCode(error_correction=qrcode.constants.ERROR_CORRECT_M, box_size=12, border=4)
     qr.add_data(target)
     qr.make(fit=True)
     output = BytesIO()
