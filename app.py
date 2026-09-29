@@ -184,7 +184,7 @@ LOGIN_TEMPLATE = """
 </html>
 """
 
-# --- صفحة لوحة العمليات ومخطط الرادار التفاعلي مع وضع NOC والسجل التاريخي ---
+# --- صفحة لوحة العمليات ومخطط الرادار التفاعلي ---
 DASHBOARD_TEMPLATE = """
 <!DOCTYPE html>
 <html dir="rtl" lang="ar">
@@ -272,7 +272,6 @@ DASHBOARD_TEMPLATE = """
             pointer-events: none;
             font-family: 'Tajawal', sans-serif;
         }
-        /* وضع المراقبة الكاملة (NOC Fullscreen Mode) */
         body.noc-active {
             padding: 12px !important;
             background-color: #020409 !important;
@@ -285,7 +284,6 @@ DASHBOARD_TEMPLATE = """
 </head>
 <body id="main-body" class="min-h-screen flex flex-col p-4 md:p-6 space-y-5">
 
-    <!-- شريط الرأس مع تحكم NOC -->
     <header class="flex flex-wrap justify-between items-center px-6 py-4 bg-slate-900/80 border border-slate-800 rounded-2xl backdrop-blur gap-3">
         <div class="flex items-center gap-2.5">
             <a href="/logout" class="bg-red-950/40 hover:bg-red-900/60 border border-red-800/60 text-red-400 px-3 py-1.5 rounded-xl text-xs flex items-center gap-1.5 transition">
@@ -296,11 +294,9 @@ DASHBOARD_TEMPLATE = """
                 <span class="font-bold text-slate-200">{{ session.get('name', 'محمد الدوخي') }}</span>
                 <span class="text-cyan-400 text-[10px]">({{ session.get('role', 'مشرف الصيانة التقنية') }})</span>
             </div>
-            <!-- زر وضع غرفة المراقبة NOC -->
             <button onclick="toggleNocMode()" id="noc-toggle-btn" class="bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/40 text-cyan-300 text-xs px-3 py-1.5 rounded-xl flex items-center gap-2 transition font-bold shadow-sm">
                 <i class="fa-solid fa-tv"></i> <span id="noc-btn-label">شاشة المراقبة (NOC)</span>
             </button>
-            <!-- مؤشر التحديث التلقائي اللحظي -->
             <div id="noc-status-badge" class="hidden items-center gap-2 bg-emerald-950/50 border border-emerald-500/40 text-emerald-300 px-3 py-1.5 rounded-xl text-xs font-semibold">
                 <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
                 <span>بث حي مباشر (تحديث بعد: <span id="countdown-timer">30</span>ث)</span>
@@ -321,7 +317,6 @@ DASHBOARD_TEMPLATE = """
         </div>
     </header>
 
-    <!-- بطاقات الإحصائيات -->
     <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div class="bg-slate-900/70 border border-slate-800 p-4 rounded-2xl flex justify-between items-center">
             <div>
@@ -353,10 +348,7 @@ DASHBOARD_TEMPLATE = """
         </div>
     </div>
 
-    <!-- شبكة الأجهزة + المخطط الهندسي المطابق للورقة بالملي -->
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-
-        <!-- لوحة الأجهزة الـ 27 (يسار) -->
         <div class="lg:col-span-4 bg-slate-900/70 border border-slate-800 rounded-2xl p-5 flex flex-col justify-between">
             <div>
                 <div class="flex justify-between items-center mb-4">
@@ -368,7 +360,7 @@ DASHBOARD_TEMPLATE = """
                             <span id="active-lab-title">توزيع أجهزة معمل (1)</span>
                             <i class="fa-solid fa-network-wired text-cyan-400"></i>
                         </h2>
-                        <span class="text-[10px] text-slate-400">27 جهاز حاسب + جهاز المدرب (انقر لعرض السجل)</span>
+                        <span class="text-[10px] text-slate-400">27 جهاز حاسب + جهاز المدرب</span>
                     </div>
                 </div>
 
@@ -383,7 +375,6 @@ DASHBOARD_TEMPLATE = """
             </div>
         </div>
 
-        <!-- المخطط المعماري الكامل للقسم -->
         <div class="lg:col-span-8 bg-slate-900/70 border border-slate-800 rounded-2xl p-5 flex flex-col">
             <div class="flex justify-between items-center mb-3">
                 <div class="flex items-center gap-3 text-[11px]">
@@ -396,251 +387,161 @@ DASHBOARD_TEMPLATE = """
                 </h2>
             </div>
 
-            <!-- إطار الرسم المعماري الهندسي -->
             <div class="blueprint-container rounded-xl p-3 border border-cyan-950/80 overflow-x-auto flex justify-center">
                 <svg viewBox="0 0 850 960" class="w-full max-w-[750px] h-auto select-none" xmlns="http://www.w3.org/2000/svg">
                     <rect x="70" y="30" width="710" height="900" fill="none" stroke="#172554" stroke-width="3" rx="8" />
 
-                    <!-- ================= 1. الضلع العلوي الخارجي ================= -->
+                    <!-- 1. الضلع العلوي الخارجي -->
                     <rect x="235" y="35" width="80" height="75" class="svg-room" />
-                    <text x="275" y="72" class="svg-facility-text">شبكات</text>
-                    <text x="275" y="87" class="svg-facility-text">الحاسب</text>
+                    <text x="275" y="72" class="svg-facility-text">شبكات</text><text x="275" y="87" class="svg-facility-text">الحاسب</text>
 
-                    <!-- معمل 26 -->
                     <g onclick="switchLab(26)" id="lab-node-26" class="cursor-pointer">
                         <rect x="320" y="35" width="85" height="75" class="svg-lab" rx="4" />
-                        <text x="362" y="72" class="svg-text-title">معمل (26)</text>
-                        <text x="362" y="88" class="svg-text-sub">الحوسبة</text>
+                        <text x="362" y="72" class="svg-text-title">معمل (26)</text><text x="362" y="88" class="svg-text-sub">الحوسبة</text>
                     </g>
 
                     <rect x="410" y="35" width="85" height="75" class="svg-room" />
-                    <text x="452" y="72" class="svg-facility-text">أساسيات</text>
-                    <text x="452" y="87" class="svg-facility-text">الكهرباء</text>
+                    <text x="452" y="72" class="svg-facility-text">أساسيات</text><text x="452" y="87" class="svg-facility-text">الكهرباء</text>
 
-                    <!-- معمل 24 -->
                     <g onclick="switchLab(24)" id="lab-node-24" class="cursor-pointer">
                         <rect x="500" y="35" width="85" height="75" class="svg-lab" rx="4" />
-                        <text x="542" y="72" class="svg-text-title">معمل (24)</text>
-                        <text x="542" y="88" class="svg-text-sub">الأساسيات</text>
+                        <text x="542" y="72" class="svg-text-title">معمل (24)</text><text x="542" y="88" class="svg-text-sub">الأساسيات</text>
                     </g>
 
-                    <rect x="590" y="35" width="65" height="75" class="svg-room" />
-                    <text x="622" y="78" class="svg-facility-text">مستودع</text>
-
-                    <rect x="660" y="35" width="80" height="75" class="svg-room" />
-                    <text x="700" y="72" class="svg-facility-text">أساسيات</text>
-                    <text x="700" y="86" class="svg-facility-text">الإلكترونيات</text>
+                    <rect x="590" y="35" width="65" height="75" class="svg-room" /><text x="622" y="78" class="svg-facility-text">مستودع</text>
+                    <rect x="660" y="35" width="80" height="75" class="svg-room" /><text x="700" y="72" class="svg-facility-text">أساسيات</text><text x="700" y="86" class="svg-facility-text">الإلكترونيات</text>
 
                     <g>
                         <rect x="745" y="35" width="30" height="75" fill="#1e293b" stroke="#475569" stroke-width="1.2" />
-                        <line x1="745" y1="48" x2="775" y2="48" stroke="#64748b" />
-                        <line x1="745" y1="60" x2="775" y2="60" stroke="#64748b" />
-                        <line x1="745" y1="72" x2="775" y2="72" stroke="#64748b" />
-                        <line x1="745" y1="84" x2="775" y2="84" stroke="#64748b" />
-                        <line x1="745" y1="96" x2="775" y2="96" stroke="#64748b" />
+                        <line x1="745" y1="48" x2="775" y2="48" stroke="#64748b" /><line x1="745" y1="60" x2="775" y2="60" stroke="#64748b" /><line x1="745" y1="72" x2="775" y2="72" stroke="#64748b" /><line x1="745" y1="84" x2="775" y2="84" stroke="#64748b" /><line x1="745" y1="96" x2="775" y2="96" stroke="#64748b" />
                     </g>
 
-                    <!-- ================= 2. الضلع الأيسر الخارجي ================= -->
-                    <rect x="75" y="115" width="125" height="70" class="svg-room" />
-                    <text x="137" y="155" class="svg-facility-text">مستودع</text>
-
-                    <rect x="75" y="190" width="125" height="75" class="svg-room" />
-                    <text x="137" y="232" class="svg-facility-text">دورة مياه المتدربين</text>
+                    <!-- 2. الضلع الأيسر الخارجي -->
+                    <rect x="75" y="115" width="125" height="70" class="svg-room" /><text x="137" y="155" class="svg-facility-text">مستودع</text>
+                    <rect x="75" y="190" width="125" height="75" class="svg-room" /><text x="137" y="232" class="svg-facility-text">دورة مياه المتدربين</text>
 
                     <g>
                         <rect x="75" y="270" width="125" height="75" fill="#854d0e" stroke="#eab308" stroke-width="2" rx="4" />
-                        <line x1="85" y1="285" x2="165" y2="285" stroke="#facc15" stroke-width="3" />
-                        <line x1="85" y1="298" x2="165" y2="298" stroke="#facc15" stroke-width="3" />
-                        <line x1="85" y1="311" x2="165" y2="311" stroke="#facc15" stroke-width="3" />
-                        <line x1="85" y1="324" x2="165" y2="324" stroke="#facc15" stroke-width="3" />
-                        <line x1="85" y1="337" x2="165" y2="337" stroke="#facc15" stroke-width="3" />
+                        <line x1="85" y1="285" x2="165" y2="285" stroke="#facc15" stroke-width="3" /><line x1="85" y1="298" x2="165" y2="298" stroke="#facc15" stroke-width="3" /><line x1="85" y1="311" x2="165" y2="311" stroke="#facc15" stroke-width="3" /><line x1="85" y1="324" x2="165" y2="324" stroke="#facc15" stroke-width="3" /><line x1="85" y1="337" x2="165" y2="337" stroke="#facc15" stroke-width="3" />
                         <path d="M 180 330 L 180 280 L 175 290 M 180 280 L 185 290" stroke="#fef08a" stroke-width="2.5" fill="none" stroke-linecap="round" />
                     </g>
 
                     <g>
                         <rect x="70" y="380" width="130" height="95" fill="rgba(16, 185, 129, 0.08)" stroke="#10b981" stroke-width="1.8" stroke-dasharray="4" rx="4" />
-                        <path d="M 70 410 A 30 30 0 0 1 100 440" stroke="#10b981" stroke-width="1.5" fill="none" />
-                        <line x1="70" y1="410" x2="70" y2="440" stroke="#10b981" stroke-width="2" />
-                        <path d="M 70 470 A 30 30 0 0 0 100 440" stroke="#10b981" stroke-width="1.5" fill="none" />
-                        <line x1="70" y1="470" x2="70" y2="440" stroke="#10b981" stroke-width="2" />
-                        <text x="135" y="425" fill="#34d399" font-size="11" font-weight="bold" text-anchor="middle">المدخل الرئيسي</text>
-                        <text x="135" y="445" fill="#6ee7b7" font-size="9" text-anchor="middle">المزدوج</text>
+                        <path d="M 70 410 A 30 30 0 0 1 100 440" stroke="#10b981" stroke-width="1.5" fill="none" /><line x1="70" y1="410" x2="70" y2="440" stroke="#10b981" stroke-width="2" />
+                        <path d="M 70 470 A 30 30 0 0 0 100 440" stroke="#10b981" stroke-width="1.5" fill="none" /><line x1="70" y1="470" x2="70" y2="440" stroke="#10b981" stroke-width="2" />
+                        <text x="135" y="425" fill="#34d399" font-size="11" font-weight="bold" text-anchor="middle">المدخل الرئيسي</text><text x="135" y="445" fill="#6ee7b7" font-size="9" text-anchor="middle">المزدوج</text>
                     </g>
 
-                    <rect x="75" y="520" width="125" height="90" class="svg-room" />
-                    <text x="137" y="572" class="svg-facility-text" font-weight="bold">منسق رايات</text>
+                    <rect x="75" y="520" width="125" height="90" class="svg-room" /><text x="137" y="572" class="svg-facility-text" font-weight="bold">منسق رايات</text>
 
-                    <!-- معمل 1 -->
                     <g onclick="switchLab(1)" id="lab-node-1" class="cursor-pointer">
                         <rect x="75" y="620" width="125" height="90" class="svg-lab active-lab" rx="4" />
-                        <text x="137" y="665" class="svg-text-title" font-size="12">معمل (1)</text>
-                        <text x="137" y="682" class="svg-text-sub">الشبكات والأنظمة</text>
+                        <text x="137" y="665" class="svg-text-title" font-size="12">معمل (1)</text><text x="137" y="682" class="svg-text-sub">الشبكات والأنظمة</text>
                     </g>
 
-                    <!-- ================= 3. المبنى الداخلي وقسم الحاسب ================= -->
+                    <!-- 3. المبنى الداخلي وقسم الحاسب -->
                     <rect x="250" y="200" width="415" height="490" fill="#040814" stroke="#1e3a8a" stroke-width="1.8" rx="6" />
 
-                    <!-- معمل 27 -->
                     <g onclick="switchLab(27)" id="lab-node-27" class="cursor-pointer">
-                        <rect x="255" y="205" width="95" height="80" class="svg-lab" rx="3" />
-                        <text x="302" y="250" class="svg-text-title">معمل (27)</text>
+                        <rect x="255" y="205" width="95" height="80" class="svg-lab" rx="3" /><text x="302" y="250" class="svg-text-title">معمل (27)</text>
                     </g>
-                    <!-- غرفة الصيانة -->
                     <rect x="355" y="205" width="90" height="80" class="svg-room" />
-                    <text x="400" y="245" fill="#fbbf24" font-size="10" font-weight="bold" text-anchor="middle">غرفة صيانة</text>
-                    <text x="400" y="260" fill="#f59e0b" font-size="8" text-anchor="middle">⚙ صيانة الأجهزة</text>
+                    <text x="400" y="245" fill="#fbbf24" font-size="10" font-weight="bold" text-anchor="middle">غرفة صيانة</text><text x="400" y="260" fill="#f59e0b" font-size="8" text-anchor="middle">⚙ صيانة الأجهزة</text>
 
-                    <!-- معمل 23 -->
                     <g onclick="switchLab(23)" id="lab-node-23" class="cursor-pointer">
-                        <rect x="450" y="205" width="100" height="80" class="svg-lab" rx="3" />
-                        <text x="500" y="250" class="svg-text-title">معمل (23)</text>
+                        <rect x="450" y="205" width="100" height="80" class="svg-lab" rx="3" /><text x="500" y="250" class="svg-text-title">معمل (23)</text>
                     </g>
-
-                    <!-- معمل 22 -->
                     <g onclick="switchLab(22)" id="lab-node-22" class="cursor-pointer">
-                        <rect x="555" y="205" width="105" height="80" class="svg-lab" rx="3" />
-                        <text x="607" y="250" class="svg-text-title">معمل (22)</text>
+                        <rect x="555" y="205" width="105" height="80" class="svg-lab" rx="3" /><text x="607" y="250" class="svg-text-title">معمل (22)</text>
                     </g>
 
-                    <!-- مكاتب الإدارة الغربية -->
                     <rect x="255" y="290" width="70" height="35" class="svg-room" /><text x="290" y="312" class="svg-facility-text" font-size="9">تهوية</text>
                     <rect x="255" y="330" width="70" height="75" class="svg-room" /><text x="290" y="365" class="svg-facility-text">مكتب التدريب</text><text x="290" y="380" class="svg-facility-text">الإلكتروني</text>
                     <rect x="255" y="410" width="70" height="80" class="svg-room" stroke="#38bdf8" /><text x="290" y="445" fill="#7dd3fc" font-size="10" font-weight="bold" text-anchor="middle">مكتب</text><text x="290" y="460" fill="#7dd3fc" font-size="10" font-weight="bold" text-anchor="middle">رئيس القسم</text>
                     <rect x="255" y="495" width="70" height="75" class="svg-room" /><text x="290" y="532" class="svg-facility-text">شؤون</text><text x="290" y="547" class="svg-facility-text">المتدربين</text>
                     <rect x="255" y="575" width="70" height="35" class="svg-room" /><text x="290" y="597" class="svg-facility-text" font-size="9">تهوية</text>
 
-                    <!-- قسم الحاسب (الوسط) -->
+                    <!-- قسم الحاسب الوسطي -->
                     <g>
                         <rect x="335" y="295" width="235" height="295" fill="rgba(8, 47, 73, 0.25)" stroke="#0e7490" stroke-dasharray="5 5" stroke-width="1.5" rx="8" />
                         <circle cx="355" cy="315" r="7" fill="#047857" stroke="#10b981" stroke-width="1.5" />
                         <circle cx="550" cy="315" r="7" fill="#047857" stroke="#10b981" stroke-width="1.5" />
                         <circle cx="355" cy="570" r="7" fill="#047857" stroke="#10b981" stroke-width="1.5" />
                         <circle cx="550" cy="570" r="7" fill="#047857" stroke="#10b981" stroke-width="1.5" />
-
                         <text x="452" y="440" fill="#93c5fd" font-size="15" font-weight="bold" text-anchor="middle">قسم الحاسب</text>
                         <text x="452" y="462" fill="#3b82f6" font-size="10" font-family="monospace" letter-spacing="2" text-anchor="middle">COMPUTER DEPT</text>
                     </g>
 
-                    <!-- المستودعات الشرقية ومعامل 14 و 12 -->
                     <rect x="580" y="290" width="80" height="30" class="svg-room" /><text x="620" y="310" class="svg-facility-text" font-size="9">تهوية</text>
                     <rect x="580" y="325" width="80" height="28" class="svg-room" /><text x="620" y="343" class="svg-facility-text" font-size="9">مستودع 3</text>
                     <rect x="580" y="357" width="80" height="28" class="svg-room" /><text x="620" y="375" class="svg-facility-text" font-size="9">مستودع 2</text>
                     <rect x="580" y="389" width="80" height="28" class="svg-room" /><text x="620" y="407" class="svg-facility-text" font-size="9">مستودع 1</text>
                     
-                    <!-- معمل 14 -->
                     <g onclick="switchLab(14)" id="lab-node-14" class="cursor-pointer">
-                        <rect x="580" y="423" width="80" height="75" class="svg-lab" rx="3" />
-                        <text x="620" y="465" class="svg-text-title">معمل (14)</text>
+                        <rect x="580" y="423" width="80" height="75" class="svg-lab" rx="3" /><text x="620" y="465" class="svg-text-title">معمل (14)</text>
                     </g>
-
-                    <!-- معمل 12 -->
                     <g onclick="switchLab(12)" id="lab-node-12" class="cursor-pointer">
-                        <rect x="580" y="503" width="80" height="75" class="svg-lab" rx="3" />
-                        <text x="620" y="545" class="svg-text-title">معمل (12)</text>
+                        <rect x="580" y="503" width="80" height="75" class="svg-lab" rx="3" /><text x="620" y="545" class="svg-text-title">معمل (12)</text>
                     </g>
                     <rect x="580" y="582" width="80" height="30" class="svg-room" /><text x="620" y="602" class="svg-facility-text" font-size="9">تهوية</text>
 
-                    <!-- صف القاعات الداخلي السفلي بالمقاسات الهندسية المضبوطة بدقة -->
-                    <!-- معمل 4: العرض 98px -->
+                    <!-- الضلع السفلي الداخلي بالمقاسات الهندسية المضبوطة -->
                     <g onclick="switchLab(4)" id="lab-node-4" class="cursor-pointer">
-                        <rect x="255" y="600" width="98" height="85" class="svg-lab" rx="4" />
-                        <text x="304" y="648" class="svg-text-title">معمل (4)</text>
+                        <rect x="255" y="600" width="98" height="85" class="svg-lab" rx="4" /><text x="304" y="648" class="svg-text-title">معمل (4)</text>
                     </g>
-
-                    <!-- معمل 6: العرض 98px -->
                     <g onclick="switchLab(6)" id="lab-node-6" class="cursor-pointer">
-                        <rect x="357" y="600" width="98" height="85" class="svg-lab" rx="4" />
-                        <text x="406" y="648" class="svg-text-title">معمل (6)</text>
+                        <rect x="357" y="600" width="98" height="85" class="svg-lab" rx="4" /><text x="406" y="648" class="svg-text-title">معمل (6)</text>
                     </g>
-
-                    <!-- كيابل الألياف الضوئية: العرض 100px -->
                     <rect x="459" y="600" width="100" height="85" class="svg-room" />
-                    <text x="509" y="635" class="svg-facility-text">كيابل</text>
-                    <text x="509" y="651" class="svg-facility-text">الألياف</text>
-                    <text x="509" y="667" class="svg-facility-text">الضوئية</text>
+                    <text x="509" y="635" class="svg-facility-text">كيابل</text><text x="509" y="651" class="svg-facility-text">الألياف</text><text x="509" y="667" class="svg-facility-text">الضوئية</text>
 
-                    <!-- معمل 10: العرض 100px -->
                     <g onclick="switchLab(10)" id="lab-node-10" class="cursor-pointer">
-                        <rect x="563" y="600" width="100" height="85" class="svg-lab" rx="4" />
-                        <text x="613" y="648" class="svg-text-title">معمل (10)</text>
+                        <rect x="563" y="600" width="100" height="85" class="svg-lab" rx="4" /><text x="613" y="648" class="svg-text-title">معمل (10)</text>
                     </g>
 
-                    <!-- ================= 4. الضلع الأيمن الخارجي ================= -->
-                    <rect x="715" y="140" width="60" height="90" class="svg-room" stroke="#059669" />
-                    <text x="745" y="190" fill="#6ee7b7" font-size="10" font-weight="bold" text-anchor="middle">مصلى</text>
+                    <!-- 4. الضلع الأيمن الخارجي -->
+                    <rect x="715" y="140" width="60" height="90" class="svg-room" stroke="#059669" /><text x="745" y="190" fill="#6ee7b7" font-size="10" font-weight="bold" text-anchor="middle">مصلى</text>
+                    <rect x="715" y="235" width="60" height="40" class="svg-room" /><text x="745" y="260" class="svg-facility-text" font-size="9">مستودع</text>
+                    <rect x="715" y="280" width="60" height="100" class="svg-room" /><text x="745" y="325" class="svg-facility-text">قاعة</text><text x="745" y="340" class="svg-facility-text font-bold text-slate-300">نظري 1</text>
+                    <rect x="715" y="385" width="60" height="40" class="svg-room" /><text x="745" y="410" class="svg-facility-text" font-size="9">مستودع</text>
 
-                    <rect x="715" y="235" width="60" height="40" class="svg-room" />
-                    <text x="745" y="260" class="svg-facility-text" font-size="9">مستودع</text>
-
-                    <rect x="715" y="280" width="60" height="100" class="svg-room" />
-                    <text x="745" y="325" class="svg-facility-text">قاعة</text>
-                    <text x="745" y="340" class="svg-facility-text font-bold text-slate-300">نظري 1</text>
-
-                    <rect x="715" y="385" width="60" height="40" class="svg-room" />
-                    <text x="745" y="410" class="svg-facility-text" font-size="9">مستودع</text>
-
-                    <!-- معمل 13 -->
                     <g onclick="switchLab(13)" id="lab-node-13" class="cursor-pointer">
-                        <rect x="715" y="430" width="60" height="90" class="svg-lab" rx="3" />
-                        <text x="745" y="480" class="svg-text-title">معمل (13)</text>
+                        <rect x="715" y="430" width="60" height="90" class="svg-lab" rx="3" /><text x="745" y="480" class="svg-text-title">معمل (13)</text>
                     </g>
-
-                    <!-- معمل 11 -->
                     <g onclick="switchLab(11)" id="lab-node-11" class="cursor-pointer">
-                        <rect x="715" y="525" width="60" height="90" class="svg-lab" rx="3" />
-                        <text x="745" y="575" class="svg-text-title">معمل (11)</text>
+                        <rect x="715" y="525" width="60" height="90" class="svg-lab" rx="3" /><text x="745" y="575" class="svg-text-title">معمل (11)</text>
                     </g>
-
-                    <rect x="715" y="620" width="60" height="60" class="svg-room" />
-                    <text x="745" y="645" class="svg-facility-text" font-size="9">دورة مياه</text>
-                    <text x="745" y="660" class="svg-facility-text" font-size="9">المتدربين</text>
+                    <rect x="715" y="620" width="60" height="60" class="svg-room" /><text x="745" y="645" class="svg-facility-text" font-size="9">دورة مياه</text><text x="745" y="660" class="svg-facility-text" font-size="9">المتدربين</text>
 
                     <g>
                         <rect x="715" y="685" width="60" height="45" fill="#1e293b" stroke="#475569" />
-                        <line x1="715" y1="696" x2="775" y2="696" stroke="#64748b" />
-                        <line x1="715" y1="707" x2="775" y2="707" stroke="#64748b" />
-                        <line x1="715" y1="718" x2="775" y2="718" stroke="#64748b" />
+                        <line x1="715" y1="696" x2="775" y2="696" stroke="#64748b" /><line x1="715" y1="707" x2="775" y2="707" stroke="#64748b" /><line x1="715" y1="718" x2="775" y2="718" stroke="#64748b" />
                     </g>
 
-                    <!-- ================= 5. الضلع السفلي الخارجي ================= -->
+                    <!-- 5. الضلع السفلي الخارجي -->
                     <g onclick="switchLab(2)" id="lab-node-2" class="cursor-pointer">
-                        <rect x="200" y="740" width="80" height="85" class="svg-lab" rx="4" />
-                        <text x="240" y="788" class="svg-text-title">معمل (2)</text>
+                        <rect x="200" y="740" width="80" height="85" class="svg-lab" rx="4" /><text x="240" y="788" class="svg-text-title">معمل (2)</text>
                     </g>
-
                     <g onclick="switchLab(3)" id="lab-node-3" class="cursor-pointer">
-                        <rect x="285" y="740" width="80" height="85" class="svg-lab" rx="4" />
-                        <text x="325" y="788" class="svg-text-title">معمل (3)</text>
+                        <rect x="285" y="740" width="80" height="85" class="svg-lab" rx="4" /><text x="325" y="788" class="svg-text-title">معمل (3)</text>
                     </g>
-
                     <g onclick="switchLab(5)" id="lab-node-5" class="cursor-pointer">
-                        <rect x="370" y="740" width="80" height="85" class="svg-lab" rx="4" />
-                        <text x="410" y="788" class="svg-text-title">معمل (5)</text>
+                        <rect x="370" y="740" width="80" height="85" class="svg-lab" rx="4" /><text x="410" y="788" class="svg-text-title">معمل (5)</text>
                     </g>
-
                     <g onclick="switchLab(7)" id="lab-node-7" class="cursor-pointer">
-                        <rect x="455" y="740" width="80" height="85" class="svg-lab" rx="4" />
-                        <text x="495" y="788" class="svg-text-title">معمل (7)</text>
+                        <rect x="455" y="740" width="80" height="85" class="svg-lab" rx="4" /><text x="495" y="788" class="svg-text-title">معمل (7)</text>
                     </g>
-
                     <g onclick="switchLab(9)" id="lab-node-9" class="cursor-pointer">
-                        <rect x="540" y="740" width="80" height="85" class="svg-lab" rx="4" />
-                        <text x="580" y="788" class="svg-text-title">معمل (9)</text>
+                        <rect x="540" y="740" width="80" height="85" class="svg-lab" rx="4" /><text x="580" y="788" class="svg-text-title">معمل (9)</text>
                     </g>
-
-                    <rect x="625" y="740" width="85" height="85" class="svg-room" />
-                    <text x="667" y="778" class="svg-facility-text font-bold text-slate-200">الكيابل</text>
-                    <text x="667" y="794" class="svg-facility-text font-bold text-slate-200">النحاسية</text>
-
-                    <rect x="715" y="740" width="60" height="85" class="svg-room" />
-                    <text x="745" y="788" class="svg-facility-text">مستودع</text>
+                    <rect x="625" y="740" width="85" height="85" class="svg-room" /><text x="667" y="778" class="svg-facility-text font-bold text-slate-200">الكيابل</text><text x="667" y="794" class="svg-facility-text font-bold text-slate-200">النحاسية</text>
+                    <rect x="715" y="740" width="60" height="85" class="svg-room" /><text x="745" y="788" class="svg-facility-text">مستودع</text>
                 </svg>
             </div>
         </div>
-
     </div>
 
-    <!-- قسم إحصائيات القطع المستهلكة وجدول التذاكر -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div class="md:col-span-1 bg-slate-900/70 border border-slate-800 rounded-2xl p-5">
             <h3 class="font-bold text-sm text-white mb-3 flex items-center gap-2">
@@ -659,7 +560,6 @@ DASHBOARD_TEMPLATE = """
             </div>
         </div>
 
-        <!-- جدول تذاكر الصيانة الرقمي -->
         <div class="md:col-span-2 bg-slate-900/70 border border-slate-800 rounded-2xl p-5 flex flex-col justify-between">
             <div>
                 <h3 class="font-bold text-sm text-white mb-3 flex items-center gap-2">
@@ -713,7 +613,7 @@ DASHBOARD_TEMPLATE = """
         </div>
     </div>
 
-    <!-- نافذة تفاصيل الجهاز والسجل التاريخي (Device Passport & Modal) -->
+    <!-- نافذة تفاصيل الجهاز والسجل التاريخي -->
     <div id="quick-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
         <div class="bg-slate-900 border border-slate-700/80 rounded-3xl max-w-xl w-full p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
             <div class="flex justify-between items-center border-b border-slate-800 pb-3">
@@ -723,7 +623,6 @@ DASHBOARD_TEMPLATE = """
                 <button onclick="closeModal()" class="text-slate-400 hover:text-white text-lg"><i class="fa-solid fa-xmark"></i></button>
             </div>
 
-            <!-- معلومات البلاغ النشط (إن وجد) -->
             <div id="active-ticket-box" class="space-y-2 text-xs bg-slate-950/70 p-3.5 rounded-xl border border-red-500/40">
                 <div class="flex justify-between items-center mb-1">
                     <span class="text-red-400 font-bold flex items-center gap-1.5"><i class="fa-solid fa-triangle-exclamation"></i> يوجد بلاغ صيانة نشط حالياً</span>
@@ -741,7 +640,6 @@ DASHBOARD_TEMPLATE = """
                 <i class="fa-solid fa-circle-check ml-1"></i> هذا الجهاز يعمل بكفاءة تامة ولا توجد عليه أي بلاغات نشطة حالياً.
             </div>
 
-            <!-- نموذج تحديث التذكرة النشطة -->
             <form id="modal-form" method="POST" action="" class="space-y-3 pt-1">
                 <div>
                     <label class="block text-xs font-semibold text-slate-300 mb-1">تحديث حالة التذكرة</label>
@@ -765,7 +663,6 @@ DASHBOARD_TEMPLATE = """
                 </div>
             </form>
 
-            <!-- السجل التاريخي للأعطال وقطع الغيار السابقة لهذا الجهاز -->
             <div class="border-t border-slate-800 pt-3">
                 <h4 class="text-xs font-bold text-slate-300 mb-2 flex items-center gap-1.5">
                     <i class="fa-solid fa-clock-rotate-left text-cyan-400"></i> السجل التاريخي للبلاغات السابقة لهذا الجهاز:
@@ -782,7 +679,6 @@ DASHBOARD_TEMPLATE = """
         let nocInterval = null;
         let countdown = 30;
 
-        // تطبيق الألوان ديناميكياً على المخطط
         function applyDynamicColors() {
             for (const [labNum, status] of Object.entries(labStatuses)) {
                 const labGroup = document.getElementById(`lab-node-${labNum}`);
@@ -859,7 +755,6 @@ DASHBOARD_TEMPLATE = """
             renderSeatsGrid(num);
         }
 
-        // فحص وعرض بطاقة الجهاز والسجل التاريخي
         function inspectDevice(labNum, seatNum) {
             const devTitle = seatNum === 0 ? `معمل (${labNum}) - منصة المدرب` : `معمل (${labNum}) - جهاز (${seatNum})`;
             document.getElementById('modal-device-name').innerText = devTitle;
@@ -887,7 +782,6 @@ DASHBOARD_TEMPLATE = """
                 modalForm.classList.add('hidden');
             }
 
-            // تجميع السجل التاريخي للبلاغات المحلولة لهذا الجهاز
             const historyContainer = document.getElementById('device-history-container');
             historyContainer.innerHTML = '';
             const historyTickets = allTickets.filter(t => t[1] == labNum && t[2] == seatNum && t[6] === 'تم الحل');
@@ -917,7 +811,6 @@ DASHBOARD_TEMPLATE = """
             document.getElementById('quick-modal').classList.add('hidden');
         }
 
-        // وضع شاشة المراقبة الكبيرة (NOC Mode)
         function toggleNocMode() {
             const body = document.getElementById('main-body');
             const badge = document.getElementById('noc-status-badge');
@@ -930,7 +823,6 @@ DASHBOARD_TEMPLATE = """
                 badge.classList.add('flex');
                 btnLabel.innerText = "إنهاء وضع NOC";
 
-                // بدء التحديث التلقائي كل 30 ثانية
                 countdown = 30;
                 nocInterval = setInterval(() => {
                     countdown--;
@@ -958,7 +850,7 @@ DASHBOARD_TEMPLATE = """
 </html>
 """
 
-# --- نموذج باركودات QR الموحدة (مقاس 15×15 سم على A4 - كل باركود بورقة لحاله) ---
+# --- نموذج باركودات QR الموحدة (مقاس 15×15 سم على A4) ---
 QR_LABELS_TEMPLATE = """
 <!DOCTYPE html>
 <html dir="rtl" lang="ar">
@@ -1094,66 +986,157 @@ QR_LABELS_TEMPLATE = """
 </html>
 """
 
-# --- نموذج البلاغ الذكي (مع ميزة قفل الأجهزة المبلغ عنها لمنع التكرار) ---
+# --- نموذج البلاغ الذكي بالواجهة الجديدة الزجاجية والحديثة (Glassmorphism & Cyber) ---
 REPORT_TEMPLATE = """
 <!DOCTYPE html>
 <html dir="rtl" lang="ar">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>بلاغ صيانة - معمل {{ lab_num }}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تقديم بلاغ صيانة | معمل ({{ lab_num }})</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
     <style>
-        * { box-sizing: border-box; }
-        body { background: #07101f; color: #e2e8f0; font-family: Tahoma, Arial, sans-serif; margin: 0; padding: 22px; }
-        main { max-width: 520px; margin: 30px auto; padding: 26px; background: #0f172a; border: 1px solid #155e75; border-radius: 18px; }
-        h1 { font-size: 24px; margin: 0 0 8px; }
-        p { color: #94a3b8; line-height: 1.8; }
-        label { display: block; margin: 17px 0 5px; font-size: 14px; }
-        input, select, textarea { width: 100%; padding: 12px; background: #020617; border: 1px solid #475569; border-radius: 9px; color: white; font: inherit; }
-        textarea { min-height: 110px; resize: vertical; }
-        button, a.button { display: block; width: 100%; margin-top: 22px; padding: 13px; border: 0; border-radius: 9px; background: #0891b2; color: white; text-align: center; font: inherit; font-weight: bold; text-decoration: none; cursor: pointer; }
-        .notice { padding: 12px; border-radius: 8px; background: #064e3b; color: #d1fae5; }
-        .error { padding: 12px; border-radius: 8px; background: #7f1d1d; color: white; }
+        body {
+            font-family: 'Tajawal', sans-serif;
+            background-color: #040711;
+            background-image: 
+                radial-gradient(circle at 50% 18%, rgba(6, 182, 212, 0.18) 0%, transparent 60%),
+                radial-gradient(rgba(14, 165, 233, 0.08) 1px, transparent 1px),
+                linear-gradient(rgba(14, 165, 233, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(14, 165, 233, 0.03) 1px, transparent 1px);
+            background-size: 100% 100%, 24px 24px, 12px 12px, 12px 12px;
+        }
+        .report-glass-card {
+            background: rgba(13, 21, 41, 0.75);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+            border: 1px solid rgba(34, 211, 238, 0.28);
+            box-shadow: 0 0 50px rgba(6, 182, 212, 0.12), inset 0 0 20px rgba(34, 211, 238, 0.03);
+            transition: all 0.3s ease;
+        }
     </style>
 </head>
-<body>
-    <main>
-        <h1>بلاغ صيانة — معمل ({{ lab_num }})</h1>
-        <p>الباركود خاص بالمعمل كاملاً. حدد رقم الجهاز وسيتحقق النظام من حالته فوراً.</p>
-        {% if success %}
-            <div class="notice">تم استلام البلاغ رقم #{{ success }} بنجاح وسيتم توجيه الفني لموقع الجهاز فوراً.</div>
-            <a class="button" href="{{ url_for('lab_report', lab_num=lab_num) }}">بلاغ جديد لنفس المعمل</a>
-        {% else %}
-            {% if error %}<div class="error">{{ error }}</div>{% endif %}
-            <form method="POST">
-                <label for="seat">رقم الجهاز</label>
-                <select id="seat" name="seat_num" required>
-                    <option value="" disabled {% if not values.get('seat_num') %}selected{% endif %}>اختر الجهاز</option>
-                    
-                    <!-- منصة المدرب مع الحماية الذكية -->
-                    <option value="0" {% if 0 in occupied_seats %}disabled style="color: #f87171; background-color: #1e1b4b;"{% endif %} {% if values.get('seat_num') == '0' %}selected{% endif %}>
-                        منصة المدرب {% if 0 in occupied_seats %}(تم الإبلاغ عنه مسبقاً - قيد الصيانة ⏳){% endif %}
-                    </option>
+<body class="min-h-screen text-slate-200 flex flex-col justify-between items-center p-4">
+    <div></div>
 
-                    <!-- أجهزة المتدربين مع قفل أي جهاز مسجل مسبقاً -->
-                    {% for seat in seats %}
-                    <option value="{{ seat }}" {% if seat in occupied_seats %}disabled style="color: #f87171; background-color: #1e1b4b;"{% endif %} {% if values.get('seat_num') == seat|string %}selected{% endif %}>
-                        جهاز {{ seat }} {% if seat in occupied_seats %}(تم الإبلاغ عنه مسبقاً - قيد الصيانة ⏳){% endif %}
-                    </option>
+    <main class="max-w-lg w-full report-glass-card rounded-3xl p-7 md:p-8 relative my-auto shadow-2xl">
+        <div class="text-center mb-6">
+            <div class="w-14 h-14 bg-gradient-to-tr from-cyan-600/30 to-blue-500/20 border border-cyan-400/50 rounded-2xl flex items-center justify-center mx-auto text-cyan-400 text-2xl mb-3 shadow-[0_0_25px_rgba(6,182,212,0.3)]">
+                <i class="fa-solid fa-headset"></i>
+            </div>
+            
+            <div class="inline-flex items-center gap-2 bg-cyan-950/60 border border-cyan-500/40 px-3 py-1 rounded-full text-xs text-cyan-300 font-bold mb-2">
+                <span class="w-2 h-2 rounded-full bg-cyan-400 animate-ping"></span>
+                <span>معمل ({{ lab_num }})</span>
+            </div>
+
+            <h1 class="text-xl font-black text-white tracking-wide">تسجيل بلاغ صيانة حاسب آلي</h1>
+            <p class="text-xs text-slate-400 mt-1">حدد رقم الجهاز بدقة وسيتحقق النظام من حالته فورياً</p>
+        </div>
+
+        {% if success %}
+        <div class="bg-emerald-950/70 border border-emerald-500/50 p-6 rounded-2xl text-center space-y-3">
+            <div class="w-12 h-12 bg-emerald-500/20 text-emerald-400 rounded-2xl flex items-center justify-center mx-auto text-2xl">
+                <i class="fa-solid fa-check-double"></i>
+            </div>
+            <h3 class="text-base font-bold text-white">تم استلام البلاغ رقم #{{ success }} بنجاح!</h3>
+            <p class="text-xs text-emerald-300/90 leading-relaxed">
+                تم تسجيل البلاغ في الرادار المركزي لقسم الحاسب وجارٍ توجيه الفني لموقع الجهاز فوراً.
+            </p>
+            <div class="pt-2">
+                <a href="{{ url_for('lab_report', lab_num=lab_num) }}" class="inline-block w-full py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold rounded-xl text-xs shadow-lg shadow-emerald-500/25 transition">
+                    تسجيل بلاغ جديد لنفس المعمل
+                </a>
+            </div>
+        </div>
+        {% else %}
+
+        {% if error %}
+        <div class="bg-red-950/60 border border-red-800/80 text-red-300 text-xs p-3 rounded-xl mb-4 text-center flex items-center justify-center gap-2">
+            <i class="fa-solid fa-circle-exclamation text-red-400 text-sm"></i>
+            <span>{{ error }}</span>
+        </div>
+        {% endif %}
+
+        <form method="POST" class="space-y-4" onsubmit="handleSubmitBtn()">
+            <div>
+                <label for="seat" class="block text-xs font-semibold text-slate-300 mb-1.5 flex items-center gap-1.5">
+                    <i class="fa-solid fa-display text-cyan-400 text-[11px]"></i> موقع الجهاز المتعطل
+                </label>
+                <div class="relative">
+                    <select id="seat" name="seat_num" required class="w-full bg-slate-950/90 border border-slate-700/80 focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400/40 rounded-xl py-2.5 px-3 text-xs text-white focus:outline-none transition cursor-pointer">
+                        <option value="" disabled {% if not values.get('seat_num') %}selected{% endif %}>-- اختر الجهاز --</option>
+                        
+                        <option value="0" {% if 0 in occupied_seats %}disabled style="color: #f87171; background-color: #1e1b4b;"{% endif %} {% if values.get('seat_num') == '0' %}selected{% endif %}>
+                            منصة المدرب والشاشة الرئيسية {% if 0 in occupied_seats %}(تم الإبلاغ عنه مسبقاً ⏳){% endif %}
+                        </option>
+
+                        {% for seat in seats %}
+                        <option value="{{ seat }}" {% if seat in occupied_seats %}disabled style="color: #f87171; background-color: #1e1b4b;"{% endif %} {% if values.get('seat_num') == seat|string %}selected{% endif %}>
+                            جهاز {{ seat }} {% if seat in occupied_seats %}(تم الإبلاغ عنه مسبقاً - قيد الصيانة ⏳){% endif %}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <div>
+                <label for="reporter" class="block text-xs font-semibold text-slate-300 mb-1.5 flex items-center gap-1.5">
+                    <i class="fa-solid fa-user text-cyan-400 text-[11px]"></i> اسم المُبلّغ (مدرب / متدرب)
+                </label>
+                <input id="reporter" name="reporter_name" maxlength="80" required value="{{ values.get('reporter_name', '') }}" placeholder="اكتب اسمك الثلاثي" class="w-full bg-slate-950/90 border border-slate-700/80 focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400/40 rounded-xl py-2.5 px-3 text-xs text-white focus:outline-none transition">
+            </div>
+
+            <div>
+                <label for="category" class="block text-xs font-semibold text-slate-300 mb-1.5 flex items-center gap-1.5">
+                    <i class="fa-solid fa-tags text-cyan-400 text-[11px]"></i> تصنيف نوع العطل
+                </label>
+                <select id="category" name="issue_category" required class="w-full bg-slate-950/90 border border-slate-700/80 focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400/40 rounded-xl py-2.5 px-3 text-xs text-white focus:outline-none transition cursor-pointer">
+                    {% for category in categories %}
+                    <option value="{{ category }}" {% if values.get('issue_category') == category %}selected{% endif %}>{{ category }}</option>
                     {% endfor %}
                 </select>
-                <label for="reporter">اسم المبلّغ</label>
-                <input id="reporter" name="reporter_name" maxlength="80" required value="{{ values.get('reporter_name', '') }}">
-                <label for="category">نوع العطل</label>
-                <select id="category" name="issue_category" required>
-                    {% for category in categories %}<option value="{{ category }}" {% if values.get('issue_category') == category %}selected{% endif %}>{{ category }}</option>{% endfor %}
-                </select>
-                <label for="issue">وصف العطل</label>
-                <textarea id="issue" name="issue" maxlength="1000" minlength="5" required>{{ values.get('issue', '') }}</textarea>
-                <button type="submit">إرسال البلاغ</button>
-            </form>
+            </div>
+
+            <div>
+                <label for="issue" class="block text-xs font-semibold text-slate-300 mb-1.5 flex items-center gap-1.5">
+                    <i class="fa-solid fa-pen-nib text-cyan-400 text-[11px]"></i> وصف العطل بدقة
+                </label>
+                <textarea id="issue" name="issue" maxlength="1000" minlength="5" required placeholder="مثال: الجهاز لا يقلع، كابل الشاشة لا يعمل، الفأرة لا تستجيب..." class="w-full min-h-[95px] bg-slate-950/90 border border-slate-700/80 focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400/40 rounded-xl py-2.5 px-3 text-xs text-white focus:outline-none transition resize-none"></textarea>
+            </div>
+
+            <button type="submit" id="submit-report-btn" class="w-full py-2.5 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-bold rounded-xl text-xs shadow-lg shadow-cyan-500/25 transition duration-200 flex items-center justify-center gap-2">
+                <span id="btn-text">إرسال البلاغ فوراً</span>
+                <i id="btn-spinner" class="fa-solid fa-paper-plane text-xs"></i>
+            </button>
+        </form>
         {% endif %}
     </main>
+
+    <footer class="my-4 text-center">
+        <div class="bg-slate-900/60 border border-slate-800/80 backdrop-blur-md px-5 py-2 rounded-full text-xs text-slate-400 inline-flex flex-wrap items-center justify-center gap-2 shadow-lg">
+            <span class="font-bold text-slate-200">قسم الحاسب الآلي وتقنية المعلومات</span>
+            <span class="text-cyan-500/60">•</span>
+            <span>إشراف: <span class="text-slate-300 font-semibold">أ. محمد الدوخي</span></span>
+            <span class="text-cyan-500/60">•</span>
+            <span>إعداد: <span class="text-cyan-400 font-semibold">ريان المحيطيب</span></span>
+        </div>
+    </footer>
+
+    <script>
+        function handleSubmitBtn() {
+            const btn = document.getElementById('submit-report-btn');
+            const btnText = document.getElementById('btn-text');
+            const icon = document.getElementById('btn-spinner');
+            if (btn) {
+                btnText.innerText = "جاري إرسال البلاغ وتوجيه الفني...";
+                icon.className = "fa-solid fa-circle-notch fa-spin text-xs";
+                btn.classList.add('opacity-85', 'cursor-not-allowed');
+            }
+        }
+    </script>
 </body>
 </html>
 """
@@ -1228,13 +1211,11 @@ def lab_qr(lab_num):
     output.seek(0)
     return send_file(output, mimetype='image/png', max_age=0)
 
-# مسار تقديم البلاغ مع خاصية منع التكرار الذكية
 @app.route('/lab/<int:lab_num>/report', methods=['GET', 'POST'])
 def lab_report(lab_num):
     if lab_num not in LAB_NUMBERS:
         abort(404)
 
-    # جلب الأجهزة التي عليها بلاغات مفتوحة أو قيد الإصلاح حالياً في هذا المعمل
     conn = sqlite3.connect(os.path.join(BASE_DIR, 'maintenance.db'))
     cursor = conn.cursor()
     cursor.execute("SELECT seat_num FROM tickets WHERE lab_num = ? AND status != 'تم الحل'", (lab_num,))
