@@ -134,7 +134,6 @@ DASHBOARD_TEMPLATE = """
             stroke-width: 2.5 !important;
             filter: drop-shadow(0 0 12px rgba(56, 189, 248, 0.8));
         }
-        /* تلوين المعامل ديناميكياً */
         .svg-lab.status-danger {
             fill: rgba(185, 28, 28, 0.7) !important;
             stroke: #ef4444 !important;
@@ -367,7 +366,7 @@ DASHBOARD_TEMPLATE = """
                         <text x="137" y="682" class="svg-text-sub">الشبكات والأنظمة</text>
                     </g>
 
-                    <!-- ================= 3. المبنى الداخلي والفناء ================= -->
+                    <!-- ================= 3. المبنى الداخلي وقسم الحاسب ================= -->
                     <rect x="250" y="200" width="415" height="490" fill="#040814" stroke="#1e3a8a" stroke-width="1.8" rx="6" />
 
                     <!-- معمل 27 -->
@@ -399,7 +398,7 @@ DASHBOARD_TEMPLATE = """
                     <rect x="255" y="495" width="70" height="75" class="svg-room" /><text x="290" y="532" class="svg-facility-text">شؤون</text><text x="290" y="547" class="svg-facility-text">المتدربين</text>
                     <rect x="255" y="575" width="70" height="35" class="svg-room" /><text x="290" y="597" class="svg-facility-text" font-size="9">تهوية</text>
 
-                    <!-- الفناء الأوسط المفتوح -->
+                    <!-- قسم الحاسب (المعدل بدلاً من الفناء الأوسط) -->
                     <g>
                         <rect x="335" y="295" width="235" height="295" fill="rgba(8, 47, 73, 0.25)" stroke="#0e7490" stroke-dasharray="5 5" stroke-width="1.5" rx="8" />
                         <circle cx="355" cy="315" r="7" fill="#047857" stroke="#10b981" stroke-width="1.5" />
@@ -407,8 +406,8 @@ DASHBOARD_TEMPLATE = """
                         <circle cx="355" cy="570" r="7" fill="#047857" stroke="#10b981" stroke-width="1.5" />
                         <circle cx="550" cy="570" r="7" fill="#047857" stroke="#10b981" stroke-width="1.5" />
 
-                        <text x="452" y="440" fill="#93c5fd" font-size="14" font-weight="bold" text-anchor="middle">الفناء الأوسط</text>
-                        <text x="452" y="462" fill="#3b82f6" font-size="10" font-family="monospace" letter-spacing="2" text-anchor="middle">COURTYARD</text>
+                        <text x="452" y="440" fill="#93c5fd" font-size="15" font-weight="bold" text-anchor="middle">قسم الحاسب</text>
+                        <text x="452" y="462" fill="#3b82f6" font-size="10" font-family="monospace" letter-spacing="2" text-anchor="middle">COMPUTER DEPT</text>
                     </g>
 
                     <!-- المستودعات الشرقية ومعامل 14 و 12 -->
@@ -999,7 +998,6 @@ def dashboard():
     pending = sum(1 for t in tickets if t[6] == 'قيد الإصلاح')
     op_rate = 100.0 if total == 0 else round(((total - active) / total) * 100, 1)
 
-    # حساب حالة المعامل ديناميكياً لتلوين الـ SVG
     lab_statuses = {}
     for lab in LAB_NUMBERS:
         lab_tickets = [t for t in tickets if t[1] == lab and t[6] != 'تم الحل']
@@ -1010,7 +1008,6 @@ def dashboard():
         else:
             lab_statuses[lab] = 'ok'
 
-    # إحصاء القطع المستبدلة من قاعدة البيانات
     all_parts = []
     for t in tickets:
         part_text = t[7].strip() if len(t) > 7 and t[7] else ''
