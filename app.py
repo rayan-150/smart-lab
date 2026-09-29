@@ -78,7 +78,7 @@ LOGIN_TEMPLATE = """
     </style>
 </head>
 <body class="min-h-screen text-slate-200 flex flex-col justify-between items-center p-4">
-    <div></div> <!-- مباعد علوي لتوسيط البطاقة -->
+    <div></div>
 
     <div class="max-w-md w-full glass-card rounded-3xl p-7 md:p-8 relative">
         <div class="absolute -top-3 -right-3 w-7 h-7 bg-cyan-500/20 rounded-full blur-md"></div>
@@ -127,7 +127,6 @@ LOGIN_TEMPLATE = """
             </button>
         </form>
 
-        <!-- أزرار التعبئة السريعة (Demo Fast-Fill) -->
         <div class="mt-6 pt-4 border-t border-slate-800/80">
             <p class="text-[11px] text-slate-400 text-center mb-2.5 flex items-center justify-center gap-1.5">
                 <i class="fa-solid fa-bolt text-amber-400 text-xs"></i> تجربة سريعة وتعبئة بنقرة واحدة:
@@ -146,7 +145,6 @@ LOGIN_TEMPLATE = """
         </div>
     </div>
 
-    <!-- شريط الاعتماد والحقوق السفلي -->
     <footer class="my-4 text-center">
         <div class="bg-slate-900/60 border border-slate-800/80 backdrop-blur-md px-5 py-2 rounded-full text-xs text-slate-400 inline-flex flex-wrap items-center justify-center gap-2 shadow-lg">
             <span class="font-bold text-slate-200">قسم الحاسب الآلي وتقنية المعلومات</span>
@@ -191,7 +189,7 @@ LOGIN_TEMPLATE = """
 </html>
 """
 
-# --- صفحة لوحة التحكم بالمخطط المعماري الهندسي التفاعلي ---
+# --- صفحة لوحة التحكم بالمخطط المعماري الهندسي التفاعلي بعد التدقيق ---
 DASHBOARD_TEMPLATE = """
 <!DOCTYPE html>
 <html dir="rtl" lang="ar">
@@ -371,7 +369,7 @@ DASHBOARD_TEMPLATE = """
             </div>
         </div>
 
-        <!-- المخطط المعماري الكامل للقسم (رسم متجه مطابق 100% لورقة المخطط) -->
+        <!-- المخطط المعماري الكامل للقسم -->
         <div class="lg:col-span-8 bg-slate-900/70 border border-slate-800 rounded-2xl p-5 flex flex-col">
             <div class="flex justify-between items-center mb-3">
                 <div class="flex items-center gap-3 text-[11px]">
@@ -498,7 +496,7 @@ DASHBOARD_TEMPLATE = """
                     <rect x="255" y="495" width="70" height="75" class="svg-room" /><text x="290" y="532" class="svg-facility-text">شؤون</text><text x="290" y="547" class="svg-facility-text">المتدربين</text>
                     <rect x="255" y="575" width="70" height="35" class="svg-room" /><text x="290" y="597" class="svg-facility-text" font-size="9">تهوية</text>
 
-                    <!-- قسم الحاسب -->
+                    <!-- قسم الحاسب (الوسط) -->
                     <g>
                         <rect x="335" y="295" width="235" height="295" fill="rgba(8, 47, 73, 0.25)" stroke="#0e7490" stroke-dasharray="5 5" stroke-width="1.5" rx="8" />
                         <circle cx="355" cy="315" r="7" fill="#047857" stroke="#10b981" stroke-width="1.5" />
@@ -529,29 +527,29 @@ DASHBOARD_TEMPLATE = """
                     </g>
                     <rect x="580" y="582" width="80" height="30" class="svg-room" /><text x="620" y="602" class="svg-facility-text" font-size="9">تهوية</text>
 
-                    <!-- صف القاعات الداخلي السفلي -->
-                    <!-- معمل 4 -->
+                    <!-- صف القاعات الداخلي السفلي (تطبيق المقاسات الدقيقة والموزونة هندسياً) -->
+                    <!-- معمل 4: العرض 98px -->
                     <g onclick="switchLab(4)" id="lab-node-4" class="cursor-pointer">
-                        <rect x="300" y="600" width="105" height="85" class="svg-lab" rx="3" />
-                        <text x="352" y="648" class="svg-text-title">معمل (4)</text>
+                        <rect x="255" y="600" width="98" height="85" class="svg-lab" rx="4" />
+                        <text x="304" y="648" class="svg-text-title">معمل (4)</text>
                     </g>
 
-                    <!-- معمل 6 -->
+                    <!-- معمل 6: العرض 98px -->
                     <g onclick="switchLab(6)" id="lab-node-6" class="cursor-pointer">
-                        <rect x="410" y="600" width="105" height="85" class="svg-lab" rx="3" />
-                        <text x="462" y="648" class="svg-text-title">معمل (6)</text>
+                        <rect x="357" y="600" width="98" height="85" class="svg-lab" rx="4" />
+                        <text x="406" y="648" class="svg-text-title">معمل (6)</text>
                     </g>
 
-                    <!-- كيابل الألياف الضوئية -->
-                    <rect x="520" y="600" width="70" height="85" class="svg-room" />
-                    <text x="555" y="635" class="svg-facility-text">كيابل</text>
-                    <text x="555" y="651" class="svg-facility-text">الألياف</text>
-                    <text x="555" y="667" class="svg-facility-text">الضوئية</text>
+                    <!-- كيابل الألياف الضوئية: العرض 100px -->
+                    <rect x="459" y="600" width="100" height="85" class="svg-room" />
+                    <text x="509" y="635" class="svg-facility-text">كيابل</text>
+                    <text x="509" y="651" class="svg-facility-text">الألياف</text>
+                    <text x="509" y="667" class="svg-facility-text">الضوئية</text>
 
-                    <!-- معمل 10 -->
+                    <!-- معمل 10: العرض 100px -->
                     <g onclick="switchLab(10)" id="lab-node-10" class="cursor-pointer">
-                        <rect x="595" y="600" width="65" height="85" class="svg-lab" rx="3" />
-                        <text x="627" y="645" class="svg-text-title">معمل (10)</text>
+                        <rect x="563" y="600" width="100" height="85" class="svg-lab" rx="4" />
+                        <text x="613" y="648" class="svg-text-title">معمل (10)</text>
                     </g>
 
                     <!-- ================= 4. الضلع الأيمن الخارجي ================= -->
@@ -976,7 +974,6 @@ REPORT_TEMPLATE = """
 """
 
 def qr_base_url(raw_url):
-    """Keep printed QR targets on one explicit HTTP(S) origin."""
     base = raw_url.strip().rstrip('/')
     try:
         parsed = urlsplit(base)
