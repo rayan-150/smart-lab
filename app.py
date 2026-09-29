@@ -42,7 +42,7 @@ USERS = {
 LAB_NUMBERS = (1, 2, 3, 4, 5, 6, 7, 9, 10, 11, 12, 13, 14, 22, 23, 24, 26, 27)
 ISSUE_CATEGORIES = ('أجهزة', 'برامج', 'شبكة', 'أخرى')
 
-# --- صفحة تسجيل الدخول بالهوية المتطورة ---
+# --- صفحة تسجيل الدخول بالهوية المتقدمة ---
 LOGIN_TEMPLATE = """
 <!DOCTYPE html>
 <html dir="rtl" lang="ar">
@@ -72,17 +72,13 @@ LOGIN_TEMPLATE = """
             box-shadow: 0 0 50px rgba(6, 182, 212, 0.12), inset 0 0 20px rgba(34, 211, 238, 0.03);
             transition: all 0.3s ease;
         }
-        .glass-card:hover {
-            border-color: rgba(34, 211, 238, 0.45);
-        }
+        .glass-card:hover { border-color: rgba(34, 211, 238, 0.45); }
     </style>
 </head>
 <body class="min-h-screen text-slate-200 flex flex-col justify-between items-center p-4">
     <div></div>
 
     <div class="max-w-md w-full glass-card rounded-3xl p-7 md:p-8 relative">
-        <div class="absolute -top-3 -right-3 w-7 h-7 bg-cyan-500/20 rounded-full blur-md"></div>
-        
         <div class="text-center mb-6">
             <div class="w-14 h-14 bg-gradient-to-tr from-cyan-600/30 to-blue-500/20 border border-cyan-400/50 rounded-2xl flex items-center justify-center mx-auto text-cyan-400 text-2xl mb-3 shadow-[0_0_25px_rgba(6,182,212,0.3)]">
                 <i class="fa-solid fa-microchip"></i>
@@ -179,7 +175,6 @@ LOGIN_TEMPLATE = """
             const btn = document.getElementById('submit-btn');
             const btnText = document.getElementById('btn-text');
             const spinner = document.getElementById('btn-spinner');
-            
             btnText.innerText = "جاري التحقق والدخول...";
             spinner.classList.remove('hidden');
             btn.classList.add('opacity-80', 'cursor-not-allowed');
@@ -189,14 +184,14 @@ LOGIN_TEMPLATE = """
 </html>
 """
 
-# --- صفحة لوحة العمليات والمخطط الهندسي الدقيق ---
+# --- صفحة لوحة العمليات ومخطط الرادار التفاعلي مع وضع NOC والسجل التاريخي ---
 DASHBOARD_TEMPLATE = """
 <!DOCTYPE html>
 <html dir="rtl" lang="ar">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>لوحة العمليات والمخطط المعماري | صيانة المعامل</title>
+    <title>غرفة المراقبة والعمليات (NOC) | صيانة المعامل</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
@@ -277,22 +272,41 @@ DASHBOARD_TEMPLATE = """
             pointer-events: none;
             font-family: 'Tajawal', sans-serif;
         }
+        /* وضع المراقبة الكاملة (NOC Fullscreen Mode) */
+        body.noc-active {
+            padding: 12px !important;
+            background-color: #020409 !important;
+        }
+        body.noc-active header {
+            padding: 10px 16px !important;
+            margin-bottom: 12px !important;
+        }
     </style>
 </head>
-<body class="min-h-screen flex flex-col p-4 md:p-6 space-y-6">
+<body id="main-body" class="min-h-screen flex flex-col p-4 md:p-6 space-y-5">
 
-    <!-- شريط الرأس -->
-    <header class="flex justify-between items-center px-6 py-4 bg-slate-900/80 border border-slate-800 rounded-2xl backdrop-blur">
-        <div class="flex items-center gap-3">
-            <a href="/logout" class="bg-red-950/40 hover:bg-red-900/60 border border-red-800/60 text-red-400 px-3.5 py-1.5 rounded-xl text-xs flex items-center gap-2 transition">
+    <!-- شريط الرأس مع تحكم NOC -->
+    <header class="flex flex-wrap justify-between items-center px-6 py-4 bg-slate-900/80 border border-slate-800 rounded-2xl backdrop-blur gap-3">
+        <div class="flex items-center gap-2.5">
+            <a href="/logout" class="bg-red-950/40 hover:bg-red-900/60 border border-red-800/60 text-red-400 px-3 py-1.5 rounded-xl text-xs flex items-center gap-1.5 transition">
                 <i class="fa-solid fa-power-off"></i> خروج
             </a>
-            <div class="flex items-center gap-2 bg-slate-800/60 border border-slate-700/60 px-3.5 py-1.5 rounded-xl text-xs">
+            <div class="flex items-center gap-2 bg-slate-800/60 border border-slate-700/60 px-3 py-1.5 rounded-xl text-xs">
                 <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
                 <span class="font-bold text-slate-200">{{ session.get('name', 'محمد الدوخي') }}</span>
                 <span class="text-cyan-400 text-[10px]">({{ session.get('role', 'مشرف الصيانة التقنية') }})</span>
             </div>
+            <!-- زر وضع غرفة المراقبة NOC -->
+            <button onclick="toggleNocMode()" id="noc-toggle-btn" class="bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/40 text-cyan-300 text-xs px-3 py-1.5 rounded-xl flex items-center gap-2 transition font-bold shadow-sm">
+                <i class="fa-solid fa-tv"></i> <span id="noc-btn-label">شاشة المراقبة (NOC)</span>
+            </button>
+            <!-- مؤشر التحديث التلقائي اللحظي -->
+            <div id="noc-status-badge" class="hidden items-center gap-2 bg-emerald-950/50 border border-emerald-500/40 text-emerald-300 px-3 py-1.5 rounded-xl text-xs font-semibold">
+                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+                <span>بث حي مباشر (تحديث بعد: <span id="countdown-timer">30</span>ث)</span>
+            </div>
         </div>
+
         <div class="flex items-center gap-3">
             <a href="{{ url_for('export_csv') }}" class="bg-emerald-600/20 hover:bg-emerald-600/30 border border-emerald-500/40 text-emerald-300 text-xs px-3 py-1.5 rounded-xl flex items-center gap-2 transition font-bold">
                 <i class="fa-solid fa-file-excel"></i> تصدير تقرير الصيانة (Excel)
@@ -354,11 +368,11 @@ DASHBOARD_TEMPLATE = """
                             <span id="active-lab-title">توزيع أجهزة معمل (1)</span>
                             <i class="fa-solid fa-network-wired text-cyan-400"></i>
                         </h2>
-                        <span class="text-[10px] text-slate-400">27 جهاز حاسب + جهاز المدرب</span>
+                        <span class="text-[10px] text-slate-400">27 جهاز حاسب + جهاز المدرب (انقر لعرض السجل)</span>
                     </div>
                 </div>
 
-                <div id="trainer-seat-box" onclick="checkTrainerSeat()" class="p-2 mb-3 bg-cyan-950/40 border border-cyan-800/50 rounded-xl text-center text-xs text-cyan-300 font-semibold flex items-center justify-center gap-2 cursor-pointer hover:border-cyan-400 transition">
+                <div id="trainer-seat-box" onclick="inspectDevice(currentLabId, 0)" class="p-2 mb-3 bg-cyan-950/40 border border-cyan-800/50 rounded-xl text-center text-xs text-cyan-300 font-semibold flex items-center justify-center gap-2 cursor-pointer hover:border-cyan-400 transition">
                     <i class="fa-solid fa-chalkboard-user"></i> <span id="trainer-seat-text">منصة جهاز المدرب والشاشة الرئيسية</span>
                 </div>
 
@@ -385,7 +399,6 @@ DASHBOARD_TEMPLATE = """
             <!-- إطار الرسم المعماري الهندسي -->
             <div class="blueprint-container rounded-xl p-3 border border-cyan-950/80 overflow-x-auto flex justify-center">
                 <svg viewBox="0 0 850 960" class="w-full max-w-[750px] h-auto select-none" xmlns="http://www.w3.org/2000/svg">
-                    
                     <rect x="70" y="30" width="710" height="900" fill="none" stroke="#172554" stroke-width="3" rx="8" />
 
                     <!-- ================= 1. الضلع العلوي الخارجي ================= -->
@@ -621,7 +634,6 @@ DASHBOARD_TEMPLATE = """
 
                     <rect x="715" y="740" width="60" height="85" class="svg-room" />
                     <text x="745" y="788" class="svg-facility-text">مستودع</text>
-
                 </svg>
             </div>
         </div>
@@ -684,8 +696,8 @@ DASHBOARD_TEMPLATE = """
                                     {% endif %}
                                 </td>
                                 <td class="p-2.5">
-                                    <button onclick='openTicketModal({{ t|tojson }})' class="bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 px-2.5 py-1 rounded-lg transition text-[11px]">
-                                        <i class="fa-solid fa-pen-to-square"></i> إدارة
+                                    <button onclick='inspectDevice({{ t[1] }}, {{ t[2] }})' class="bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 px-2.5 py-1 rounded-lg transition text-[11px]">
+                                        <i class="fa-solid fa-pen-to-square"></i> إدارة وسجل الجهاز
                                     </button>
                                 </td>
                             </tr>
@@ -701,27 +713,36 @@ DASHBOARD_TEMPLATE = """
         </div>
     </div>
 
-    <!-- نافذة تفاصيل سريعة (Quick Modal) -->
+    <!-- نافذة تفاصيل الجهاز والسجل التاريخي (Device Passport & Modal) -->
     <div id="quick-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
-        <div class="bg-slate-900 border border-slate-700/80 rounded-3xl max-w-lg w-full p-6 shadow-2xl space-y-4">
+        <div class="bg-slate-900 border border-slate-700/80 rounded-3xl max-w-xl w-full p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
             <div class="flex justify-between items-center border-b border-slate-800 pb-3">
                 <h3 class="font-bold text-base text-white flex items-center gap-2">
-                    <i class="fa-solid fa-screwdriver-wrench text-cyan-400"></i> تفاصيل التذكرة <span id="modal-ticket-id" class="text-cyan-400 font-mono"></span>
+                    <i class="fa-solid fa-computer text-cyan-400"></i> بطاقة الجهاز وسجل الصيانة: <span id="modal-device-name" class="text-cyan-400"></span>
                 </h3>
                 <button onclick="closeModal()" class="text-slate-400 hover:text-white text-lg"><i class="fa-solid fa-xmark"></i></button>
             </div>
 
-            <div class="space-y-2 text-xs bg-slate-950/60 p-3.5 rounded-xl border border-slate-800">
-                <div class="flex justify-between"><span class="text-slate-400">الموقع:</span> <span id="modal-location" class="font-bold text-white"></span></div>
+            <!-- معلومات البلاغ النشط (إن وجد) -->
+            <div id="active-ticket-box" class="space-y-2 text-xs bg-slate-950/70 p-3.5 rounded-xl border border-red-500/40">
+                <div class="flex justify-between items-center mb-1">
+                    <span class="text-red-400 font-bold flex items-center gap-1.5"><i class="fa-solid fa-triangle-exclamation"></i> يوجد بلاغ صيانة نشط حالياً</span>
+                    <span id="modal-ticket-id" class="text-cyan-400 font-mono font-bold"></span>
+                </div>
                 <div class="flex justify-between"><span class="text-slate-400">اسم المُبلّغ:</span> <span id="modal-reporter" class="text-slate-200"></span></div>
-                <div class="flex justify-between"><span class="text-slate-400">تصنيف العطل:</span> <span id="modal-category" class="text-slate-200"></span></div>
+                <div class="flex justify-between"><span class="text-slate-400">نوع العطل:</span> <span id="modal-category" class="text-slate-200"></span></div>
                 <div>
                     <span class="text-slate-400 block mb-1">وصف العطل:</span>
                     <p id="modal-desc" class="text-slate-300 bg-slate-900 p-2 rounded border border-slate-800 leading-relaxed"></p>
                 </div>
             </div>
 
-            <form id="modal-form" method="POST" action="" class="space-y-3 pt-2">
+            <div id="no-active-ticket-box" class="hidden p-3 bg-emerald-950/30 border border-emerald-500/40 rounded-xl text-center text-xs text-emerald-300 font-semibold">
+                <i class="fa-solid fa-circle-check ml-1"></i> هذا الجهاز يعمل بكفاءة تامة ولا توجد عليه أي بلاغات نشطة حالياً.
+            </div>
+
+            <!-- نموذج تحديث التذكرة النشطة -->
+            <form id="modal-form" method="POST" action="" class="space-y-3 pt-1">
                 <div>
                     <label class="block text-xs font-semibold text-slate-300 mb-1">تحديث حالة التذكرة</label>
                     <select id="modal-status" name="status" class="w-full bg-slate-950 border border-slate-700 text-xs rounded-xl p-2.5 text-white focus:outline-none focus:border-cyan-400">
@@ -731,18 +752,26 @@ DASHBOARD_TEMPLATE = """
                     </select>
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-slate-300 mb-1">القطع المستبدلة (إن وجدت)</label>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1">القطع المستبدلة</label>
                     <input id="modal-parts" type="text" name="replaced_parts" placeholder="مثال: كابل باور، فأرة USB، كيبورد، رامات 8GB" class="w-full bg-slate-950 border border-slate-700 text-xs rounded-xl p-2.5 text-white focus:outline-none focus:border-cyan-400">
                 </div>
-                <div class="flex gap-2 pt-2">
+                <div class="flex gap-2 pt-1">
                     <button type="submit" class="flex-1 py-2.5 bg-cyan-600 hover:bg-cyan-500 font-bold text-white text-xs rounded-xl transition shadow-lg shadow-cyan-600/20">
                         حفظ التعديل
                     </button>
                     <button type="button" onclick="closeModal()" class="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs rounded-xl transition">
-                        إلغاء
+                        إغلاق
                     </button>
                 </div>
             </form>
+
+            <!-- السجل التاريخي للأعطال وقطع الغيار السابقة لهذا الجهاز -->
+            <div class="border-t border-slate-800 pt-3">
+                <h4 class="text-xs font-bold text-slate-300 mb-2 flex items-center gap-1.5">
+                    <i class="fa-solid fa-clock-rotate-left text-cyan-400"></i> السجل التاريخي للبلاغات السابقة لهذا الجهاز:
+                </h4>
+                <div id="device-history-container" class="space-y-1.5 max-h-36 overflow-y-auto pr-1"></div>
+            </div>
         </div>
     </div>
 
@@ -750,7 +779,10 @@ DASHBOARD_TEMPLATE = """
         const allTickets = {{ tickets|tojson }};
         const labStatuses = {{ lab_statuses|tojson }};
         let currentLabId = 1;
+        let nocInterval = null;
+        let countdown = 30;
 
+        // تطبيق الألوان ديناميكياً على المخطط
         function applyDynamicColors() {
             for (const [labNum, status] of Object.entries(labStatuses)) {
                 const labGroup = document.getElementById(`lab-node-${labNum}`);
@@ -775,7 +807,7 @@ DASHBOARD_TEMPLATE = """
             const trainerText = document.getElementById('trainer-seat-text');
             if (trainerTicket) {
                 trainerBox.className = 'p-2 mb-3 bg-red-950/60 border border-red-500 rounded-xl text-center text-xs text-red-300 font-semibold flex items-center justify-center gap-2 cursor-pointer hover:border-red-400 transition shadow-lg shadow-red-500/20';
-                trainerText.innerText = `منصة المدرب (عطل: ${trainerTicket[4]}) - انقر للإدارة`;
+                trainerText.innerText = `منصة المدرب (عطل: ${trainerTicket[4]}) - انقر للسجل`;
             } else {
                 trainerBox.className = 'p-2 mb-3 bg-cyan-950/40 border border-cyan-800/50 rounded-xl text-center text-xs text-cyan-300 font-semibold flex items-center justify-center gap-2 cursor-pointer hover:border-cyan-400 transition';
                 trainerText.innerText = 'منصة جهاز المدرب والشاشة الرئيسية (سليم)';
@@ -784,11 +816,11 @@ DASHBOARD_TEMPLATE = """
             for (let i = 1; i <= 27; i++) {
                 const activeTicket = allTickets.find(t => t[1] == labId && t[2] == i && t[6] !== 'تم الحل');
                 const seat = document.createElement('div');
+                seat.onclick = () => inspectDevice(labId, i);
                 
                 if (activeTicket) {
                     const isFixing = activeTicket[6] === 'قيد الإصلاح';
                     seat.className = `${isFixing ? 'bg-amber-950/50 border-amber-500 text-amber-300' : 'bg-red-950/60 border-red-500 text-red-300 animate-pulse'} border p-2 rounded-xl text-center flex flex-col justify-between h-14 transition cursor-pointer hover:scale-105 shadow-md`;
-                    seat.onclick = () => openTicketModal(activeTicket);
                     seat.innerHTML = `
                         <div class="flex justify-between items-center text-[10px]">
                             <i class="fa-solid fa-triangle-exclamation"></i>
@@ -798,7 +830,7 @@ DASHBOARD_TEMPLATE = """
                         <div class="text-[9px] font-semibold">${activeTicket[6]}</div>
                     `;
                 } else {
-                    seat.className = 'bg-slate-950/80 border border-slate-800 hover:border-cyan-500/40 p-2 rounded-xl text-center flex flex-col justify-between h-14 transition';
+                    seat.className = 'bg-slate-950/80 border border-slate-800 hover:border-cyan-500/40 p-2 rounded-xl text-center flex flex-col justify-between h-14 transition cursor-pointer hover:scale-105';
                     seat.innerHTML = `
                         <div class="flex justify-between items-center text-[10px] text-slate-500">
                             <i class="fa-solid fa-display text-[9px]"></i>
@@ -810,11 +842,6 @@ DASHBOARD_TEMPLATE = """
                 }
                 container.appendChild(seat);
             }
-        }
-
-        function checkTrainerSeat() {
-            const trainerTicket = allTickets.find(t => t[1] == currentLabId && t[2] == 0 && t[6] !== 'تم الحل');
-            if (trainerTicket) openTicketModal(trainerTicket);
         }
 
         function switchLab(num) {
@@ -832,20 +859,94 @@ DASHBOARD_TEMPLATE = """
             renderSeatsGrid(num);
         }
 
-        function openTicketModal(ticket) {
-            document.getElementById('modal-ticket-id').innerText = `#${ticket[0]}`;
-            document.getElementById('modal-location').innerText = `معمل (${ticket[1]}) - ` + (ticket[2] == 0 ? 'منصة المدرب' : `جهاز ${ticket[2]}`);
-            document.getElementById('modal-reporter').innerText = ticket[3];
-            document.getElementById('modal-category').innerText = ticket[4];
-            document.getElementById('modal-desc').innerText = ticket[5];
-            document.getElementById('modal-status').value = ticket[6];
-            document.getElementById('modal-parts').value = ticket[7] === 'لا يوجد' ? '' : ticket[7];
-            document.getElementById('modal-form').action = `/update_status/${ticket[0]}`;
+        // فحص وعرض بطاقة الجهاز والسجل التاريخي
+        function inspectDevice(labNum, seatNum) {
+            const devTitle = seatNum === 0 ? `معمل (${labNum}) - منصة المدرب` : `معمل (${labNum}) - جهاز (${seatNum})`;
+            document.getElementById('modal-device-name').innerText = devTitle;
+
+            const activeTicket = allTickets.find(t => t[1] == labNum && t[2] == seatNum && t[6] !== 'تم الحل');
+            const activeBox = document.getElementById('active-ticket-box');
+            const noActiveBox = document.getElementById('no-active-ticket-box');
+            const modalForm = document.getElementById('modal-form');
+
+            if (activeTicket) {
+                activeBox.classList.remove('hidden');
+                noActiveBox.classList.add('hidden');
+                modalForm.classList.remove('hidden');
+
+                document.getElementById('modal-ticket-id').innerText = `#${activeTicket[0]}`;
+                document.getElementById('modal-reporter').innerText = activeTicket[3];
+                document.getElementById('modal-category').innerText = activeTicket[4];
+                document.getElementById('modal-desc').innerText = activeTicket[5];
+                document.getElementById('modal-status').value = activeTicket[6];
+                document.getElementById('modal-parts').value = activeTicket[7] === 'لا يوجد' ? '' : activeTicket[7];
+                modalForm.action = `/update_status/${activeTicket[0]}`;
+            } else {
+                activeBox.classList.add('hidden');
+                noActiveBox.classList.remove('hidden');
+                modalForm.classList.add('hidden');
+            }
+
+            // تجميع السجل التاريخي للبلاغات المحلولة لهذا الجهاز
+            const historyContainer = document.getElementById('device-history-container');
+            historyContainer.innerHTML = '';
+            const historyTickets = allTickets.filter(t => t[1] == labNum && t[2] == seatNum && t[6] === 'تم الحل');
+
+            if (historyTickets.length > 0) {
+                historyTickets.forEach(t => {
+                    const row = document.createElement('div');
+                    row.className = 'bg-slate-950/80 border border-slate-800 p-2 rounded-lg text-[11px] flex justify-between items-center';
+                    row.innerHTML = `
+                        <div>
+                            <span class="text-cyan-400 font-bold font-mono">#${t[0]}</span>
+                            <span class="text-slate-300 mr-1.5">${t[4]} (${t[5]})</span>
+                            ${t[7] !== 'لا يوجد' ? `<span class="text-amber-400 block text-[10px]">القطع المستبدلة: ${t[7]}</span>` : ''}
+                        </div>
+                        <span class="text-emerald-400 font-semibold bg-emerald-500/10 px-2 py-0.5 rounded text-[10px]">تم الإصلاح</span>
+                    `;
+                    historyContainer.appendChild(row);
+                });
+            } else {
+                historyContainer.innerHTML = '<p class="text-slate-500 text-[11px] text-center py-2">لا توجد بلاغات صيانة سابقة مسجلة لهذا الجهاز.</p>';
+            }
+
             document.getElementById('quick-modal').classList.remove('hidden');
         }
 
         function closeModal() {
             document.getElementById('quick-modal').classList.add('hidden');
+        }
+
+        // وضع شاشة المراقبة الكبيرة (NOC Mode)
+        function toggleNocMode() {
+            const body = document.getElementById('main-body');
+            const badge = document.getElementById('noc-status-badge');
+            const btnLabel = document.getElementById('noc-btn-label');
+
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(() => {});
+                body.classList.add('noc-active');
+                badge.classList.remove('hidden');
+                badge.classList.add('flex');
+                btnLabel.innerText = "إنهاء وضع NOC";
+
+                // بدء التحديث التلقائي كل 30 ثانية
+                countdown = 30;
+                nocInterval = setInterval(() => {
+                    countdown--;
+                    document.getElementById('countdown-timer').innerText = countdown;
+                    if (countdown <= 0) {
+                        location.reload();
+                    }
+                }, 1000);
+            } else {
+                if (document.exitFullscreen) document.exitFullscreen();
+                body.classList.remove('noc-active');
+                badge.classList.add('hidden');
+                badge.classList.remove('flex');
+                btnLabel.innerText = "شاشة المراقبة (NOC)";
+                clearInterval(nocInterval);
+            }
         }
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -879,10 +980,8 @@ QR_LABELS_TEMPLATE = """
         .tools a.btn-back { background: #64748b; }
         .error { color: #b91c1c !important; font-size: 13px; margin-top: 8px; }
 
-        /* حاوية الصفحات */
         .pages-container { display: flex; flex-direction: column; align-items: center; gap: 20px; }
 
-        /* تمثيل ورقة A4 على الشاشة */
         .a4-sheet {
             width: 210mm;
             min-height: 297mm;
@@ -896,7 +995,6 @@ QR_LABELS_TEMPLATE = """
             break-after: page;
         }
 
-        /* لوحة الباركود المربعة 15x15 سم (150mm x 150mm) */
         .qr-card-15cm {
             width: 150mm;
             height: 150mm;
@@ -933,7 +1031,6 @@ QR_LABELS_TEMPLATE = """
         .qr-card-footer .instruction { font-size: 12px; font-weight: 800; color: #0f172a; margin: 0 0 3px; }
         .qr-card-footer .meta { font-size: 9px; color: #64748b; margin: 0; }
 
-        /* تنسيقات الطباعة الإجبارية - A4 ولكل باركود صفحته المستقلة */
         @page {
             size: A4 portrait;
             margin: 0;
@@ -973,9 +1070,7 @@ QR_LABELS_TEMPLATE = """
     {% if not error %}
     <div class="pages-container">
         {% for lab in labs %}
-        <!-- ورقة A4 مستقلة لكل معمل -->
         <div class="a4-sheet">
-            <!-- اللوحة المربعة 15x15 سم -->
             <div class="qr-card-15cm">
                 <div class="qr-card-header">
                     <p class="dept-title">قسم الحاسب الآلي وتقنية المعلومات</p>
@@ -999,7 +1094,7 @@ QR_LABELS_TEMPLATE = """
 </html>
 """
 
-# --- نموذج البلاغ المباشر للمتدربين والمدربين ---
+# --- نموذج البلاغ الذكي (مع ميزة قفل الأجهزة المبلغ عنها لمنع التكرار) ---
 REPORT_TEMPLATE = """
 <!DOCTYPE html>
 <html dir="rtl" lang="ar">
@@ -1024,9 +1119,9 @@ REPORT_TEMPLATE = """
 <body>
     <main>
         <h1>بلاغ صيانة — معمل ({{ lab_num }})</h1>
-        <p>الباركود خاص بالمعمل كله. حدد رقم الجهاز أو منصة المدرب في البلاغ.</p>
+        <p>الباركود خاص بالمعمل كاملاً. حدد رقم الجهاز وسيتحقق النظام من حالته فوراً.</p>
         {% if success %}
-            <div class="notice">تم استلام البلاغ رقم #{{ success }} بنجاح.</div>
+            <div class="notice">تم استلام البلاغ رقم #{{ success }} بنجاح وسيتم توجيه الفني لموقع الجهاز فوراً.</div>
             <a class="button" href="{{ url_for('lab_report', lab_num=lab_num) }}">بلاغ جديد لنفس المعمل</a>
         {% else %}
             {% if error %}<div class="error">{{ error }}</div>{% endif %}
@@ -1034,8 +1129,18 @@ REPORT_TEMPLATE = """
                 <label for="seat">رقم الجهاز</label>
                 <select id="seat" name="seat_num" required>
                     <option value="" disabled {% if not values.get('seat_num') %}selected{% endif %}>اختر الجهاز</option>
-                    <option value="0" {% if values.get('seat_num') == '0' %}selected{% endif %}>منصة المدرب</option>
-                    {% for seat in seats %}<option value="{{ seat }}" {% if values.get('seat_num') == seat|string %}selected{% endif %}>جهاز {{ seat }}</option>{% endfor %}
+                    
+                    <!-- منصة المدرب مع الحماية الذكية -->
+                    <option value="0" {% if 0 in occupied_seats %}disabled style="color: #f87171; background-color: #1e1b4b;"{% endif %} {% if values.get('seat_num') == '0' %}selected{% endif %}>
+                        منصة المدرب {% if 0 in occupied_seats %}(تم الإبلاغ عنه مسبقاً - قيد الصيانة ⏳){% endif %}
+                    </option>
+
+                    <!-- أجهزة المتدربين مع قفل أي جهاز مسجل مسبقاً -->
+                    {% for seat in seats %}
+                    <option value="{{ seat }}" {% if seat in occupied_seats %}disabled style="color: #f87171; background-color: #1e1b4b;"{% endif %} {% if values.get('seat_num') == seat|string %}selected{% endif %}>
+                        جهاز {{ seat }} {% if seat in occupied_seats %}(تم الإبلاغ عنه مسبقاً - قيد الصيانة ⏳){% endif %}
+                    </option>
+                    {% endfor %}
                 </select>
                 <label for="reporter">اسم المبلّغ</label>
                 <input id="reporter" name="reporter_name" maxlength="80" required value="{{ values.get('reporter_name', '') }}">
@@ -1115,7 +1220,6 @@ def lab_qr(lab_num):
     if base_url is None:
         abort(400)
     target = base_url + url_for('lab_report', lab_num=lab_num)
-    # رفع دقة الـ QR إلى box_size=12 لطباعة واضحة جداً بمقاس 15x15 سم
     qr = qrcode.QRCode(error_correction=qrcode.constants.ERROR_CORRECT_M, box_size=12, border=4)
     qr.add_data(target)
     qr.make(fit=True)
@@ -1124,10 +1228,18 @@ def lab_qr(lab_num):
     output.seek(0)
     return send_file(output, mimetype='image/png', max_age=0)
 
+# مسار تقديم البلاغ مع خاصية منع التكرار الذكية
 @app.route('/lab/<int:lab_num>/report', methods=['GET', 'POST'])
 def lab_report(lab_num):
     if lab_num not in LAB_NUMBERS:
         abort(404)
+
+    # جلب الأجهزة التي عليها بلاغات مفتوحة أو قيد الإصلاح حالياً في هذا المعمل
+    conn = sqlite3.connect(os.path.join(BASE_DIR, 'maintenance.db'))
+    cursor = conn.cursor()
+    cursor.execute("SELECT seat_num FROM tickets WHERE lab_num = ? AND status != 'تم الحل'", (lab_num,))
+    occupied_seats = [row[0] for row in cursor.fetchall()]
+    conn.close()
 
     error = None
     values = request.form.to_dict(flat=True) if request.method == 'POST' else {}
@@ -1136,8 +1248,11 @@ def lab_report(lab_num):
         reporter = values.get('reporter_name', '').strip()
         category = values.get('issue_category', '')
         issue = values.get('issue', '').strip()
+        
         if not seat_raw.isdigit() or not 0 <= int(seat_raw) <= 27:
             error = 'اختر جهازًا صحيحًا أو منصة المدرب.'
+        elif int(seat_raw) in occupied_seats:
+            error = 'عذراً! هذا الجهاز مسجل عليه بلاغ نشط بالفعل وهو قيد متابعة فريق الصيانة حالياً.'
         elif not 1 <= len(reporter) <= 80:
             error = 'اكتب اسم المبلّغ (حتى 80 حرفًا).'
         elif category not in ISSUE_CATEGORIES:
@@ -1157,6 +1272,7 @@ def lab_report(lab_num):
     success = int(success_raw) if success_raw.isdigit() else None
     return render_template_string(
         REPORT_TEMPLATE, lab_num=lab_num, seats=range(1, 28),
+        occupied_seats=occupied_seats,
         categories=ISSUE_CATEGORIES, values=values, error=error, success=success
     )
 
