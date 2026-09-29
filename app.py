@@ -42,7 +42,7 @@ USERS = {
 LAB_NUMBERS = (1, 2, 3, 4, 5, 6, 7, 9, 10, 11, 12, 13, 14, 22, 23, 24, 26, 27)
 ISSUE_CATEGORIES = ('أجهزة', 'برامج', 'شبكة', 'أخرى')
 
-# --- صفحة تسجيل الدخول ---
+# --- صفحة تسجيل الدخول بالهوية الجديدة والتحسينات المتقدمة ---
 LOGIN_TEMPLATE = """
 <!DOCTYPE html>
 <html dir="rtl" lang="ar">
@@ -52,39 +52,141 @@ LOGIN_TEMPLATE = """
     <title>تسجيل الدخول | نظام صيانة حواسيب المعامل</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
-    <style>body { font-family: 'Tajawal', sans-serif; }</style>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Tajawal', sans-serif;
+            background-color: #040711;
+            background-image: 
+                radial-gradient(circle at 50% 30%, rgba(6, 182, 212, 0.16) 0%, transparent 65%),
+                radial-gradient(rgba(14, 165, 233, 0.08) 1px, transparent 1px),
+                linear-gradient(rgba(14, 165, 233, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(14, 165, 233, 0.03) 1px, transparent 1px);
+            background-size: 100% 100%, 24px 24px, 12px 12px, 12px 12px;
+        }
+        .glass-card {
+            background: rgba(13, 21, 41, 0.7);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(34, 211, 238, 0.28);
+            box-shadow: 0 0 50px rgba(6, 182, 212, 0.12), inset 0 0 20px rgba(34, 211, 238, 0.03);
+            transition: all 0.3s ease;
+        }
+        .glass-card:hover {
+            border-color: rgba(34, 211, 238, 0.45);
+        }
+    </style>
 </head>
-<body class="bg-slate-950 text-slate-200 min-h-screen flex items-center justify-center p-4">
-    <div class="max-w-md w-full bg-slate-900/80 border border-slate-800 rounded-3xl p-8 backdrop-blur shadow-2xl">
+<body class="min-h-screen text-slate-200 flex flex-col justify-between items-center p-4">
+    <div></div> <!-- مباعد علوي لتوسيط البطاقة -->
+
+    <div class="max-w-md w-full glass-card rounded-3xl p-7 md:p-8 relative">
+        <div class="absolute -top-3 -right-3 w-7 h-7 bg-cyan-500/20 rounded-full blur-md"></div>
+        
         <div class="text-center mb-6">
-            <div class="w-14 h-14 bg-cyan-500/20 border border-cyan-400/40 rounded-2xl flex items-center justify-center mx-auto text-cyan-400 text-2xl mb-3 shadow-lg shadow-cyan-500/10">
+            <div class="w-14 h-14 bg-gradient-to-tr from-cyan-600/30 to-blue-500/20 border border-cyan-400/50 rounded-2xl flex items-center justify-center mx-auto text-cyan-400 text-2xl mb-3 shadow-[0_0_25px_rgba(6,182,212,0.3)]">
                 <i class="fa-solid fa-microchip"></i>
             </div>
-            <h2 class="text-xl font-black text-white">نظام إدارة صيانة المعامل</h2>
-            <p class="text-xs text-cyan-400 mt-1">قسم الحاسب الآلي وتقنية المعلومات</p>
+            <h2 class="text-xl font-black text-white tracking-wide">نظام إدارة صيانة المعامل</h2>
+            <p class="text-xs text-cyan-400 font-semibold mt-1">قسم الحاسب الآلي وتقنية المعلومات</p>
         </div>
 
         {% if error %}
-        <div class="bg-red-950/50 border border-red-800/80 text-red-300 text-xs p-3 rounded-xl mb-4 text-center">
-            {{ error }}
+        <div class="bg-red-950/60 border border-red-800/80 text-red-300 text-xs p-3 rounded-xl mb-4 text-center flex items-center justify-center gap-2">
+            <i class="fa-solid fa-circle-exclamation text-red-400"></i>
+            <span>{{ error }}</span>
         </div>
         {% endif %}
 
-        <form method="POST" action="/login" class="space-y-4">
+        <form id="login-form" method="POST" action="/login" class="space-y-4" onsubmit="handleLoginSubmit()">
             <div>
-                <label class="block text-xs font-semibold text-slate-300 mb-1">اسم المستخدم</label>
-                <input type="text" name="username" required placeholder="admin" class="w-full bg-slate-950/80 border border-slate-700 focus:border-cyan-400 rounded-xl py-2.5 px-3 text-xs text-white focus:outline-none">
+                <label class="block text-xs font-semibold text-slate-300 mb-1.5">اسم المستخدم</label>
+                <div class="relative">
+                    <span class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-slate-500">
+                        <i class="fa-solid fa-user text-xs"></i>
+                    </span>
+                    <input type="text" id="username-input" name="username" required placeholder="admin" class="w-full bg-slate-950/90 border border-slate-700/80 focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400/40 rounded-xl py-2.5 pr-9 pl-3 text-xs text-white focus:outline-none transition">
+                </div>
             </div>
             <div>
-                <label class="block text-xs font-semibold text-slate-300 mb-1">كلمة المرور</label>
-                <input type="password" name="password" required placeholder="123" class="w-full bg-slate-950/80 border border-slate-700 focus:border-cyan-400 rounded-xl py-2.5 px-3 text-xs text-white focus:outline-none">
+                <label class="block text-xs font-semibold text-slate-300 mb-1.5">كلمة المرور</label>
+                <div class="relative">
+                    <span class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-slate-500">
+                        <i class="fa-solid fa-lock text-xs"></i>
+                    </span>
+                    <input type="password" id="password-input" name="password" required placeholder="••••••" class="w-full bg-slate-950/90 border border-slate-700/80 focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400/40 rounded-xl py-2.5 pr-9 pl-10 text-xs text-white focus:outline-none transition">
+                    <button type="button" onclick="togglePasswordVisibility()" class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400 hover:text-cyan-300 transition">
+                        <i id="eye-icon" class="fa-solid fa-eye text-xs"></i>
+                    </button>
+                </div>
             </div>
-            <button type="submit" class="w-full py-2.5 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-bold rounded-xl text-xs shadow-lg shadow-cyan-500/20 transition">
-                تسجيل الدخول
+
+            <button type="submit" id="submit-btn" class="w-full py-2.5 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-bold rounded-xl text-xs shadow-lg shadow-cyan-500/25 transition duration-200 flex items-center justify-center gap-2">
+                <span id="btn-text">تسجيل الدخول</span>
+                <i id="btn-spinner" class="fa-solid fa-circle-notch fa-spin hidden"></i>
             </button>
         </form>
+
+        <!-- أزرار التعبئة السريعة (Demo Fast-Fill) -->
+        <div class="mt-6 pt-4 border-t border-slate-800/80">
+            <p class="text-[11px] text-slate-400 text-center mb-2.5 flex items-center justify-center gap-1.5">
+                <i class="fa-solid fa-bolt text-amber-400 text-xs"></i> تجربة سريعة وتعبئة بنقرة واحدة:
+            </p>
+            <div class="grid grid-cols-3 gap-2">
+                <button type="button" onclick="fastFill('admin', '123')" class="bg-cyan-950/40 hover:bg-cyan-900/50 border border-cyan-800/50 hover:border-cyan-400/60 text-cyan-300 text-[10px] py-1.5 px-1 rounded-lg text-center transition font-semibold">
+                    مشرف الصيانة
+                </button>
+                <button type="button" onclick="fastFill('tech', '123')" class="bg-slate-950/50 hover:bg-slate-800/60 border border-slate-700/60 hover:border-slate-500 text-slate-300 text-[10px] py-1.5 px-1 rounded-lg text-center transition font-semibold">
+                    الدعم الفني
+                </button>
+                <button type="button" onclick="fastFill('trainer', '123')" class="bg-slate-950/50 hover:bg-slate-800/60 border border-slate-700/60 hover:border-slate-500 text-slate-300 text-[10px] py-1.5 px-1 rounded-lg text-center transition font-semibold">
+                    مدرب القسم
+                </button>
+            </div>
+        </div>
     </div>
+
+    <!-- شريط الاعتماد والحقوق السفلي -->
+    <footer class="my-4 text-center">
+        <div class="bg-slate-900/60 border border-slate-800/80 backdrop-blur-md px-5 py-2 rounded-full text-xs text-slate-400 inline-flex flex-wrap items-center justify-center gap-2 shadow-lg">
+            <span class="font-bold text-slate-200">قسم الحاسب الآلي وتقنية المعلومات</span>
+            <span class="text-cyan-500/60">•</span>
+            <span>إشراف: <span class="text-slate-300 font-semibold">أ. محمد الدوخي</span></span>
+            <span class="text-cyan-500/60">•</span>
+            <span>إعداد: <span class="text-cyan-400 font-semibold">ريان المحيطيب</span></span>
+        </div>
+    </footer>
+
+    <script>
+        function fastFill(user, pass) {
+            document.getElementById('username-input').value = user;
+            document.getElementById('password-input').value = pass;
+        }
+
+        function togglePasswordVisibility() {
+            const passInput = document.getElementById('password-input');
+            const eyeIcon = document.getElementById('eye-icon');
+            if (passInput.type === 'password') {
+                passInput.type = 'text';
+                eyeIcon.classList.remove('fa-eye');
+                eyeIcon.classList.add('fa-eye-slash');
+            } else {
+                passInput.type = 'password';
+                eyeIcon.classList.remove('fa-eye-slash');
+                eyeIcon.classList.add('fa-eye');
+            }
+        }
+
+        function handleLoginSubmit() {
+            const btn = document.getElementById('submit-btn');
+            const btnText = document.getElementById('btn-text');
+            const spinner = document.getElementById('btn-spinner');
+            
+            btnText.innerText = "جاري التحقق والدخول...";
+            spinner.classList.remove('hidden');
+            btn.classList.add('opacity-80', 'cursor-not-allowed');
+        }
+    </script>
 </body>
 </html>
 """
@@ -258,7 +360,6 @@ DASHBOARD_TEMPLATE = """
                     </div>
                 </div>
 
-                <!-- منصة المدرب -->
                 <div id="trainer-seat-box" onclick="checkTrainerSeat()" class="p-2 mb-3 bg-cyan-950/40 border border-cyan-800/50 rounded-xl text-center text-xs text-cyan-300 font-semibold flex items-center justify-center gap-2 cursor-pointer hover:border-cyan-400 transition">
                     <i class="fa-solid fa-chalkboard-user"></i> <span id="trainer-seat-text">منصة جهاز المدرب والشاشة الرئيسية</span>
                 </div>
@@ -287,7 +388,6 @@ DASHBOARD_TEMPLATE = """
             <div class="blueprint-container rounded-xl p-3 border border-cyan-950/80 overflow-x-auto flex justify-center">
                 <svg viewBox="0 0 850 960" class="w-full max-w-[750px] h-auto select-none" xmlns="http://www.w3.org/2000/svg">
                     
-                    <!-- جدار المبنى الخارجي والداخلي -->
                     <rect x="70" y="30" width="710" height="900" fill="none" stroke="#172554" stroke-width="3" rx="8" />
 
                     <!-- ================= 1. الضلع العلوي الخارجي ================= -->
