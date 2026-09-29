@@ -34,7 +34,7 @@ def init_db():
 init_db()
 
 USERS = {
-    "admin": {"password": "123", "role": "مشرف الصيانة التقنية", "name": "ريان المحيطيب"},
+    "admin": {"password": "123", "role": "مشرف الصيانة التقنية", "name": "محمد الدوخي"},
     "tech": {"password": "123", "role": "فني دعم المعامل", "name": "الدعم الفني"},
     "trainer": {"password": "123", "role": "مدرب قسم الحاسب", "name": "مدرب حاسب"}
 }
@@ -189,8 +189,8 @@ DASHBOARD_TEMPLATE = """
             </a>
             <div class="flex items-center gap-2 bg-slate-800/60 border border-slate-700/60 px-3.5 py-1.5 rounded-xl text-xs">
                 <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                <span class="font-bold text-slate-200">{{ session.get('name', 'ريان المحيطيب') }}</span>
-                <span class="text-cyan-400 text-[10px]">({{ session.get('role', 'مشرف') }})</span>
+                <span class="font-bold text-slate-200">{{ session.get('name', 'محمد الدوخي') }}</span>
+                <span class="text-cyan-400 text-[10px]">({{ session.get('role', 'مشرف الصيانة التقنية') }})</span>
             </div>
         </div>
         <div class="flex items-center gap-3">
@@ -398,7 +398,7 @@ DASHBOARD_TEMPLATE = """
                     <rect x="255" y="495" width="70" height="75" class="svg-room" /><text x="290" y="532" class="svg-facility-text">شؤون</text><text x="290" y="547" class="svg-facility-text">المتدربين</text>
                     <rect x="255" y="575" width="70" height="35" class="svg-room" /><text x="290" y="597" class="svg-facility-text" font-size="9">تهوية</text>
 
-                    <!-- قسم الحاسب (المعدل بدلاً من الفناء الأوسط) -->
+                    <!-- قسم الحاسب -->
                     <g>
                         <rect x="335" y="295" width="235" height="295" fill="rgba(8, 47, 73, 0.25)" stroke="#0e7490" stroke-dasharray="5 5" stroke-width="1.5" rx="8" />
                         <circle cx="355" cy="315" r="7" fill="#047857" stroke="#10b981" stroke-width="1.5" />
