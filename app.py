@@ -49,7 +49,7 @@ LOGIN_TEMPLATE = """
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>تسجيل الدخول | نظام صيانة حواسيب المعامل</title>
+    <title>تسجيل الدخول | نظام SMART LAB لصيانة حواسيب المعامل</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
@@ -73,7 +73,23 @@ LOGIN_TEMPLATE = """
             transition: all 0.3s ease;
         }
         .glass-card:hover { border-color: rgba(34, 211, 238, 0.45); }
-    </style>
+    
+        /* ===== SMART LAB PRO UI ===== */
+        :root { --cyan:#22d3ee; --blue:#3b82f6; --bg:#030712; }
+        * { scrollbar-width: thin; scrollbar-color: rgba(34,211,238,.35) rgba(15,23,42,.35); }
+        body::before {
+            content:""; position:fixed; inset:0; pointer-events:none; opacity:.55;
+            background: radial-gradient(circle at 12% 18%, rgba(59,130,246,.12), transparent 28%),
+                        radial-gradient(circle at 88% 78%, rgba(34,211,238,.10), transparent 30%);
+        }
+        .glass-card { position:relative; overflow:hidden; }
+        .glass-card::before { content:""; position:absolute; inset:-1px; border-radius:inherit; pointer-events:none;
+            background:linear-gradient(120deg,rgba(34,211,238,.18),transparent 34%,rgba(59,130,246,.12) 72%,transparent);
+            mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0); mask-composite:exclude; padding:1px; }
+        input { letter-spacing:.15px; }
+        input:focus { box-shadow:0 0 0 4px rgba(34,211,238,.08), 0 0 28px rgba(34,211,238,.09); }
+        button:hover { transform:translateY(-1px); }
+</style>
 </head>
 <body class="min-h-screen text-slate-200 flex flex-col justify-between items-center p-4">
     <div></div>
@@ -83,7 +99,7 @@ LOGIN_TEMPLATE = """
             <div class="w-14 h-14 bg-gradient-to-tr from-cyan-600/30 to-blue-500/20 border border-cyan-400/50 rounded-2xl flex items-center justify-center mx-auto text-cyan-400 text-2xl mb-3 shadow-[0_0_25px_rgba(6,182,212,0.3)]">
                 <i class="fa-solid fa-microchip"></i>
             </div>
-            <h2 class="text-xl font-black text-white tracking-wide">نظام إدارة صيانة المعامل</h2>
+            <h2 class="text-xl font-black text-white tracking-wide">نظام SMART LAB لإدارة صيانة المعامل</h2>
             <p class="text-xs text-cyan-400 font-semibold mt-1">قسم الحاسب الآلي وتقنية المعلومات</p>
         </div>
 
@@ -191,7 +207,7 @@ DASHBOARD_TEMPLATE = """
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>غرفة المراقبة والعمليات (NOC) | صيانة المعامل</title>
+    <title>مركز العمليات الذكي | Smart Lab</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
@@ -280,7 +296,32 @@ DASHBOARD_TEMPLATE = """
             padding: 10px 16px !important;
             margin-bottom: 12px !important;
         }
-    </style>
+    
+        /* ===== SMART LAB PRO COMMAND CENTER ===== */
+        :root { --accent:#22d3ee; --accent2:#3b82f6; }
+        * { scrollbar-width:thin; scrollbar-color:rgba(34,211,238,.28) rgba(2,6,23,.35); }
+        body { background:
+          radial-gradient(circle at 15% 0%, rgba(14,165,233,.10), transparent 28%),
+          radial-gradient(circle at 100% 55%, rgba(59,130,246,.08), transparent 24%), #020617 !important; }
+        body::before { content:""; position:fixed; inset:0; pointer-events:none; opacity:.22;
+          background-image:linear-gradient(rgba(34,211,238,.025) 1px, transparent 1px),linear-gradient(90deg,rgba(34,211,238,.025) 1px,transparent 1px); background-size:40px 40px; }
+        header, .bg-slate-900\/70, .bg-slate-900\/80 { box-shadow:0 18px 55px rgba(0,0,0,.22), inset 0 1px 0 rgba(255,255,255,.025); }
+        header { position:sticky; top:12px; z-index:30; border-color:rgba(51,65,85,.7)!important; }
+        header::after { content:"SMART LAB • COMMAND CENTER"; position:absolute; left:18px; bottom:-8px; font-size:8px; letter-spacing:2.5px; color:rgba(103,232,249,.32); pointer-events:none; }
+        .grid > div { transition:transform .22s ease, border-color .22s ease, box-shadow .22s ease; }
+        .grid > div:hover { transform:translateY(-2px); }
+        .bg-slate-900\/70:hover { border-color:rgba(34,211,238,.22)!important; box-shadow:0 16px 45px rgba(2,132,199,.08); }
+        .blueprint-container { position:relative; box-shadow:inset 0 0 80px rgba(2,132,199,.08),0 20px 55px rgba(0,0,0,.26); }
+        .blueprint-container::after { content:"LIVE FACILITY MAP"; position:absolute; top:10px; left:14px; font:700 8px/1 monospace; letter-spacing:2px; color:rgba(103,232,249,.45); pointer-events:none; }
+        .svg-lab { filter:drop-shadow(0 0 0 rgba(34,211,238,0)); }
+        .svg-lab:hover { transform-box:fill-box; transform-origin:center; }
+        .status-danger,.status-warning { filter:drop-shadow(0 0 15px rgba(239,68,68,.45)); }
+        table tbody tr { transition:background .18s ease; }
+        table tbody tr:hover { background:rgba(34,211,238,.035)!important; }
+        .text-2xl { text-shadow:0 0 22px rgba(34,211,238,.12); }
+        #quick-modal > div { box-shadow:0 25px 100px rgba(0,0,0,.55),0 0 0 1px rgba(34,211,238,.05); }
+        @media (max-width:900px){ header{position:relative;top:0;} }
+</style>
 </head>
 <body id="main-body" class="min-h-screen flex flex-col p-4 md:p-6 space-y-5">
 
@@ -295,7 +336,7 @@ DASHBOARD_TEMPLATE = """
                 <span class="text-cyan-400 text-[10px]">({{ session.get('role', 'مشرف الصيانة التقنية') }})</span>
             </div>
             <button onclick="toggleNocMode()" id="noc-toggle-btn" class="bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/40 text-cyan-300 text-xs px-3 py-1.5 rounded-xl flex items-center gap-2 transition font-bold shadow-sm">
-                <i class="fa-solid fa-tv"></i> <span id="noc-btn-label">شاشة المراقبة (NOC)</span>
+                <i class="fa-solid fa-tv"></i> <span id="noc-btn-label">مركز العمليات (NOC)</span>
             </button>
             <div id="noc-status-badge" class="hidden items-center gap-2 bg-emerald-950/50 border border-emerald-500/40 text-emerald-300 px-3 py-1.5 rounded-xl text-xs font-semibold">
                 <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
@@ -383,7 +424,7 @@ DASHBOARD_TEMPLATE = """
                     <span class="flex items-center gap-1 text-red-400"><span class="w-2.5 h-2.5 rounded-full bg-red-500 animate-ping"></span> عطل نشط</span>
                 </div>
                 <h2 class="font-bold text-sm text-white flex items-center gap-2">
-                    المخطط المعماري لجناح قسم الحاسب (رادار حي ومباشر) <i class="fa-solid fa-compass-drafting text-cyan-400"></i>
+                    الخريطة التشغيلية لجناح قسم الحاسب (مراقبة مباشرة) <i class="fa-solid fa-compass-drafting text-cyan-400"></i>
                 </h2>
             </div>
 
@@ -821,7 +862,7 @@ DASHBOARD_TEMPLATE = """
                 body.classList.add('noc-active');
                 badge.classList.remove('hidden');
                 badge.classList.add('flex');
-                btnLabel.innerText = "إنهاء وضع NOC";
+                btnLabel.innerText = "إنهاء مركز العمليات";
 
                 countdown = 30;
                 nocInterval = setInterval(() => {
@@ -836,7 +877,7 @@ DASHBOARD_TEMPLATE = """
                 body.classList.remove('noc-active');
                 badge.classList.add('hidden');
                 badge.classList.remove('flex');
-                btnLabel.innerText = "شاشة المراقبة (NOC)";
+                btnLabel.innerText = "مركز العمليات (NOC)";
                 clearInterval(nocInterval);
             }
         }
@@ -993,7 +1034,7 @@ REPORT_TEMPLATE = """
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>تقديم بلاغ صيانة | معمل ({{ lab_num }})</title>
+    <title>بلاغ صيانة ذكي | معمل ({{ lab_num }})</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
@@ -1016,7 +1057,16 @@ REPORT_TEMPLATE = """
             box-shadow: 0 0 50px rgba(6, 182, 212, 0.12), inset 0 0 20px rgba(34, 211, 238, 0.03);
             transition: all 0.3s ease;
         }
-    </style>
+    
+        /* ===== SMART LAB PRO REPORT UI ===== */
+        :root { --accent:#22d3ee; }
+        body::before { content:""; position:fixed; inset:0; pointer-events:none;
+          background:radial-gradient(circle at 20% 10%,rgba(59,130,246,.12),transparent 26%),radial-gradient(circle at 80% 88%,rgba(34,211,238,.10),transparent 28%); }
+        .report-glass-card { position:relative; overflow:hidden; box-shadow:0 30px 110px rgba(0,0,0,.45),inset 0 0 35px rgba(34,211,238,.025); }
+        .report-glass-card::after { content:"SMART LAB / INCIDENT REPORT"; position:absolute; top:17px; left:22px; font:700 8px/1 monospace; letter-spacing:2px; color:rgba(103,232,249,.34); }
+        input:focus,select:focus,textarea:focus { box-shadow:0 0 0 4px rgba(34,211,238,.07),0 0 24px rgba(34,211,238,.08); }
+        button[type=submit]:hover { transform:translateY(-1px); box-shadow:0 12px 30px rgba(6,182,212,.18); }
+</style>
 </head>
 <body class="min-h-screen text-slate-200 flex flex-col justify-between items-center p-4">
     <div></div>
