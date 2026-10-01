@@ -185,7 +185,7 @@ LOGIN_TEMPLATE = """
 </html>
 """
 
-# --- صفحة لوحة العمليات ومخطط الرادار التفاعلي مع تقارير المعامل المنفصلة ---
+# --- صفحة لوحة العمليات ومخطط الرادار التفاعلي ---
 DASHBOARD_TEMPLATE = """
 <!DOCTYPE html>
 <html dir="rtl" lang="ar">
@@ -350,7 +350,6 @@ DASHBOARD_TEMPLATE = """
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        <!-- لوحة الأجهزة للمعمل المحدد مع أزرار تقارير المعمل المنفصلة -->
         <div class="lg:col-span-4 bg-slate-900/70 border border-slate-800 rounded-2xl p-5 flex flex-col justify-between">
             <div>
                 <div class="flex justify-between items-center mb-3">
@@ -366,7 +365,6 @@ DASHBOARD_TEMPLATE = """
                     </div>
                 </div>
 
-                <!-- أزرار استخراج وطباعة تقرير هذا المعمل المحدد -->
                 <div class="grid grid-cols-2 gap-2 mb-3">
                     <a id="lab-export-btn" href="{{ url_for('export_csv', lab_num=1) }}" class="bg-emerald-950/50 hover:bg-emerald-900/60 border border-emerald-500/40 text-emerald-300 text-[11px] py-1.5 px-2 rounded-xl text-center font-bold transition flex items-center justify-center gap-1.5 shadow-sm">
                         <i class="fa-solid fa-file-excel"></i> <span id="lab-export-text">إكسل معمل (1)</span>
@@ -395,7 +393,7 @@ DASHBOARD_TEMPLATE = """
                     <span class="flex items-center gap-1 text-red-400"><span class="w-2.5 h-2.5 rounded-full bg-red-500 animate-ping"></span> عطل نشط</span>
                 </div>
                 <h2 class="font-bold text-sm text-white flex items-center gap-2">
-                    المخطط المعماري لجناح قسم الحاسب (رادار حي ومباشر) <i class="fa-solid fa-compass-drafting text-cyan-400"></i>
+                    المخطط المعماري لجناح قسم الحاسب <i class="fa-solid fa-compass-drafting text-cyan-400"></i>
                 </h2>
             </div>
 
@@ -755,7 +753,7 @@ DASHBOARD_TEMPLATE = """
         function switchLab(num) {
             document.getElementById('active-lab-title').innerText = `توزيع أجهزة معمل (${num})`;
             
-            // تحديث روابط وأزرار التقرير المخصص للمعمل المختار
+            // تحديث روابط التقرير لهذا المعمل
             document.getElementById('lab-export-btn').href = `/export_csv/${num}`;
             document.getElementById('lab-export-text').innerText = `إكسل معمل (${num})`;
             document.getElementById('lab-sheet-btn').href = `/lab/${num}/report-sheet`;
@@ -865,146 +863,6 @@ DASHBOARD_TEMPLATE = """
             renderSeatsGrid(1);
         });
     </script>
-</body>
-</html>
-"""
-
-# --- صفحة التقرير الرسمي المطبوع A4 لكل معمل منفصل ---
-LAB_REPORT_SHEET_TEMPLATE = """
-<!DOCTYPE html>
-<html dir="rtl" lang="ar">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>تقرير الصيانة الرسمي | معمل ({{ lab_num }})</title>
-    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
-    <style>
-        * { box-sizing: border-box; }
-        body { font-family: 'Tajawal', Tahoma, Arial, sans-serif; margin: 0; padding: 25px; color: #0f172a; background: #f8fafc; }
-        .sheet { max-width: 900px; margin: 0 auto; background: white; padding: 35px; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.06); }
-        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #0284c7; padding-bottom: 15px; margin-bottom: 25px; }
-        .header h1 { margin: 0; font-size: 22px; color: #0369a1; }
-        .header p { margin: 4px 0 0; font-size: 13px; color: #64748b; }
-        .meta-box { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 25px; }
-        .card { background: #f0fdf4; border: 1px solid #bbf7d0; padding: 14px; border-radius: 12px; text-align: center; }
-        .card.warning { background: #fffbeb; border-color: #fde68a; }
-        .card.danger { background: #fef2f2; border-color: #fecaca; }
-        .card.info { background: #f0f9ff; border-color: #bae6fd; }
-        .card span { font-size: 11px; color: #475569; display: block; margin-bottom: 4px; }
-        .card strong { font-size: 20px; font-weight: 900; }
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 12px; }
-        th, td { border: 1px solid #e2e8f0; padding: 10px; text-align: right; }
-        th { background: #0f172a; color: white; font-weight: 700; }
-        tr:nth-child(even) { background: #f8fafc; }
-        .badge { padding: 3px 8px; border-radius: 6px; font-weight: bold; font-size: 11px; }
-        .badge-danger { background: #fee2e2; color: #991b1b; }
-        .badge-warning { background: #fef3c7; color: #92400e; }
-        .badge-success { background: #dcfce7; color: #166534; }
-        .signatures { display: flex; justify-content: space-between; margin-top: 50px; padding-top: 20px; border-top: 1px dashed #cbd5e1; }
-        .sign-block { text-align: center; width: 220px; }
-        .sign-block p { margin: 0 0 45px; font-size: 13px; font-weight: bold; }
-        .sign-line { border-bottom: 1.5px dotted #64748b; }
-        .print-btn { display: inline-block; background: #0284c7; color: white; padding: 10px 20px; border-radius: 8px; font-weight: bold; text-decoration: none; cursor: pointer; border: 0; margin-bottom: 20px; }
-        @media print {
-            body { background: white; padding: 0; }
-            .sheet { box-shadow: none; padding: 0; max-width: 100%; }
-            .print-btn { display: none; }
-        }
-    </style>
-</head>
-<body>
-    <div style="max-width: 900px; margin: 0 auto; text-align: left;">
-        <button onclick="window.print()" class="print-btn">🖨️️ طباعة التقرير الرسمي (A4)</button>
-    </div>
-
-    <div class="sheet">
-        <div class="header">
-            <div>
-                <h1>المعهد الصناعي الثانوي الأول بالأحساء</h1>
-                <p>قسم الحاسب الآلي وتقنية المعلومات • تقرير الحالة التشغيلية والصيانة</p>
-            </div>
-            <div style="text-align: left;">
-                <h2 style="margin: 0; color: #0284c7; font-size: 24px;">معمل ({{ lab_num }})</h2>
-                <p>تاريخ الاستخراج: {{ report_date }}</p>
-            </div>
-        </div>
-
-        <div class="meta-box">
-            <div class="card info">
-                <span>إجمالي محطات المعمل</span>
-                <strong>28 جهاز</strong>
-            </div>
-            <div class="card">
-                <span>الجاهزية التشغيلية</span>
-                <strong style="color: #16a34a;">{{ op_rate }}%</strong>
-            </div>
-            <div class="card danger">
-                <span>أعطال بانتظار الإصلاح</span>
-                <strong style="color: #dc2626;">{{ active_count }}</strong>
-            </div>
-            <div class="card warning">
-                <span>أعطال قيد الإصلاح</span>
-                <strong style="color: #d97706;">{{ pending_count }}</strong>
-            </div>
-        </div>
-
-        <h3 style="font-size: 15px; margin: 20px 0 10px; color: #0f172a;">سجل بلاغات الصيانة لجميع أجهزة معمل ({{ lab_num }}):</h3>
-        <table>
-            <thead>
-                <tr>
-                    <th style="width: 70px;">رقم التذكرة</th>
-                    <th style="width: 110px;">الجهاز</th>
-                    <th style="width: 120px;">المُبلّغ</th>
-                    <th style="width: 90px;">نوع العطل</th>
-                    <th>وصف المشكلة</th>
-                    <th style="width: 120px;">القطع المستبدلة</th>
-                    <th style="width: 80px;">الحالة</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for t in tickets %}
-                <tr>
-                    <td style="font-family: monospace; font-weight: bold;">#{{ t[0] }}</td>
-                    <td style="font-weight: bold;">{% if t[2] == 0 %}منصة المدرب{% else %}جهاز {{ t[2] }}{% endif %}</td>
-                    <td>{{ t[3] }}</td>
-                    <td>{{ t[4] }}</td>
-                    <td>{{ t[5] }}</td>
-                    <td style="color: #d97706; font-weight: bold;">{{ t[7] }}</td>
-                    <td>
-                        {% if t[6] == 'مفتوح' %}
-                        <span class="badge badge-danger">مفتوح</span>
-                        {% elif t[6] == 'قيد الإصلاح' %}
-                        <span class="badge badge-warning">قيد الإصلاح</span>
-                        {% else %}
-                        <span class="badge badge-success">تم الحل</span>
-                        {% endif %}
-                    </td>
-                </tr>
-                {% else %}
-                <tr>
-                    <td colspan="7" style="text-align: center; padding: 25px; color: #64748b;">
-                        لا توجد أي بلاغات صيانة مسجلة لمعمل ({{ lab_num }}). جميع الحواسيب تعمل بكفاءة تشغيلية 100%.
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-
-        <div class="signatures">
-            <div class="sign-block">
-                <p>فني دعم المعامل</p>
-                <div class="sign-line"></div>
-            </div>
-            <div class="sign-block">
-                <p>مشرف الصيانة التقنية<br><span style="font-size: 12px; color: #64748b;">أ. محمد الدوخي</span></p>
-                <div class="sign-line"></div>
-            </div>
-            <div class="sign-block">
-                <p>إعداد المنظومة التقنية<br><span style="font-size: 12px; color: #0284c7;">ريان المحيطيب</span></p>
-                <div class="sign-line"></div>
-            </div>
-        </div>
-    </div>
 </body>
 </html>
 """
@@ -1476,7 +1334,7 @@ def update_status(ticket_id):
     conn.close()
     return redirect(url_for('dashboard'))
 
-# مسار تصدير تقرير Excel (العام أو لكل معمل منفصل)
+# تصدير تقرير إكسل (للمعمل المختار أو لجميع المعامل)
 @app.route('/export_csv')
 @app.route('/export_csv/<int:lab_num>')
 def export_csv(lab_num=None):
@@ -1511,7 +1369,7 @@ def export_csv(lab_num=None):
         headers={"Content-Disposition": f"attachment;filename={download_name}"}
     )
 
-# مسار التقرير الرسمي المطبوع A4 لكل معمل منفصل
+# صفحة التقرير الرسمي A4 لكل معمل
 @app.route('/lab/<int:lab_num>/report-sheet')
 def lab_report_sheet(lab_num):
     if 'user' not in session:
@@ -1525,11 +1383,10 @@ def lab_report_sheet(lab_num):
     tickets = cursor.fetchall()
     conn.close()
 
-    total_seats = 28  # 27 جهاز متدرب + جهاز المدرب
+    total_seats = 28
     active_count = sum(1 for t in tickets if t[6] == 'مفتوح')
     pending_count = sum(1 for t in tickets if t[6] == 'قيد الإصلاح')
     
-    # حساب نسبة جاهزية هذا المعمل بالتحديد
     unusable_devices = active_count + pending_count
     op_rate = round(max(0, (total_seats - unusable_devices) / total_seats) * 100, 1)
 
