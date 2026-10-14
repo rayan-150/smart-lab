@@ -36,13 +36,13 @@ init_db()
 USERS = {
     "admin": {"password": "123", "role": "مشرف الصيانة التقنية", "name": "محمد الدوخي"},
     "tech": {"password": "123", "role": "فني دعم المعامل", "name": "الدعم الفني"},
-    "trainer": {"password": "123", "role": "مدرب قسم الحاسب", "name": "مدرب حاسب"}
+    "trainer": {"password": "123", "role": "رئيس قسم الحاسب", "name": "رئيس القسم"}
 }
 
 LAB_NUMBERS = (1, 2, 3, 4, 5, 6, 7, 9, 10, 11, 12, 13, 14, 22, 23, 24, 26, 27)
 ISSUE_CATEGORIES = ('أجهزة', 'برامج', 'شبكة', 'أخرى')
 
-# --- صفحة تسجيل الدخول (اسم المستخدم مخفي افتراضياً) ---
+# --- صفحة تسجيل الدخول (اسم المستخدم مخفي افتراضياً + زر رئيس القسم) ---
 LOGIN_TEMPLATE = """
 <!DOCTYPE html>
 <html dir="rtl" lang="ar">
@@ -101,7 +101,6 @@ LOGIN_TEMPLATE = """
                     <span class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-slate-500">
                         <i class="fa-solid fa-user text-xs"></i>
                     </span>
-                    <!-- حقل اسم المستخدم أصبح password ليكون مخفياً بشكل افتراضي -->
                     <input type="password" id="username-input" name="username" required placeholder="••••••" class="w-full bg-slate-950/90 border border-slate-700/80 focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400/40 rounded-xl py-2.5 pr-9 pl-10 text-xs text-white focus:outline-none transition">
                     <button type="button" onclick="toggleUsernameVisibility()" class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400 hover:text-cyan-300 transition" title="إظهار / إخفاء اسم المستخدم">
                         <i id="user-eye-icon" class="fa-solid fa-eye text-xs"></i>
@@ -139,7 +138,7 @@ LOGIN_TEMPLATE = """
                     الدعم الفني
                 </button>
                 <button type="button" onclick="fastFill('trainer', '123')" class="bg-slate-950/50 hover:bg-slate-800/60 border border-slate-700/60 hover:border-slate-500 text-slate-300 text-[10px] py-1.5 px-1 rounded-lg text-center transition font-semibold">
-                    مدرب القسم
+                    رئيس القسم
                 </button>
             </div>
         </div>
@@ -161,7 +160,6 @@ LOGIN_TEMPLATE = """
             document.getElementById('password-input').value = pass;
         }
 
-        // إظهار / إخفاء اسم المستخدم
         function toggleUsernameVisibility() {
             const userInput = document.getElementById('username-input');
             const eyeIcon = document.getElementById('user-eye-icon');
@@ -176,7 +174,6 @@ LOGIN_TEMPLATE = """
             }
         }
 
-        // إظهار / إخفاء كلمة المرور
         function togglePasswordVisibility() {
             const passInput = document.getElementById('password-input');
             const eyeIcon = document.getElementById('pass-eye-icon');
@@ -309,7 +306,7 @@ DASHBOARD_TEMPLATE = """
             <a href="/logout" class="bg-red-950/40 hover:bg-red-900/60 border border-red-800/60 text-red-400 px-3 py-1.5 rounded-xl text-xs flex items-center gap-1.5 transition">
                 <i class="fa-solid fa-power-off"></i> خروج
             </a>
-            <div class="flex items-center gap-2 bg-slate-800/60 border border-slate-700/60 px-3.5 py-1.5 rounded-xl text-xs">
+            <div class="flex items-center gap-2 bg-slate-800/60 border border-slate-700/60 px-3 py-1.5 rounded-xl text-xs">
                 <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
                 <span class="font-bold text-slate-200">{{ session.get('name', 'محمد الدوخي') }}</span>
                 <span class="text-cyan-400 text-[10px]">({{ session.get('role', 'مشرف الصيانة التقنية') }})</span>
