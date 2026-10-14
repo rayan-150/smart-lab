@@ -4,7 +4,6 @@ import csv
 from io import BytesIO, StringIO
 from urllib.parse import urlsplit
 from collections import Counter
-from datetime import datetime
 
 import qrcode
 from flask import Flask, abort, render_template_string, request, redirect, send_file, url_for, session, Response
@@ -43,7 +42,7 @@ USERS = {
 LAB_NUMBERS = (1, 2, 3, 4, 5, 6, 7, 9, 10, 11, 12, 13, 14, 22, 23, 24, 26, 27)
 ISSUE_CATEGORIES = ('أجهزة', 'برامج', 'شبكة', 'أخرى')
 
-# --- صفحة تسجيل الدخول بالهوية المتقدمة ---
+# --- صفحة تسجيل الدخول مع خيار إخفاء اسم المستخدم وكلمة المرور ---
 LOGIN_TEMPLATE = """
 <!DOCTYPE html>
 <html dir="rtl" lang="ar">
@@ -102,7 +101,10 @@ LOGIN_TEMPLATE = """
                     <span class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-slate-500">
                         <i class="fa-solid fa-user text-xs"></i>
                     </span>
-                    <input type="text" id="username-input" name="username" required placeholder="admin" class="w-full bg-slate-950/90 border border-slate-700/80 focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400/40 rounded-xl py-2.5 pr-9 pl-3 text-xs text-white focus:outline-none transition">
+                    <input type="text" id="username-input" name="username" required placeholder="admin" class="w-full bg-slate-950/90 border border-slate-700/80 focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400/40 rounded-xl py-2.5 pr-9 pl-10 text-xs text-white focus:outline-none transition">
+                    <button type="button" onclick="toggleUsernameVisibility()" class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400 hover:text-cyan-300 transition" title="إظهار / إخفاء اسم المستخدم">
+                        <i id="user-eye-icon" class="fa-solid fa-eye text-xs"></i>
+                    </button>
                 </div>
             </div>
             <div>
@@ -112,8 +114,8 @@ LOGIN_TEMPLATE = """
                         <i class="fa-solid fa-lock text-xs"></i>
                     </span>
                     <input type="password" id="password-input" name="password" required placeholder="••••••" class="w-full bg-slate-950/90 border border-slate-700/80 focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400/40 rounded-xl py-2.5 pr-9 pl-10 text-xs text-white focus:outline-none transition">
-                    <button type="button" onclick="togglePasswordVisibility()" class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400 hover:text-cyan-300 transition">
-                        <i id="eye-icon" class="fa-solid fa-eye text-xs"></i>
+                    <button type="button" onclick="togglePasswordVisibility()" class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400 hover:text-cyan-300 transition" title="إظهار / إخفاء كلمة المرور">
+                        <i id="pass-eye-icon" class="fa-solid fa-eye text-xs"></i>
                     </button>
                 </div>
             </div>
@@ -158,9 +160,25 @@ LOGIN_TEMPLATE = """
             document.getElementById('password-input').value = pass;
         }
 
+        // إخفاء / إظهار اسم المستخدم
+        function toggleUsernameVisibility() {
+            const userInput = document.getElementById('username-input');
+            const eyeIcon = document.getElementById('user-eye-icon');
+            if (userInput.type === 'text') {
+                userInput.type = 'password';
+                eyeIcon.classList.remove('fa-eye');
+                eyeIcon.classList.add('fa-eye-slash');
+            } else {
+                userInput.type = 'text';
+                eyeIcon.classList.remove('fa-eye-slash');
+                eyeIcon.classList.add('fa-eye');
+            }
+        }
+
+        // إخفاء / إظهار كلمة المرور
         function togglePasswordVisibility() {
             const passInput = document.getElementById('password-input');
-            const eyeIcon = document.getElementById('eye-icon');
+            const eyeIcon = document.getElementById('pass-eye-icon');
             if (passInput.type === 'password') {
                 passInput.type = 'text';
                 eyeIcon.classList.remove('fa-eye');
@@ -290,7 +308,7 @@ DASHBOARD_TEMPLATE = """
             <a href="/logout" class="bg-red-950/40 hover:bg-red-900/60 border border-red-800/60 text-red-400 px-3 py-1.5 rounded-xl text-xs flex items-center gap-1.5 transition">
                 <i class="fa-solid fa-power-off"></i> خروج
             </a>
-            <div class="flex items-center gap-2 bg-slate-800/60 border border-slate-700/60 px-3 py-1.5 rounded-xl text-xs">
+            <div class="flex items-center gap-2 bg-slate-800/60 border border-slate-700/60 px-3.5 py-1.5 rounded-xl text-xs">
                 <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
                 <span class="font-bold text-slate-200">{{ session.get('name', 'محمد الدوخي') }}</span>
                 <span class="text-cyan-400 text-[10px]">({{ session.get('role', 'مشرف الصيانة التقنية') }})</span>
@@ -306,7 +324,7 @@ DASHBOARD_TEMPLATE = """
 
         <div class="flex items-center gap-3">
             <a href="{{ url_for('export_csv') }}" class="bg-emerald-600/20 hover:bg-emerald-600/30 border border-emerald-500/40 text-emerald-300 text-xs px-3 py-1.5 rounded-xl flex items-center gap-2 transition font-bold">
-                <i class="fa-solid fa-file-excel"></i> تصدير التقرير العام لكل المعامل
+                <i class="fa-solid fa-file-excel"></i> تصدير تقرير الصيانة (Excel)
             </a>
             <div class="text-left">
                 <h1 class="font-black text-base text-white">النظام الذكي لإدارة ومتابعة صيانة حواسيب المعامل</h1>
@@ -352,12 +370,12 @@ DASHBOARD_TEMPLATE = """
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
         <div class="lg:col-span-4 bg-slate-900/70 border border-slate-800 rounded-2xl p-5 flex flex-col justify-between">
             <div>
-                <div class="flex justify-between items-center mb-3">
-                    <a href="{{ url_for('qr_labels') }}" class="bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 text-cyan-300 text-xs px-2.5 py-1.5 rounded-lg flex items-center gap-1 transition">
-                        <i class="fa-solid fa-print"></i> ملصقات QR
+                <div class="flex justify-between items-center mb-4">
+                    <a href="{{ url_for('qr_labels') }}" class="bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 text-cyan-300 text-xs px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition">
+                        <i class="fa-solid fa-print"></i> طباعة QR المعامل (A4)
                     </a>
                     <div class="text-right">
-                        <h2 class="font-bold text-sm text-white flex items-center gap-1.5">
+                        <h2 class="font-bold text-sm text-white flex items-center gap-2">
                             <span id="active-lab-title">توزيع أجهزة معمل (1)</span>
                             <i class="fa-solid fa-network-wired text-cyan-400"></i>
                         </h2>
@@ -365,21 +383,12 @@ DASHBOARD_TEMPLATE = """
                     </div>
                 </div>
 
-                <div class="grid grid-cols-2 gap-2 mb-3">
-                    <a id="lab-export-btn" href="{{ url_for('export_csv', lab_num=1) }}" class="bg-emerald-950/50 hover:bg-emerald-900/60 border border-emerald-500/40 text-emerald-300 text-[11px] py-1.5 px-2 rounded-xl text-center font-bold transition flex items-center justify-center gap-1.5 shadow-sm">
-                        <i class="fa-solid fa-file-excel"></i> <span id="lab-export-text">إكسل معمل (1)</span>
-                    </a>
-                    <a id="lab-sheet-btn" href="{{ url_for('lab_report_sheet', lab_num=1) }}" target="_blank" class="bg-cyan-950/50 hover:bg-cyan-900/60 border border-cyan-500/40 text-cyan-300 text-[11px] py-1.5 px-2 rounded-xl text-center font-bold transition flex items-center justify-center gap-1.5 shadow-sm">
-                        <i class="fa-solid fa-file-invoice"></i> <span id="lab-sheet-text">تقرير معمل (1) A4</span>
-                    </a>
-                </div>
-
                 <div id="trainer-seat-box" onclick="inspectDevice(currentLabId, 0)" class="p-2 mb-3 bg-cyan-950/40 border border-cyan-800/50 rounded-xl text-center text-xs text-cyan-300 font-semibold flex items-center justify-center gap-2 cursor-pointer hover:border-cyan-400 transition">
                     <i class="fa-solid fa-chalkboard-user"></i> <span id="trainer-seat-text">منصة جهاز المدرب والشاشة الرئيسية</span>
                 </div>
 
                 <div class="grid grid-cols-3 gap-2" id="seats-container"></div>
-                <a id="lab-report-link" href="{{ url_for('lab_report', lab_num=1) }}" target="_blank" class="mt-4 block rounded-xl border border-cyan-500/30 bg-cyan-500/10 p-2.5 text-center text-xs font-bold text-cyan-300 hover:bg-cyan-500/20 transition">
+                <a id="lab-report-link" href="{{ url_for('lab_report', lab_num=1) }}" target="_blank" class="mt-4 block rounded-xl border border-cyan-500/30 bg-cyan-500/10 p-3 text-center text-xs font-bold text-cyan-300 hover:bg-cyan-500/20 transition">
                     <i class="fa-solid fa-qrcode ml-1"></i> فتح نموذج البلاغ المباشر لمعمل (1)
                 </a>
             </div>
@@ -393,7 +402,7 @@ DASHBOARD_TEMPLATE = """
                     <span class="flex items-center gap-1 text-red-400"><span class="w-2.5 h-2.5 rounded-full bg-red-500 animate-ping"></span> عطل نشط</span>
                 </div>
                 <h2 class="font-bold text-sm text-white flex items-center gap-2">
-                    المخطط المعماري لجناح قسم الحاسب <i class="fa-solid fa-compass-drafting text-cyan-400"></i>
+                    المخطط المعماري لجناح قسم الحاسب (رادار حي ومباشر) <i class="fa-solid fa-compass-drafting text-cyan-400"></i>
                 </h2>
             </div>
 
@@ -752,13 +761,6 @@ DASHBOARD_TEMPLATE = """
 
         function switchLab(num) {
             document.getElementById('active-lab-title').innerText = `توزيع أجهزة معمل (${num})`;
-            
-            // تحديث روابط التقرير لهذا المعمل
-            document.getElementById('lab-export-btn').href = `/export_csv/${num}`;
-            document.getElementById('lab-export-text').innerText = `إكسل معمل (${num})`;
-            document.getElementById('lab-sheet-btn').href = `/lab/${num}/report-sheet`;
-            document.getElementById('lab-sheet-text').innerText = `تقرير معمل (${num}) A4`;
-
             const reportLink = document.getElementById('lab-report-link');
             reportLink.href = `/lab/${num}/report`;
             reportLink.textContent = `بلاغ جديد في معمل (${num}) — نفس الرابط الموجود في QR المعمل`;
@@ -1334,24 +1336,13 @@ def update_status(ticket_id):
     conn.close()
     return redirect(url_for('dashboard'))
 
-# تصدير تقرير إكسل (للمعمل المختار أو لجميع المعامل)
 @app.route('/export_csv')
-@app.route('/export_csv/<int:lab_num>')
-def export_csv(lab_num=None):
+def export_csv():
     if 'user' not in session:
         return redirect(url_for('login'))
-    
-    selected_lab = request.args.get('lab', type=int) or lab_num
     conn = sqlite3.connect(os.path.join(BASE_DIR, 'maintenance.db'))
     cursor = conn.cursor()
-    
-    if selected_lab:
-        cursor.execute('SELECT id, lab_num, seat_num, reporter_name, issue_category, issue, status, replaced_parts, created_at FROM tickets WHERE lab_num = ? ORDER BY id DESC', (selected_lab,))
-        download_name = f"maintenance_report_lab_{selected_lab}.csv"
-    else:
-        cursor.execute('SELECT id, lab_num, seat_num, reporter_name, issue_category, issue, status, replaced_parts, created_at FROM tickets ORDER BY id DESC')
-        download_name = "smart_lab_maintenance_report_all.csv"
-        
+    cursor.execute('SELECT id, lab_num, seat_num, reporter_name, issue_category, issue, status, replaced_parts, created_at FROM tickets ORDER BY id DESC')
     tickets = cursor.fetchall()
     conn.close()
 
@@ -1366,40 +1357,7 @@ def export_csv(lab_num=None):
     return Response(
         output,
         mimetype="text/csv",
-        headers={"Content-Disposition": f"attachment;filename={download_name}"}
-    )
-
-# صفحة التقرير الرسمي A4 لكل معمل
-@app.route('/lab/<int:lab_num>/report-sheet')
-def lab_report_sheet(lab_num):
-    if 'user' not in session:
-        return redirect(url_for('login'))
-    if lab_num not in LAB_NUMBERS:
-        abort(404)
-
-    conn = sqlite3.connect(os.path.join(BASE_DIR, 'maintenance.db'))
-    cursor = conn.cursor()
-    cursor.execute('SELECT id, lab_num, seat_num, reporter_name, issue_category, issue, status, replaced_parts, created_at FROM tickets WHERE lab_num = ? ORDER BY id DESC', (lab_num,))
-    tickets = cursor.fetchall()
-    conn.close()
-
-    total_seats = 28
-    active_count = sum(1 for t in tickets if t[6] == 'مفتوح')
-    pending_count = sum(1 for t in tickets if t[6] == 'قيد الإصلاح')
-    
-    unusable_devices = active_count + pending_count
-    op_rate = round(max(0, (total_seats - unusable_devices) / total_seats) * 100, 1)
-
-    now_str = datetime.now().strftime('%Y-%m-%d %I:%M %p')
-
-    return render_template_string(
-        LAB_REPORT_SHEET_TEMPLATE,
-        lab_num=lab_num,
-        tickets=tickets,
-        op_rate=op_rate,
-        active_count=active_count,
-        pending_count=pending_count,
-        report_date=now_str
+        headers={"Content-Disposition": "attachment;filename=smart_lab_maintenance_report.csv"}
     )
 
 if __name__ == '__main__':
