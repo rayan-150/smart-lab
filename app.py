@@ -12,6 +12,9 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 app = Flask(__name__)
 app.secret_key = "smart_lab_secret_key_2026_super_safe"
 
+# رابط شعار المؤسسة العامة للتدريب التقني والمهني الرسمي
+TVTC_LOGO_URL = "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c2/TVTC_Logo.svg/512px-TVTC_Logo.svg.png"
+
 def init_db():
     conn = sqlite3.connect(os.path.join(BASE_DIR, 'maintenance.db'))
     cursor = conn.cursor()
@@ -42,7 +45,7 @@ USERS = {
 LAB_NUMBERS = (1, 2, 3, 4, 5, 6, 7, 9, 10, 11, 12, 13, 14, 22, 23, 24, 26, 27)
 ISSUE_CATEGORIES = ('أجهزة', 'برامج', 'شبكة', 'أخرى')
 
-# --- صفحة تسجيل الدخول (اسم المستخدم مخفي افتراضياً + زر رئيس القسم) ---
+# --- صفحة تسجيل الدخول بشعار TVTC وإخفاء اسم المستخدم افتراضياً ---
 LOGIN_TEMPLATE = """
 <!DOCTYPE html>
 <html dir="rtl" lang="ar">
@@ -80,11 +83,13 @@ LOGIN_TEMPLATE = """
 
     <div class="max-w-md w-full glass-card rounded-3xl p-7 md:p-8 relative">
         <div class="text-center mb-6">
-            <div class="w-14 h-14 bg-gradient-to-tr from-cyan-600/30 to-blue-500/20 border border-cyan-400/50 rounded-2xl flex items-center justify-center mx-auto text-cyan-400 text-2xl mb-3 shadow-[0_0_25px_rgba(6,182,212,0.3)]">
-                <i class="fa-solid fa-microchip"></i>
+            <div class="flex justify-center items-center mb-3">
+                <div class="p-2.5 rounded-2xl bg-white/95 border border-cyan-400/40 shadow-[0_0_25px_rgba(6,182,212,0.3)]">
+                    <img src="{{ logo_url }}" alt="شعار المؤسسة العامة للتدريب التقني والمهني" class="h-14 w-auto object-contain">
+                </div>
             </div>
             <h2 class="text-xl font-black text-white tracking-wide">نظام إدارة صيانة المعامل</h2>
-            <p class="text-xs text-cyan-400 font-semibold mt-1">قسم الحاسب الآلي وتقنية المعلومات</p>
+            <p class="text-xs text-cyan-400 font-semibold mt-1">المؤسسة العامة للتدريب التقني والمهني • قسم الحاسب</p>
         </div>
 
         {% if error %}
@@ -146,7 +151,7 @@ LOGIN_TEMPLATE = """
 
     <footer class="my-4 text-center">
         <div class="bg-slate-900/60 border border-slate-800/80 backdrop-blur-md px-5 py-2 rounded-full text-xs text-slate-400 inline-flex flex-wrap items-center justify-center gap-2 shadow-lg">
-            <span class="font-bold text-slate-200">قسم الحاسب الآلي وتقنية المعلومات</span>
+            <span class="font-bold text-slate-200">المؤسسة العامة للتدريب التقني والمهني</span>
             <span class="text-cyan-500/60">•</span>
             <span>إشراف: <span class="text-slate-300 font-semibold">أ. محمد الدوخي</span></span>
             <span class="text-cyan-500/60">•</span>
@@ -201,7 +206,7 @@ LOGIN_TEMPLATE = """
 </html>
 """
 
-# --- صفحة لوحة العمليات ومخطط الرادار التفاعلي ---
+# --- لوحة العمليات ومخطط الرادار المعماري بشعار TVTC ---
 DASHBOARD_TEMPLATE = """
 <!DOCTYPE html>
 <html dir="rtl" lang="ar">
@@ -306,7 +311,7 @@ DASHBOARD_TEMPLATE = """
             <a href="/logout" class="bg-red-950/40 hover:bg-red-900/60 border border-red-800/60 text-red-400 px-3 py-1.5 rounded-xl text-xs flex items-center gap-1.5 transition">
                 <i class="fa-solid fa-power-off"></i> خروج
             </a>
-            <div class="flex items-center gap-2 bg-slate-800/60 border border-slate-700/60 px-3 py-1.5 rounded-xl text-xs">
+            <div class="flex items-center gap-2 bg-slate-800/60 border border-slate-700/60 px-3.5 py-1.5 rounded-xl text-xs">
                 <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
                 <span class="font-bold text-slate-200">{{ session.get('name', 'محمد الدوخي') }}</span>
                 <span class="text-cyan-400 text-[10px]">({{ session.get('role', 'مشرف الصيانة التقنية') }})</span>
@@ -326,10 +331,10 @@ DASHBOARD_TEMPLATE = """
             </a>
             <div class="text-left">
                 <h1 class="font-black text-base text-white">النظام الذكي لإدارة ومتابعة صيانة حواسيب المعامل</h1>
-                <p class="text-[11px] text-cyan-400">قسم الحاسب الآلي | إشراف: أ. محمد الدوخي • إعداد: ريان المحيطيب</p>
+                <p class="text-[11px] text-cyan-400">المؤسسة العامة للتدريب التقني والمهني • قسم الحاسب الآلي</p>
             </div>
-            <div class="w-10 h-10 rounded-xl bg-cyan-500/20 border border-cyan-400/40 flex items-center justify-center text-cyan-400 text-lg">
-                <i class="fa-solid fa-microchip"></i>
+            <div class="h-11 w-11 rounded-xl bg-white/95 border border-cyan-400/40 p-1 flex items-center justify-center shadow-[0_0_15px_rgba(6,182,212,0.3)]">
+                <img src="{{ logo_url }}" alt="TVTC" class="h-full w-full object-contain">
             </div>
         </div>
     </header>
@@ -867,7 +872,7 @@ DASHBOARD_TEMPLATE = """
 </html>
 """
 
-# --- نموذج باركودات QR الموحدة (مقاس 15×15 سم على A4) ---
+# --- نموذج باركودات QR الموحدة (مقاس 15×15 سم على A4 بشعار TVTC) ---
 QR_LABELS_TEMPLATE = """
 <!DOCTYPE html>
 <html dir="rtl" lang="ar">
@@ -911,7 +916,7 @@ QR_LABELS_TEMPLATE = """
             outline: 1.5px dashed #38bdf8;
             outline-offset: -7px;
             border-radius: 16px;
-            padding: 9mm 7mm 7mm;
+            padding: 6mm 7mm 7mm;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
@@ -921,12 +926,14 @@ QR_LABELS_TEMPLATE = """
             background: #ffffff;
         }
 
-        .qr-card-header .dept-title { font-size: 11px; font-weight: 700; color: #0284c7; margin: 0 0 3px; letter-spacing: 0.5px; }
-        .qr-card-header .lab-title { font-size: 26px; font-weight: 900; color: #0f172a; margin: 0; }
+        .qr-card-header { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+        .qr-card-header img { height: 14mm; width: auto; object-fit: contain; margin-bottom: 2px; }
+        .qr-card-header .dept-title { font-size: 10.5px; font-weight: 700; color: #0284c7; margin: 0; letter-spacing: 0.5px; }
+        .qr-card-header .lab-title { font-size: 24px; font-weight: 900; color: #0f172a; margin: 0; }
 
         .qr-image-wrapper {
-            width: 82mm;
-            height: 82mm;
+            width: 76mm;
+            height: 76mm;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -937,8 +944,8 @@ QR_LABELS_TEMPLATE = """
         }
         .qr-image-wrapper img { width: 100%; height: 100%; object-fit: contain; }
 
-        .qr-card-footer .instruction { font-size: 12px; font-weight: 800; color: #0f172a; margin: 0 0 3px; }
-        .qr-card-footer .meta { font-size: 9px; color: #64748b; margin: 0; }
+        .qr-card-footer .instruction { font-size: 11.5px; font-weight: 800; color: #0f172a; margin: 0 0 2px; }
+        .qr-card-footer .meta { font-size: 8.5px; color: #64748b; margin: 0; }
 
         @page {
             size: A4 portrait;
@@ -962,7 +969,7 @@ QR_LABELS_TEMPLATE = """
 <body>
     <div class="tools">
         <h1>طباعة باركودات المعامل (A4 - مقاس 15 × 15 سم)</h1>
-        <p>تم ضبط كل باركود ليُطبع تلقائياً في ورقة A4 مستقلة بمقاس 15 × 15 سم في المنتصف تماماً مع إطار رسمي.</p>
+        <p>تم ضبط كل باركود ليُطبع تلقائياً في ورقة A4 مستقلة بمقاس 15 × 15 سم في المنتصف تماماً مع شعار المؤسسة.</p>
         <form method="GET">
             <label>رابط النظام (الذي يفتحه جوال المتدرب عند المسح)
                 <input name="base" type="url" required value="{{ base_url }}" placeholder="https://smart-lab-k5r2.onrender.com">
@@ -982,7 +989,8 @@ QR_LABELS_TEMPLATE = """
         <div class="a4-sheet">
             <div class="qr-card-15cm">
                 <div class="qr-card-header">
-                    <p class="dept-title">قسم الحاسب الآلي وتقنية المعلومات</p>
+                    <img src="{{ logo_url }}" alt="شعار TVTC">
+                    <p class="dept-title">المؤسسة العامة للتدريب التقني والمهني • قسم الحاسب</p>
                     <h2 class="lab-title">معمل ({{ lab }})</h2>
                 </div>
 
@@ -1003,7 +1011,7 @@ QR_LABELS_TEMPLATE = """
 </html>
 """
 
-# --- نموذج البلاغ الذكي بالواجهة الزجاجية ---
+# --- نموذج البلاغ الذكي بالواجهة الزجاجية وشعار TVTC ---
 REPORT_TEMPLATE = """
 <!DOCTYPE html>
 <html dir="rtl" lang="ar">
@@ -1040,8 +1048,10 @@ REPORT_TEMPLATE = """
 
     <main class="max-w-lg w-full report-glass-card rounded-3xl p-7 md:p-8 relative my-auto shadow-2xl">
         <div class="text-center mb-6">
-            <div class="w-14 h-14 bg-gradient-to-tr from-cyan-600/30 to-blue-500/20 border border-cyan-400/50 rounded-2xl flex items-center justify-center mx-auto text-cyan-400 text-2xl mb-3 shadow-[0_0_25px_rgba(6,182,212,0.3)]">
-                <i class="fa-solid fa-headset"></i>
+            <div class="flex justify-center items-center mb-3">
+                <div class="p-2.5 rounded-2xl bg-white/95 border border-cyan-400/40 shadow-[0_0_20px_rgba(6,182,212,0.25)]">
+                    <img src="{{ logo_url }}" alt="شعار المؤسسة العامة للتدريب التقني والمهني" class="h-12 w-auto object-contain">
+                </div>
             </div>
             
             <div class="inline-flex items-center gap-2 bg-cyan-950/60 border border-cyan-500/40 px-3 py-1 rounded-full text-xs text-cyan-300 font-bold mb-2">
@@ -1050,7 +1060,7 @@ REPORT_TEMPLATE = """
             </div>
 
             <h1 class="text-xl font-black text-white tracking-wide">تسجيل بلاغ صيانة حاسب آلي</h1>
-            <p class="text-xs text-slate-400 mt-1">حدد رقم الجهاز بدقة وسيتحقق النظام من حالته فورياً</p>
+            <p class="text-xs text-slate-400 mt-1">المؤسسة العامة للتدريب التقني والمهني • قسم الحاسب</p>
         </div>
 
         {% if success %}
@@ -1134,7 +1144,7 @@ REPORT_TEMPLATE = """
 
     <footer class="my-4 text-center">
         <div class="bg-slate-900/60 border border-slate-800/80 backdrop-blur-md px-5 py-2 rounded-full text-xs text-slate-400 inline-flex flex-wrap items-center justify-center gap-2 shadow-lg">
-            <span class="font-bold text-slate-200">قسم الحاسب الآلي وتقنية المعلومات</span>
+            <span class="font-bold text-slate-200">المؤسسة العامة للتدريب التقني والمهني</span>
             <span class="text-cyan-500/60">•</span>
             <span>إشراف: <span class="text-slate-300 font-semibold">أ. محمد الدوخي</span></span>
             <span class="text-cyan-500/60">•</span>
@@ -1192,7 +1202,7 @@ def login():
             return redirect(url_for('dashboard'))
         else:
             error = "اسم المستخدم أو كلمة المرور غير صحيحة"
-    return render_template_string(LOGIN_TEMPLATE, error=error)
+    return render_template_string(LOGIN_TEMPLATE, error=error, logo_url=TVTC_LOGO_URL)
 
 @app.route('/logout')
 def logout():
@@ -1209,6 +1219,7 @@ def qr_labels():
         QR_LABELS_TEMPLATE,
         base_url=requested_base,
         labs=LAB_NUMBERS,
+        logo_url=TVTC_LOGO_URL,
         error=None if base_url else 'أدخل رابطًا يبدأ بـ http:// أو https:// ويتضمن عنوان الجهاز والمنفذ فقط.'
     )
 
@@ -1271,7 +1282,8 @@ def lab_report(lab_num):
     return render_template_string(
         REPORT_TEMPLATE, lab_num=lab_num, seats=range(1, 28),
         occupied_seats=occupied_seats,
-        categories=ISSUE_CATEGORIES, values=values, error=error, success=success
+        categories=ISSUE_CATEGORIES, values=values, error=error, success=success,
+        logo_url=TVTC_LOGO_URL
     )
 
 @app.route('/dashboard')
@@ -1318,7 +1330,8 @@ def dashboard():
         pending_tickets=pending,
         operational_rate=op_rate,
         lab_statuses=lab_statuses,
-        parts_stats=parts_stats
+        parts_stats=parts_stats,
+        logo_url=TVTC_LOGO_URL
     )
 
 @app.route('/update_status/<int:ticket_id>', methods=['POST'])
