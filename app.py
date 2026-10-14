@@ -42,7 +42,7 @@ USERS = {
 LAB_NUMBERS = (1, 2, 3, 4, 5, 6, 7, 9, 10, 11, 12, 13, 14, 22, 23, 24, 26, 27)
 ISSUE_CATEGORIES = ('أجهزة', 'برامج', 'شبكة', 'أخرى')
 
-# --- صفحة تسجيل الدخول مع خيار إخفاء اسم المستخدم وكلمة المرور ---
+# --- صفحة تسجيل الدخول (اسم المستخدم مخفي افتراضياً) ---
 LOGIN_TEMPLATE = """
 <!DOCTYPE html>
 <html dir="rtl" lang="ar">
@@ -101,7 +101,8 @@ LOGIN_TEMPLATE = """
                     <span class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-slate-500">
                         <i class="fa-solid fa-user text-xs"></i>
                     </span>
-                    <input type="text" id="username-input" name="username" required placeholder="admin" class="w-full bg-slate-950/90 border border-slate-700/80 focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400/40 rounded-xl py-2.5 pr-9 pl-10 text-xs text-white focus:outline-none transition">
+                    <!-- حقل اسم المستخدم أصبح password ليكون مخفياً بشكل افتراضي -->
+                    <input type="password" id="username-input" name="username" required placeholder="••••••" class="w-full bg-slate-950/90 border border-slate-700/80 focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400/40 rounded-xl py-2.5 pr-9 pl-10 text-xs text-white focus:outline-none transition">
                     <button type="button" onclick="toggleUsernameVisibility()" class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400 hover:text-cyan-300 transition" title="إظهار / إخفاء اسم المستخدم">
                         <i id="user-eye-icon" class="fa-solid fa-eye text-xs"></i>
                     </button>
@@ -160,22 +161,22 @@ LOGIN_TEMPLATE = """
             document.getElementById('password-input').value = pass;
         }
 
-        // إخفاء / إظهار اسم المستخدم
+        // إظهار / إخفاء اسم المستخدم
         function toggleUsernameVisibility() {
             const userInput = document.getElementById('username-input');
             const eyeIcon = document.getElementById('user-eye-icon');
-            if (userInput.type === 'text') {
-                userInput.type = 'password';
+            if (userInput.type === 'password') {
+                userInput.type = 'text';
                 eyeIcon.classList.remove('fa-eye');
                 eyeIcon.classList.add('fa-eye-slash');
             } else {
-                userInput.type = 'text';
+                userInput.type = 'password';
                 eyeIcon.classList.remove('fa-eye-slash');
                 eyeIcon.classList.add('fa-eye');
             }
         }
 
-        // إخفاء / إظهار كلمة المرور
+        // إظهار / إخفاء كلمة المرور
         function togglePasswordVisibility() {
             const passInput = document.getElementById('password-input');
             const eyeIcon = document.getElementById('pass-eye-icon');
