@@ -57,176 +57,298 @@ LOGIN_TEMPLATE = """
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#071523">
     <title>تسجيل الدخول | نظام صيانة حواسيب المعامل</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
     <style>
-
-        .institution-brand {
-            width: min(100%, 320px);
-            aspect-ratio: 10 / 3;
-            margin: 0 auto 12px;
-            background: #ffffff;
-            border-radius: 10px;
-            overflow: hidden;
-            flex-shrink: 0;
-        }
-        .institution-brand img {
-            display: block;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            object-position: center;
-        }
+        * { box-sizing: border-box; }
+        [hidden] { display: none !important; }
+        :root { color-scheme: light; --ink: #142f42; --teal: #087f8b; --muted: #64748b; }
         body {
-            font-family: 'Tajawal', sans-serif;
-            background-color: #040711;
-            background-image: 
-                radial-gradient(circle at 50% 30%, rgba(6, 182, 212, 0.16) 0%, transparent 65%),
-                radial-gradient(rgba(14, 165, 233, 0.08) 1px, transparent 1px),
-                linear-gradient(rgba(14, 165, 233, 0.03) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(14, 165, 233, 0.03) 1px, transparent 1px);
-            background-size: 100% 100%, 24px 24px, 12px 12px, 12px 12px;
+            margin: 0;
+            min-height: 100vh;
+            min-height: 100svh;
+            padding: 32px 24px 22px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            font-family: 'Tajawal', 'Noto Sans Arabic', Tahoma, Arial, sans-serif;
+            background: radial-gradient(ellipse at 12% 20%, #123c49 0, transparent 48%),
+                        radial-gradient(ellipse at 90% 85%, #122f49 0, transparent 46%), #071523;
+            color: var(--ink);
         }
-        .glass-card {
-            background: rgba(13, 21, 41, 0.7);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid rgba(34, 211, 238, 0.28);
-            box-shadow: 0 0 50px rgba(6, 182, 212, 0.12), inset 0 0 20px rgba(34, 211, 238, 0.03);
-            transition: all 0.3s ease;
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            background-image: linear-gradient(#ffffff05 1px, transparent 1px),
+                              linear-gradient(90deg, #ffffff05 1px, transparent 1px);
+            background-size: 64px 64px;
         }
-        .glass-card:hover { border-color: rgba(34, 211, 238, 0.45); }
+        button, input { font: inherit; }
+        button { cursor: pointer; }
+        button:focus-visible { outline: 3px solid #16afbe; outline-offset: 3px; }
+        .icon { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
+        .icon-definitions { position: absolute; width: 0; height: 0; overflow: hidden; }
+        .login-shell {
+            position: relative;
+            z-index: 1;
+            width: min(100%, 980px);
+            margin: auto;
+            display: grid;
+            grid-template-columns: minmax(0, 440px) minmax(0, 1fr);
+            gap: clamp(40px, 6vw, 90px);
+            align-items: center;
+        }
+        .login-card {
+            grid-column: 1;
+            grid-row: 1;
+            width: 100%;
+            border-radius: 26px;
+            background: #ffffff;
+            border: 1px solid #ffffffb3;
+            overflow: hidden;
+            box-shadow: 0 32px 90px #00000040, 0 1px 0 #ffffff80 inset;
+        }
+        .brand-header { padding: 20px 30px 12px; border-bottom: 1px solid #edf1f5; }
+        .institution-brand { width: min(100%, 320px); aspect-ratio: 10 / 3; margin: 0 auto; overflow: hidden; background: white; }
+        .institution-brand img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: center; }
+        .card-content { padding: 25px 30px 28px; }
+        .eyebrow { display: flex; align-items: center; gap: 6px; margin: 0 0 9px; color: var(--teal); font-size: 12px; font-weight: 700; }
+        .eyebrow .icon { width: 15px; height: 15px; }
+        .card-content h2 { font-size: 23px; line-height: 1.4; font-weight: 800; margin: 0 0 6px; letter-spacing: -0.3px; }
+        .card-subtitle { font-size: 13px; line-height: 1.7; color: var(--muted); margin: 0 0 24px; }
+        .error-message { padding: 12px 14px; margin-bottom: 18px; border: 1px solid #fecaca; border-radius: 12px; background: #fff5f5; color: #b42318; font-size: 13px; line-height: 1.7; }
+        .field + .field { margin-top: 18px; }
+        .field label { display: block; margin-bottom: 8px; font-size: 13px; font-weight: 700; color: #334155; }
+        .input-wrap { position: relative; }
+        .input-wrap input {
+            width: 100%;
+            height: 50px;
+            padding: 0 44px 0 50px;
+            border: 1px solid #dbe3eb;
+            border-radius: 12px;
+            background: #f8fafc;
+            color: #142f42;
+            font-size: 14px;
+            text-align: right;
+            direction: ltr;
+            outline: none;
+            transition: border-color .18s, background .18s, box-shadow .18s;
+        }
+        .input-wrap input::placeholder { color: #a0acb9; opacity: 1; letter-spacing: 2px; }
+        .input-wrap input:focus { border-color: #098c9a; background: #ffffff; box-shadow: 0 0 0 3px #098c9a1a; }
+        .field-icon { position: absolute; right: 15px; top: 15px; width: 19px; height: 19px; color: #788a9a; pointer-events: none; }
+        .visibility-button { position: absolute; left: 3px; top: 3px; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; background: transparent; color: #64748b; border: none; border-radius: 9px; }
+        .visibility-button:hover { color: #087f8b; background: #eaf5f6; }
+        .submit-button {
+            width: 100%;
+            height: 50px;
+            margin-top: 23px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            border: 0;
+            border-radius: 12px;
+            color: #ffffff;
+            background: linear-gradient(105deg, #17577c, #087f8b);
+            box-shadow: 0 7px 18px #087f8b24;
+            font-size: 15px;
+            font-weight: 800;
+            transition: filter .18s, transform .18s, box-shadow .18s;
+        }
+        .submit-button:hover { filter: brightness(1.08); transform: translateY(-1px); box-shadow: 0 9px 22px #087f8b33; }
+        .submit-button:active { transform: translateY(0); }
+        .submit-button:disabled { opacity: .75; cursor: wait; transform: none; }
+        .button-spinner { width: 17px; height: 17px; border: 2px solid #ffffff55; border-top-color: #ffffff; border-radius: 50%; animation: spin .8s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .quick-login { margin-top: 25px; padding-top: 19px; border-top: 1px solid #e9eef3; }
+        .quick-heading { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 12px; }
+        .quick-heading strong { font-size: 12px; color: #334155; }
+        .quick-heading span { font-size: 11px; color: var(--muted); }
+        .role-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+        .role-button { min-height: 65px; padding: 11px 4px 9px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 7px; border: 1px solid #dfe7ef; border-radius: 11px; color: #475569; background: #f8fafc; font-size: 11px; font-weight: 700; transition: border-color .18s, background .18s, color .18s; }
+        .role-button .icon { width: 19px; height: 19px; color: #648198; }
+        .role-button:hover, .role-button[aria-pressed="true"] { border-color: #8fc7cc; background: #edf8f8; color: #0a6c76; }
+        .role-button:hover .icon, .role-button[aria-pressed="true"] .icon { color: #087f8b; }
+        .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+        .intro-panel { grid-column: 2; grid-row: 1; color: #ffffff; padding-bottom: 10px; }
+        .product-kicker { display: inline-flex; align-items: center; gap: 9px; margin: 0 0 26px; color: #a6c4d1; font-size: 13px; font-weight: 500; }
+        .product-kicker .icon { color: #6bd3cd; }
+        .intro-panel h1 { font-size: clamp(34px, 3.4vw, 44px); line-height: 1.5; margin: 0 0 18px; font-weight: 800; letter-spacing: -.5px; }
+        .intro-panel h1 span { color: #73d9d0; }
+        .intro-description { max-width: 400px; color: #adc3d0; font-size: 15px; line-height: 1.95; margin: 0 0 34px; }
+        .feature-list { display: flex; flex-direction: column; gap: 21px; }
+        .feature { display: flex; gap: 14px; align-items: center; }
+        .feature-mark { width: 43px; height: 43px; display: flex; align-items: center; justify-content: center; border: 1px solid #8dcee326; border-radius: 12px; background: #ffffff06; color: #77d6d3; }
+        .feature h3 { margin: 0 0 4px; font-size: 14px; font-weight: 700; }
+        .feature p { margin: 0; color: #97b4c4; font-size: 12px; line-height: 1.7; }
+        .page-footer { position: relative; z-index: 1; text-align: center; color: #8fa9ba; font-size: 11px; line-height: 1.9; }
+        .page-footer p { margin: 0; }
+        .page-footer strong { color: #c5d7e3; font-weight: 500; }
+        .credit-separator { margin: 0 7px; color: #527584; }
+        @media (max-width: 800px) {
+            body { padding: 22px 16px 18px; gap: 20px; }
+            .login-shell { display: block; max-width: 430px; }
+            .intro-panel { display: none; }
+            .card-content { padding: 23px 28px 25px; }
+            .brand-header { padding: 17px 28px 11px; }
+        }
+        @media (max-width: 380px) {
+            body { padding: 16px 12px; }
+            .card-content { padding: 21px 21px 23px; }
+            .brand-header { padding: 15px 21px 10px; }
+            .card-content h2 { font-size: 21px; }
+            .card-subtitle { font-size: 12px; }
+            .quick-heading span { font-size: 10px; }
+            .role-grid { gap: 6px; }
+            .role-button { font-size: 10px; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after { transition: none !important; animation: none !important; }
+        }
     </style>
 </head>
-<body class="min-h-screen text-slate-200 flex flex-col justify-between items-center p-4">
-    <div></div>
+<body>
+    <svg class="icon-definitions" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+        <symbol id="icon-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.5"/><path d="M5 21v-2a7 7 0 0 1 14 0v2"/></symbol>
+        <symbol id="icon-lock" viewBox="0 0 24 24"><rect x="5" y="10" width="14" height="11" rx="2.5"/><path d="M8 10V7a4 4 0 0 1 8 0v3M12 14v3"/></symbol>
+        <symbol id="icon-eye" viewBox="0 0 24 24"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></symbol>
+        <symbol id="icon-eye-off" viewBox="0 0 24 24"><path d="m3 3 18 18M10.6 5.1A12 12 0 0 1 12 5c6.5 0 10 7 10 7a18 18 0 0 1-3.1 4.1M6 6.6A20 20 0 0 0 2 12s3.5 7 10 7a11 11 0 0 0 5.4-1.4M10 10a3 3 0 0 0 4 4"/></symbol>
+        <symbol id="icon-arrow" viewBox="0 0 24 24"><path d="M20 12H4m6-6-6 6 6 6"/></symbol>
+        <symbol id="icon-wrench" viewBox="0 0 24 24"><path d="M14.7 6.3a5 5 0 0 0-6.4 6.4l-5 5a2.1 2.1 0 0 0 3 3l5-5a5 5 0 0 0 6.4-6.4l-3 3-3-3 3-3Z"/></symbol>
+        <symbol id="icon-headset" viewBox="0 0 24 24"><path d="M4 13V11a8 8 0 0 1 16 0v2M20 17v1a3 3 0 0 1-3 3h-4"/><rect x="3" y="12" width="4" height="7" rx="2"/><rect x="17" y="12" width="4" height="7" rx="2"/></symbol>
+        <symbol id="icon-building" viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 7h1m4 0h1M9 11h1m4 0h1M10 21v-5h4v5"/></symbol>
+        <symbol id="icon-monitor" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="13" rx="2"/><path d="M12 16v5m-5 0h10M7 7h5m-5 4h9"/></symbol>
+        <symbol id="icon-ticket" viewBox="0 0 24 24"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V2h6v2M9 10h6m-6 4h6m-6 4h3"/></symbol>
+        <symbol id="icon-chart" viewBox="0 0 24 24"><path d="M4 3v18h17M8 17v-5m5 5V7m5 10v-8"/></symbol>
+    </svg>
 
-    <div class="max-w-md w-full glass-card rounded-3xl p-7 md:p-8 relative">
-        <div class="text-center mb-6">
-            <div class="institution-brand">
-                <img src="{{ institution_logo }}" alt="شعار المؤسسة العامة للتدريب التقني والمهني">
-            </div>
-            <div class="w-14 h-14 bg-gradient-to-tr from-cyan-600/30 to-blue-500/20 border border-cyan-400/50 rounded-2xl flex items-center justify-center mx-auto text-cyan-400 text-2xl mb-3 shadow-[0_0_25px_rgba(6,182,212,0.3)]">
-                <i class="fa-solid fa-microchip"></i>
-            </div>
-            <h2 class="text-xl font-black text-white tracking-wide">نظام إدارة صيانة المعامل</h2>
-            <p class="text-xs text-cyan-400 font-semibold mt-1">قسم الحاسب الآلي وتقنية المعلومات</p>
-        </div>
+    <main class="login-shell">
+        <section class="login-card" aria-labelledby="login-title">
+            <header class="brand-header">
+                <div class="institution-brand">
+                    <img src="{{ institution_logo }}" alt="المؤسسة العامة للتدريب التقني والمهني" decoding="async" fetchpriority="high">
+                </div>
+            </header>
+            <div class="card-content">
+                <p class="eyebrow"><svg class="icon" aria-hidden="true"><use href="#icon-lock"/></svg> بوابة فريق الصيانة</p>
+                <h2 id="login-title">نظام إدارة صيانة المعامل</h2>
+                <p class="card-subtitle">سجّل الدخول لمتابعة البلاغات وإدارة المعامل.</p>
 
-        {% if error %}
-        <div class="bg-red-950/60 border border-red-800/80 text-red-300 text-xs p-3 rounded-xl mb-4 text-center flex items-center justify-center gap-2">
-            <i class="fa-solid fa-circle-exclamation text-red-400"></i>
-            <span>{{ error }}</span>
-        </div>
-        {% endif %}
+                {% if error %}
+                <div class="error-message" role="alert">{{ error }}</div>
+                {% endif %}
 
-        <form id="login-form" method="POST" action="/login" class="space-y-4" onsubmit="handleLoginSubmit()">
-            <div>
-                <label class="block text-xs font-semibold text-slate-300 mb-1.5">اسم المستخدم</label>
-                <div class="relative">
-                    <span class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-slate-500">
-                        <i class="fa-solid fa-user text-xs"></i>
-                    </span>
-                    <input type="password" id="username-input" name="username" required placeholder="••••••" class="w-full bg-slate-950/90 border border-slate-700/80 focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400/40 rounded-xl py-2.5 pr-9 pl-10 text-xs text-white focus:outline-none transition">
-                    <button type="button" onclick="toggleUsernameVisibility()" class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400 hover:text-cyan-300 transition" title="إظهار / إخفاء اسم المستخدم">
-                        <i id="user-eye-icon" class="fa-solid fa-eye text-xs"></i>
+                <form id="login-form" method="POST" action="/login" onsubmit="handleLoginSubmit()">
+                    <div class="field">
+                        <label for="username-input">اسم المستخدم</label>
+                        <div class="input-wrap">
+                            <svg class="icon field-icon" aria-hidden="true"><use href="#icon-user"/></svg>
+                            <input type="password" id="username-input" name="username" required placeholder="••••••" autocomplete="username" autocapitalize="none" spellcheck="false">
+                            <button type="button" id="username-toggle" class="visibility-button" onclick="toggleUsernameVisibility()" aria-label="إظهار اسم المستخدم" aria-controls="username-input" aria-pressed="false">
+                                <svg id="user-eye-icon" class="icon" aria-hidden="true"><use href="#icon-eye"/></svg>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label for="password-input">كلمة المرور</label>
+                        <div class="input-wrap">
+                            <svg class="icon field-icon" aria-hidden="true"><use href="#icon-lock"/></svg>
+                            <input type="password" id="password-input" name="password" required placeholder="••••••" autocomplete="current-password">
+                            <button type="button" id="password-toggle" class="visibility-button" onclick="togglePasswordVisibility()" aria-label="إظهار كلمة المرور" aria-controls="password-input" aria-pressed="false">
+                                <svg id="pass-eye-icon" class="icon" aria-hidden="true"><use href="#icon-eye"/></svg>
+                            </button>
+                        </div>
+                    </div>
+                    <button type="submit" id="submit-btn" class="submit-button">
+                        <span id="btn-text">تسجيل الدخول</span>
+                        <svg id="submit-arrow" class="icon" aria-hidden="true"><use href="#icon-arrow"/></svg>
+                        <span id="btn-spinner" class="button-spinner" aria-hidden="true" hidden></span>
                     </button>
+                </form>
+
+                <div class="quick-login">
+                    <div class="quick-heading"><strong>دخول سريع</strong><span>تعبئة البيانات حسب الدور</span></div>
+                    <div class="role-grid">
+                        <button type="button" class="role-button" data-user="admin" aria-pressed="false" onclick="fastFill('admin', '123')"><svg class="icon" aria-hidden="true"><use href="#icon-wrench"/></svg><span>مشرف الصيانة</span></button>
+                        <button type="button" class="role-button" data-user="tech" aria-pressed="false" onclick="fastFill('tech', '123')"><svg class="icon" aria-hidden="true"><use href="#icon-headset"/></svg><span>الدعم الفني</span></button>
+                        <button type="button" class="role-button" data-user="trainer" aria-pressed="false" onclick="fastFill('trainer', '123')"><svg class="icon" aria-hidden="true"><use href="#icon-building"/></svg><span>رئيس القسم</span></button>
+                    </div>
+                    <p id="fill-notice" class="sr-only" role="status" aria-live="polite"></p>
                 </div>
             </div>
-            <div>
-                <label class="block text-xs font-semibold text-slate-300 mb-1.5">كلمة المرور</label>
-                <div class="relative">
-                    <span class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-slate-500">
-                        <i class="fa-solid fa-lock text-xs"></i>
-                    </span>
-                    <input type="password" id="password-input" name="password" required placeholder="••••••" class="w-full bg-slate-950/90 border border-slate-700/80 focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400/40 rounded-xl py-2.5 pr-9 pl-10 text-xs text-white focus:outline-none transition">
-                    <button type="button" onclick="togglePasswordVisibility()" class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400 hover:text-cyan-300 transition" title="إظهار / إخفاء كلمة المرور">
-                        <i id="pass-eye-icon" class="fa-solid fa-eye text-xs"></i>
-                    </button>
-                </div>
+        </section>
+
+        <aside class="intro-panel" aria-label="عن النظام">
+            <p class="product-kicker"><svg class="icon" aria-hidden="true"><use href="#icon-monitor"/></svg> قسم الحاسب الآلي وتقنية المعلومات</p>
+            <h1>صيانة منظّمة.<br><span>معامل جاهزة للتدريب.</span></h1>
+            <p class="intro-description">بلاغات الأعطال، حالة الأجهزة، وتقارير الصيانة في مكان واحد، لمتابعة أوضح وعمل أكثر تنظيمًا.</p>
+            <div class="feature-list">
+                <div class="feature"><div class="feature-mark"><svg class="icon" aria-hidden="true"><use href="#icon-ticket"/></svg></div><div><h3>متابعة البلاغات</h3><p>من تسجيل العطل حتى إتمام الإصلاح.</p></div></div>
+                <div class="feature"><div class="feature-mark"><svg class="icon" aria-hidden="true"><use href="#icon-monitor"/></svg></div><div><h3>رصد حالة الأجهزة</h3><p>نظرة واضحة على الأجهزة والمعامل.</p></div></div>
+                <div class="feature"><div class="feature-mark"><svg class="icon" aria-hidden="true"><use href="#icon-chart"/></svg></div><div><h3>تقارير الصيانة</h3><p>توثيق الأعطال والقطع المستبدلة.</p></div></div>
             </div>
+        </aside>
+    </main>
 
-            <button type="submit" id="submit-btn" class="w-full py-2.5 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-bold rounded-xl text-xs shadow-lg shadow-cyan-500/25 transition duration-200 flex items-center justify-center gap-2">
-                <span id="btn-text">تسجيل الدخول</span>
-                <i id="btn-spinner" class="fa-solid fa-circle-notch fa-spin hidden"></i>
-            </button>
-        </form>
-
-        <div class="mt-6 pt-4 border-t border-slate-800/80">
-            <p class="text-[11px] text-slate-400 text-center mb-2.5 flex items-center justify-center gap-1.5">
-                <i class="fa-solid fa-bolt text-amber-400 text-xs"></i> تجربة سريعة وتعبئة بنقرة واحدة:
-            </p>
-            <div class="grid grid-cols-3 gap-2">
-                <button type="button" onclick="fastFill('admin', '123')" class="bg-cyan-950/40 hover:bg-cyan-900/50 border border-cyan-800/50 hover:border-cyan-400/60 text-cyan-300 text-[10px] py-1.5 px-1 rounded-lg text-center transition font-semibold">
-                    مشرف الصيانة
-                </button>
-                <button type="button" onclick="fastFill('tech', '123')" class="bg-slate-950/50 hover:bg-slate-800/60 border border-slate-700/60 hover:border-slate-500 text-slate-300 text-[10px] py-1.5 px-1 rounded-lg text-center transition font-semibold">
-                    الدعم الفني
-                </button>
-                <button type="button" onclick="fastFill('trainer', '123')" class="bg-slate-950/50 hover:bg-slate-800/60 border border-slate-700/60 hover:border-slate-500 text-slate-300 text-[10px] py-1.5 px-1 rounded-lg text-center transition font-semibold">
-                    رئيس القسم
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <footer class="my-4 text-center">
-        <div class="bg-slate-900/60 border border-slate-800/80 backdrop-blur-md px-5 py-2 rounded-full text-xs text-slate-400 inline-flex flex-wrap items-center justify-center gap-2 shadow-lg">
-            <span class="font-bold text-slate-200">قسم الحاسب الآلي وتقنية المعلومات</span>
-            <span class="text-cyan-500/60">•</span>
-            <span>إشراف: <span class="text-slate-300 font-semibold">أ. محمد الدوخي</span></span>
-            <span class="text-cyan-500/60">•</span>
-            <span>إعداد: <span class="text-cyan-400 font-semibold">ريان المحيطيب</span></span>
-        </div>
+    <footer class="page-footer">
+        <p>قسم الحاسب الآلي وتقنية المعلومات</p>
+        <p>إشراف: <strong>أ. محمد الدوخي</strong><span class="credit-separator">•</span>إعداد: <strong>ريان المحيطيب</strong></p>
     </footer>
 
     <script>
         function fastFill(user, pass) {
             document.getElementById('username-input').value = user;
             document.getElementById('password-input').value = pass;
+            document.querySelectorAll('.role-button').forEach(function(button) {
+                button.setAttribute('aria-pressed', String(button.dataset.user === user));
+            });
+            const selected = document.querySelector('.role-button[aria-pressed="true"]');
+            document.getElementById('fill-notice').textContent = selected ? 'تمت تعبئة بيانات ' + selected.textContent.trim() : '';
+        }
+
+        function toggleFieldVisibility(inputId, buttonId, iconId, label) {
+            const input = document.getElementById(inputId);
+            const button = document.getElementById(buttonId);
+            const showing = input.type === 'password';
+            input.type = showing ? 'text' : 'password';
+            button.setAttribute('aria-pressed', String(showing));
+            button.setAttribute('aria-label', (showing ? 'إخفاء ' : 'إظهار ') + label);
+            document.getElementById(iconId).querySelector('use').setAttribute('href', showing ? '#icon-eye-off' : '#icon-eye');
         }
 
         function toggleUsernameVisibility() {
-            const userInput = document.getElementById('username-input');
-            const eyeIcon = document.getElementById('user-eye-icon');
-            if (userInput.type === 'password') {
-                userInput.type = 'text';
-                eyeIcon.classList.remove('fa-eye');
-                eyeIcon.classList.add('fa-eye-slash');
-            } else {
-                userInput.type = 'password';
-                eyeIcon.classList.remove('fa-eye-slash');
-                eyeIcon.classList.add('fa-eye');
-            }
+            toggleFieldVisibility('username-input', 'username-toggle', 'user-eye-icon', 'اسم المستخدم');
         }
 
         function togglePasswordVisibility() {
-            const passInput = document.getElementById('password-input');
-            const eyeIcon = document.getElementById('pass-eye-icon');
-            if (passInput.type === 'password') {
-                passInput.type = 'text';
-                eyeIcon.classList.remove('fa-eye');
-                eyeIcon.classList.add('fa-eye-slash');
-            } else {
-                passInput.type = 'password';
-                eyeIcon.classList.remove('fa-eye-slash');
-                eyeIcon.classList.add('fa-eye');
-            }
+            toggleFieldVisibility('password-input', 'password-toggle', 'pass-eye-icon', 'كلمة المرور');
         }
 
         function handleLoginSubmit() {
-            const btn = document.getElementById('submit-btn');
-            const btnText = document.getElementById('btn-text');
-            const spinner = document.getElementById('btn-spinner');
-            btnText.innerText = "جاري التحقق والدخول...";
-            spinner.classList.remove('hidden');
-            btn.classList.add('opacity-80', 'cursor-not-allowed');
+            const button = document.getElementById('submit-btn');
+            button.disabled = true;
+            button.setAttribute('aria-busy', 'true');
+            document.getElementById('btn-text').textContent = 'جاري تسجيل الدخول...';
+            document.getElementById('submit-arrow').setAttribute('hidden', '');
+            document.getElementById('btn-spinner').hidden = false;
         }
+
+        window.addEventListener('pageshow', function() {
+            const button = document.getElementById('submit-btn');
+            button.disabled = false;
+            button.removeAttribute('aria-busy');
+            document.getElementById('btn-text').textContent = 'تسجيل الدخول';
+            document.getElementById('submit-arrow').removeAttribute('hidden');
+            document.getElementById('btn-spinner').hidden = true;
+        });
     </script>
 </body>
 </html>
+
 """
 
 # --- صفحة لوحة العمليات ومخطط الرادار التفاعلي ---
