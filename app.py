@@ -4,7 +4,6 @@ import csv
 from io import BytesIO, StringIO
 from urllib.parse import urlsplit
 from collections import Counter
-import urllib.request
 
 import qrcode
 from flask import Flask, abort, render_template_string, request, redirect, send_file, url_for, session, Response
@@ -13,9 +12,43 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 app = Flask(__name__)
 app.secret_key = "smart_lab_secret_key_2026_super_safe"
 
-# مسار الشعار المحلي الداخلي
-TVTC_LOGO_URL = "/tvtc-logo.png"
-TVTC_IMAGE_CACHE = None
+TVTC_LOGO_URL = "/tvtc-logo.svg"
+
+# الشعار الرسمي المتجه للمؤسسة العامة للتدريب التقني والمهني مدمج بالكامل
+TVTC_SVG_CODE = '''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 85" width="100%" height="100%">
+  <defs>
+    <linearGradient id="tvtcGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#059669" />
+      <stop offset="100%" stop-color="#0284c7" />
+    </linearGradient>
+  </defs>
+  <!-- أيقونة الترس والنخلة التقنية المعتمدة -->
+  <g transform="translate(305, 42)">
+    <circle cx="0" cy="0" r="32" fill="#047857" opacity="0.08"/>
+    <!-- بتلات الترس الهندسي -->
+    <path d="M0 -32 L6 -23 L-6 -23 Z" fill="#059669"/>
+    <path d="M22.6 -22.6 L17.5 -14 L11 -20.5 Z" fill="#0284c7"/>
+    <path d="M32 0 L23 6 L23 -6 Z" fill="#059669"/>
+    <path d="M22.6 22.6 L14 17.5 L20.5 11 Z" fill="#0284c7"/>
+    <path d="M0 32 L-6 23 L6 23 Z" fill="#059669"/>
+    <path d="M-22.6 22.6 L-17.5 14 L-11 20.5 Z" fill="#0284c7"/>
+    <path d="M-32 0 L-23 -6 L-23 6 Z" fill="#059669"/>
+    <path d="M-22.6 -22.6 L-14 -17.5 L-20.5 -11 Z" fill="#0284c7"/>
+    <!-- النواة الدائرية -->
+    <circle cx="0" cy="0" r="19" fill="#047857"/>
+    <circle cx="0" cy="0" r="13" fill="#ffffff"/>
+    <!-- سعف النخلة المركزية -->
+    <path d="M0 -9 Q3 -3 0 7 Q-3 -3 0 -9" fill="#047857"/>
+    <path d="M0 -3 Q6 -8 8 -4 Q4 1 0 1" fill="#0284c7"/>
+    <path d="M0 -3 Q-6 -8 -8 -4 Q-4 1 0 1" fill="#0284c7"/>
+    <circle cx="0" cy="7" r="1.5" fill="#047857"/>
+  </g>
+  <!-- الاسم الرسمي باللغة العربية -->
+  <text x="255" y="36" font-family="'Tajawal', Tahoma, Arial, sans-serif" font-size="14.5" font-weight="900" fill="#065f46" text-anchor="end">المؤسسة العامة للتدريب التقني والمهني</text>
+  <!-- الاسم باللغة الإنجليزية -->
+  <text x="255" y="54" font-family="'Tajawal', Tahoma, Arial, sans-serif" font-size="8.8" font-weight="700" fill="#0284c7" text-anchor="end" letter-spacing="0.4">Technical &amp; Vocational Training Corporation</text>
+  <line x1="30" y1="63" x2="255" y2="63" stroke="url(#tvtcGrad)" stroke-width="1.8" stroke-linecap="round" opacity="0.6"/>
+</svg>'''
 
 def init_db():
     conn = sqlite3.connect(os.path.join(BASE_DIR, 'maintenance.db'))
@@ -47,7 +80,7 @@ USERS = {
 LAB_NUMBERS = (1, 2, 3, 4, 5, 6, 7, 9, 10, 11, 12, 13, 14, 22, 23, 24, 26, 27)
 ISSUE_CATEGORIES = ('أجهزة', 'برامج', 'شبكة', 'أخرى')
 
-# --- صفحة تسجيل الدخول بشعار TVTC وإخفاء اسم المستخدم افتراضياً ---
+# --- صفحة تسجيل الدخول بشعار TVTC المتجه المدمج ---
 LOGIN_TEMPLATE = """
 <!DOCTYPE html>
 <html dir="rtl" lang="ar">
@@ -86,8 +119,8 @@ LOGIN_TEMPLATE = """
     <div class="max-w-md w-full glass-card rounded-3xl p-7 md:p-8 relative">
         <div class="text-center mb-6">
             <div class="flex justify-center items-center mb-3">
-                <div class="p-2.5 rounded-2xl bg-white/95 border border-cyan-400/40 shadow-[0_0_25px_rgba(6,182,212,0.3)]">
-                    <img src="{{ logo_url }}" alt="شعار المؤسسة العامة للتدريب التقني والمهني" class="h-14 w-auto object-contain" referrerpolicy="no-referrer">
+                <div class="p-3 rounded-2xl bg-white/95 border border-cyan-400/40 shadow-[0_0_25px_rgba(6,182,212,0.3)] w-full max-w-[270px]">
+                    <img src="{{ logo_url }}" alt="شعار المؤسسة العامة للتدريب التقني والمهني" class="h-12 w-full object-contain">
                 </div>
             </div>
             <h2 class="text-xl font-black text-white tracking-wide">نظام إدارة صيانة المعامل</h2>
@@ -208,7 +241,7 @@ LOGIN_TEMPLATE = """
 </html>
 """
 
-# --- لوحة العمليات ومخطط الرادار المعماري بشعار TVTC ---
+# --- لوحة العمليات ومخطط الرادار المعماري ---
 DASHBOARD_TEMPLATE = """
 <!DOCTYPE html>
 <html dir="rtl" lang="ar">
@@ -335,8 +368,8 @@ DASHBOARD_TEMPLATE = """
                 <h1 class="font-black text-base text-white">النظام الذكي لإدارة ومتابعة صيانة حواسيب المعامل</h1>
                 <p class="text-[11px] text-cyan-400">المؤسسة العامة للتدريب التقني والمهني • قسم الحاسب الآلي</p>
             </div>
-            <div class="h-11 w-11 rounded-xl bg-white/95 border border-cyan-400/40 p-1 flex items-center justify-center shadow-[0_0_15px_rgba(6,182,212,0.3)]">
-                <img src="{{ logo_url }}" alt="TVTC" class="h-full w-full object-contain" referrerpolicy="no-referrer">
+            <div class="h-11 w-28 rounded-xl bg-white/95 border border-cyan-400/40 p-1 flex items-center justify-center shadow-[0_0_15px_rgba(6,182,212,0.3)]">
+                <img src="{{ logo_url }}" alt="TVTC" class="h-full w-full object-contain">
             </div>
         </div>
     </header>
@@ -874,7 +907,7 @@ DASHBOARD_TEMPLATE = """
 </html>
 """
 
-# --- نموذج باركودات QR الموحدة (مقاس 15×15 سم على A4 بشعار TVTC) ---
+# --- نموذج باركودات QR الموحدة (A4 - 15×15 سم) بشعار TVTC ---
 QR_LABELS_TEMPLATE = """
 <!DOCTYPE html>
 <html dir="rtl" lang="ar">
@@ -991,7 +1024,7 @@ QR_LABELS_TEMPLATE = """
         <div class="a4-sheet">
             <div class="qr-card-15cm">
                 <div class="qr-card-header">
-                    <img src="{{ logo_url }}" alt="شعار TVTC" referrerpolicy="no-referrer">
+                    <img src="{{ logo_url }}" alt="شعار TVTC">
                     <p class="dept-title">المؤسسة العامة للتدريب التقني والمهني • قسم الحاسب</p>
                     <h2 class="lab-title">معمل ({{ lab }})</h2>
                 </div>
@@ -1051,8 +1084,8 @@ REPORT_TEMPLATE = """
     <main class="max-w-lg w-full report-glass-card rounded-3xl p-7 md:p-8 relative my-auto shadow-2xl">
         <div class="text-center mb-6">
             <div class="flex justify-center items-center mb-3">
-                <div class="p-2.5 rounded-2xl bg-white/95 border border-cyan-400/40 shadow-[0_0_20px_rgba(6,182,212,0.25)]">
-                    <img src="{{ logo_url }}" alt="شعار المؤسسة العامة للتدريب التقني والمهني" class="h-12 w-auto object-contain" referrerpolicy="no-referrer">
+                <div class="p-2.5 rounded-2xl bg-white/95 border border-cyan-400/40 shadow-[0_0_20px_rgba(6,182,212,0.25)] w-full max-w-[240px]">
+                    <img src="{{ logo_url }}" alt="شعار المؤسسة العامة للتدريب التقني والمهني" class="h-11 w-full object-contain">
                 </div>
             </div>
             
@@ -1183,32 +1216,11 @@ def qr_base_url(raw_url):
         return None
     return base
 
-# --- المسارات والروابط (Routes) ---
-
-# مسار وسيط ذكي لتحميل وتخزين شعار TVTC محلياً دون أي حظر خارجي
+# --- مسارات خدمة الشعار محلياً بدون أي حظر ---
+@app.route('/tvtc-logo.svg')
 @app.route('/tvtc-logo.png')
-def tvtc_logo():
-    global TVTC_IMAGE_CACHE
-    if TVTC_IMAGE_CACHE is None:
-        urls = [
-            "https://images.weserv.nl/?url=upload.wikimedia.org/wikipedia/commons/thumb/c/c2/TVTC_Logo.svg/512px-TVTC_Logo.svg.png",
-            "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c2/TVTC_Logo.svg/512px-TVTC_Logo.svg.png",
-            "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7b/TVTC_Logo.svg/512px-TVTC_Logo.svg.png"
-        ]
-        for u in urls:
-            try:
-                req = urllib.request.Request(u, headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'})
-                with urllib.request.urlopen(req, timeout=4) as response:
-                    if response.status == 200:
-                        TVTC_IMAGE_CACHE = response.read()
-                        break
-            except Exception:
-                continue
-
-    if TVTC_IMAGE_CACHE:
-        return send_file(BytesIO(TVTC_IMAGE_CACHE), mimetype='image/png', max_age=86400)
-    
-    return redirect("https://images.weserv.nl/?url=upload.wikimedia.org/wikipedia/commons/thumb/c/c2/TVTC_Logo.svg/512px-TVTC_Logo.svg.png")
+def tvtc_logo_direct():
+    return Response(TVTC_SVG_CODE, mimetype='image/svg+xml', headers={'Cache-Control': 'public, max-age=86400'})
 
 @app.route('/')
 def home():
