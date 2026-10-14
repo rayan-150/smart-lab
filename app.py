@@ -4,6 +4,7 @@ import csv
 from io import BytesIO, StringIO
 from urllib.parse import urlsplit
 from collections import Counter
+import urllib.request
 
 import qrcode
 from flask import Flask, abort, render_template_string, request, redirect, send_file, url_for, session, Response
@@ -12,8 +13,9 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 app = Flask(__name__)
 app.secret_key = "smart_lab_secret_key_2026_super_safe"
 
-# رابط شعار المؤسسة العامة للتدريب التقني والمهني الرسمي
-TVTC_LOGO_URL = "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c2/TVTC_Logo.svg/512px-TVTC_Logo.svg.png"
+# مسار الشعار المحلي الداخلي
+TVTC_LOGO_URL = "/tvtc-logo.png"
+TVTC_IMAGE_CACHE = None
 
 def init_db():
     conn = sqlite3.connect(os.path.join(BASE_DIR, 'maintenance.db'))
@@ -85,7 +87,7 @@ LOGIN_TEMPLATE = """
         <div class="text-center mb-6">
             <div class="flex justify-center items-center mb-3">
                 <div class="p-2.5 rounded-2xl bg-white/95 border border-cyan-400/40 shadow-[0_0_25px_rgba(6,182,212,0.3)]">
-                    <img src="{{ logo_url }}" alt="شعار المؤسسة العامة للتدريب التقني والمهني" class="h-14 w-auto object-contain">
+                    <img src="{{ logo_url }}" alt="شعار المؤسسة العامة للتدريب التقني والمهني" class="h-14 w-auto object-contain" referrerpolicy="no-referrer">
                 </div>
             </div>
             <h2 class="text-xl font-black text-white tracking-wide">نظام إدارة صيانة المعامل</h2>
@@ -334,7 +336,7 @@ DASHBOARD_TEMPLATE = """
                 <p class="text-[11px] text-cyan-400">المؤسسة العامة للتدريب التقني والمهني • قسم الحاسب الآلي</p>
             </div>
             <div class="h-11 w-11 rounded-xl bg-white/95 border border-cyan-400/40 p-1 flex items-center justify-center shadow-[0_0_15px_rgba(6,182,212,0.3)]">
-                <img src="{{ logo_url }}" alt="TVTC" class="h-full w-full object-contain">
+                <img src="{{ logo_url }}" alt="TVTC" class="h-full w-full object-contain" referrerpolicy="no-referrer">
             </div>
         </div>
     </header>
@@ -989,7 +991,7 @@ QR_LABELS_TEMPLATE = """
         <div class="a4-sheet">
             <div class="qr-card-15cm">
                 <div class="qr-card-header">
-                    <img src="{{ logo_url }}" alt="شعار TVTC">
+                    <img src="{{ logo_url }}" alt="شعار TVTC" referrerpolicy="no-referrer">
                     <p class="dept-title">المؤسسة العامة للتدريب التقني والمهني • قسم الحاسب</p>
                     <h2 class="lab-title">معمل ({{ lab }})</h2>
                 </div>
@@ -1050,7 +1052,7 @@ REPORT_TEMPLATE = """
         <div class="text-center mb-6">
             <div class="flex justify-center items-center mb-3">
                 <div class="p-2.5 rounded-2xl bg-white/95 border border-cyan-400/40 shadow-[0_0_20px_rgba(6,182,212,0.25)]">
-                    <img src="{{ logo_url }}" alt="شعار المؤسسة العامة للتدريب التقني والمهني" class="h-12 w-auto object-contain">
+                    <img src="{{ logo_url }}" alt="شعار المؤسسة العامة للتدريب التقني والمهني" class="h-12 w-auto object-contain" referrerpolicy="no-referrer">
                 </div>
             </div>
             
@@ -1182,6 +1184,31 @@ def qr_base_url(raw_url):
     return base
 
 # --- المسارات والروابط (Routes) ---
+
+# مسار وسيط ذكي لتحميل وتخزين شعار TVTC محلياً دون أي حظر خارجي
+@app.route('/tvtc-logo.png')
+def tvtc_logo():
+    global TVTC_IMAGE_CACHE
+    if TVTC_IMAGE_CACHE is None:
+        urls = [
+            "https://images.weserv.nl/?url=upload.wikimedia.org/wikipedia/commons/thumb/c/c2/TVTC_Logo.svg/512px-TVTC_Logo.svg.png",
+            "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c2/TVTC_Logo.svg/512px-TVTC_Logo.svg.png",
+            "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7b/TVTC_Logo.svg/512px-TVTC_Logo.svg.png"
+        ]
+        for u in urls:
+            try:
+                req = urllib.request.Request(u, headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'})
+                with urllib.request.urlopen(req, timeout=4) as response:
+                    if response.status == 200:
+                        TVTC_IMAGE_CACHE = response.read()
+                        break
+            except Exception:
+                continue
+
+    if TVTC_IMAGE_CACHE:
+        return send_file(BytesIO(TVTC_IMAGE_CACHE), mimetype='image/png', max_age=86400)
+    
+    return redirect("https://images.weserv.nl/?url=upload.wikimedia.org/wikipedia/commons/thumb/c/c2/TVTC_Logo.svg/512px-TVTC_Logo.svg.png")
 
 @app.route('/')
 def home():
