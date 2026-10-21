@@ -1,12 +1,17 @@
 import os
 import sqlite3
-import csv
-from io import BytesIO, StringIO
+import base64
+import math
+from copy import deepcopy
+from datetime import datetime, timezone, timedelta
+from zipfile import ZipFile, ZIP_DEFLATED
+from xml.etree import ElementTree as ET
+from io import BytesIO
 from urllib.parse import urlsplit
 from collections import Counter
 
 import qrcode
-from flask import Flask, abort, render_template_string, request, redirect, send_file, url_for, session, Response
+from flask import Flask, abort, render_template_string, request, redirect, send_file, url_for, session
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 app = Flask(__name__)
@@ -383,7 +388,7 @@ DASHBOARD_TEMPLATE = """
         body { font-family: 'Tajawal', sans-serif; background-color: #050811; color: #f1f5f9; }
         .blueprint-container {
             background-color: #070d1e;
-            background-image: 
+            background-image: 
                 radial-gradient(rgba(14, 165, 233, 0.12) 1px, transparent 1px),
                 linear-gradient(rgba(14, 165, 233, 0.04) 1px, transparent 1px),
                 linear-gradient(90deg, rgba(14, 165, 233, 0.04) 1px, transparent 1px);
@@ -491,7 +496,7 @@ DASHBOARD_TEMPLATE = """
         </div>
 
         <div class="flex items-center gap-3">
-            <a href="{{ url_for('export_csv') }}" class="bg-emerald-600/20 hover:bg-emerald-600/30 border border-emerald-500/40 text-emerald-300 text-xs px-3 py-1.5 rounded-xl flex items-center gap-2 transition font-bold">
+            <a href="{{ url_for('export_excel') }}" class="bg-emerald-600/20 hover:bg-emerald-600/30 border border-emerald-500/40 text-emerald-300 text-xs px-3 py-1.5 rounded-xl flex items-center gap-2 transition font-bold">
                 <i class="fa-solid fa-file-excel"></i> تصدير تقرير الصيانة (Excel)
             </a>
             <div class="text-left">
@@ -1225,7 +1230,7 @@ REPORT_TEMPLATE = """
         body {
             font-family: 'Tajawal', sans-serif;
             background-color: #040711;
-            background-image: 
+            background-image: 
                 radial-gradient(circle at 50% 18%, rgba(6, 182, 212, 0.18) 0%, transparent 60%),
                 radial-gradient(rgba(14, 165, 233, 0.08) 1px, transparent 1px),
                 linear-gradient(rgba(14, 165, 233, 0.03) 1px, transparent 1px),
@@ -1544,29 +1549,173 @@ def update_status(ticket_id):
     conn.close()
     return redirect(url_for('dashboard'))
 
+# قالب Excel مضمّن؛ لا يحتاج التصدير إلى مكتبات إضافية أو ملفات جانبية.
+_MAINTENANCE_REPORT_TEMPLATE = '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'
+
+
+def build_maintenance_workbook(tickets):
+    """إنشاء تقرير XLSX منسق من سجلات الصيانة، مع إبقاء النصوص نصوصًا."""
+    ns = 'http://schemas.openxmlformats.org/spreadsheetml/2006/main'
+    tag = lambda name: '{' + ns + '}' + name
+    template_bytes = base64.b64decode(_MAINTENANCE_REPORT_TEMPLATE)
+
+    def set_value(cell, value):
+        for child in list(cell):
+            cell.remove(child)
+        cell.attrib.pop('t', None)
+        if value is None:
+            return
+        if isinstance(value, datetime):
+            value = (value.replace(tzinfo=None) - datetime(1899, 12, 30)).total_seconds() / 86400
+        if isinstance(value, (int, float)) and not isinstance(value, bool):
+            ET.SubElement(cell, tag('v')).text = str(value)
+        else:
+            cell.set('t', 'inlineStr')
+            inline = ET.SubElement(cell, tag('is'))
+            text = ET.SubElement(inline, tag('t'))
+            text.set('{http://www.w3.org/XML/1998/namespace}space', 'preserve')
+            # محارف XML غير الصالحة لا تُقبل في Excel؛ تبقى بقية البيانات كما هي.
+            text.text = ''.join(ch for ch in str(value) if ch in '\t\n\r' or
+                                0x20 <= ord(ch) <= 0xD7FF or
+                                0xE000 <= ord(ch) <= 0xFFFD or
+                                0x10000 <= ord(ch) <= 0x10FFFF)
+
+    with ZipFile(BytesIO(template_bytes)) as template:
+        sheet = ET.fromstring(template.read('xl/worksheets/sheet1.xml'))
+        sheet_data = sheet.find(tag('sheetData'))
+        rows = {int(row.get('r')): row for row in sheet_data}
+        prototypes = [deepcopy(rows[7]), deepcopy(rows[8])]
+        for row in list(sheet_data):
+            if int(row.get('r')) >= 7:
+                sheet_data.remove(row)
+
+        # اتجاه عربي وتثبيت عناوين الجدول عند التمرير.
+        view = sheet.find(tag('sheetViews')).find(tag('sheetView'))
+        view.set('rightToLeft', '1')
+        view.set('showGridLines', '0')
+        view.set('zoomScale', '85')
+        stamp = datetime.now(timezone(timedelta(hours=3))).strftime('%Y-%m-%d %H:%M')
+        set_value(rows[4].find(tag('c')), f'تاريخ التصدير: {stamp} (بتوقيت السعودية)')
+
+        widths = (16, 14, 23, 28, 20, 52, 22, 38, 27)
+        for index, ticket in enumerate(tickets):
+            row_num = index + 7
+            row = deepcopy(prototypes[index % 2])
+            row.set('r', str(row_num))
+            values = list(ticket)
+            values[1] = f'معمل {ticket[1]}'
+            values[2] = 'منصة المدرب' if ticket[2] == 0 else f'جهاز {ticket[2]}'
+            if values[8]:
+                try:
+                    values[8] = datetime.fromisoformat(str(values[8]))
+                except ValueError:
+                    pass
+
+            line_count = 1
+            for col, (cell, value) in enumerate(zip(row, values)):
+                cell.set('r', f'{chr(65 + col)}{row_num}')
+                set_value(cell, value)
+                if col != 8:
+                    wrapped = sum(max(1, math.ceil(len(line) / max(1, (widths[col] - 3) * 0.8)))
+                                  for line in str(value or '').split('\n'))
+                    line_count = max(line_count, wrapped)
+            row.set('ht', str(min(409, max(42, line_count * 17 + 12))))
+            row.set('customHeight', '1')
+            sheet_data.append(row)
+
+        last_data_row = max(7, 6 + len(tickets))
+        last_visible_row = last_data_row
+        if not tickets:
+            row = deepcopy(prototypes[0])
+            for cell in row:
+                set_value(cell, None)
+            sheet_data.append(row)
+            message_row = ET.SubElement(sheet_data, tag('row'), {
+                'r': '9', 'ht': '34', 'customHeight': '1'
+            })
+            cell = ET.SubElement(message_row, tag('c'), {
+                'r': 'A9', 's': rows[3].find(tag('c')).get('s', '0')
+            })
+            set_value(cell, 'لا توجد بلاغات صيانة مسجلة حتى الآن.')
+            merged = sheet.find(tag('mergeCells'))
+            ET.SubElement(merged, tag('mergeCell'), {'ref': 'A9:I9'})
+            merged.set('count', str(len(merged)))
+            last_visible_row = 9
+
+        for rule in sheet.findall(tag('conditionalFormatting')):
+            rule.set('sqref', f'G7:G{last_data_row}')
+
+        dimension = ET.Element(tag('dimension'), {'ref': f'A1:I{last_visible_row}'})
+        sheet.insert(1, dimension)
+        # طباعة أفقية، مع تكرار رؤوس الأعمدة وترك عدد الصفحات الرأسي مفتوحًا.
+        properties = sheet.find(tag('sheetPr'))
+        ET.SubElement(properties, tag('pageSetUpPr'), {'fitToPage': '1'})
+        table_parts = sheet.find(tag('tableParts'))
+        page_index = list(sheet).index(table_parts)
+        sheet.insert(page_index, ET.Element(tag('pageMargins'), {
+            'left': '0.25', 'right': '0.25', 'top': '0.4', 'bottom': '0.4',
+            'header': '0.2', 'footer': '0.2'
+        }))
+        sheet.insert(page_index + 1, ET.Element(tag('pageSetup'), {
+            'paperSize': '8', 'orientation': 'landscape',
+            'fitToWidth': '1', 'fitToHeight': '0'
+        }))
+
+        table = ET.fromstring(template.read('xl/tables/table1.xml'))
+        table.set('ref', f'A6:I{last_data_row}')
+        table.find(tag('autoFilter')).set('ref', f'A6:I{last_data_row}')
+
+        styles = ET.fromstring(template.read('xl/styles.xml'))
+        for alignment in styles.iter(tag('alignment')):
+            alignment.set('readingOrder', '2')
+
+        workbook = ET.fromstring(template.read('xl/workbook.xml'))
+        defined_names = ET.SubElement(workbook, tag('definedNames'))
+        ET.SubElement(defined_names, tag('definedName'), {
+            'name': '_xlnm.Print_Titles', 'localSheetId': '0'
+        }).text = "'تقرير الصيانة'!$6:$6"
+        ET.SubElement(defined_names, tag('definedName'), {
+            'name': '_xlnm.Print_Area', 'localSheetId': '0'
+        }).text = f"'تقرير الصيانة'!$A$1:$I${last_visible_row}"
+
+        replacements = {
+            'xl/worksheets/sheet1.xml': sheet,
+            'xl/tables/table1.xml': table,
+            'xl/styles.xml': styles,
+            'xl/workbook.xml': workbook,
+        }
+        output = BytesIO()
+        with ZipFile(output, 'w', compression=ZIP_DEFLATED) as result:
+            for name in template.namelist():
+                data = (ET.tostring(replacements[name], encoding='utf-8', xml_declaration=True)
+                        if name in replacements else template.read(name))
+                result.writestr(name, data)
+        output.seek(0)
+        return output
+
+
+@app.route('/export_excel')
 @app.route('/export_csv')
-def export_csv():
+def export_excel():
     if 'user' not in session:
         return redirect(url_for('login'))
     conn = sqlite3.connect(os.path.join(BASE_DIR, 'maintenance.db'))
-    cursor = conn.cursor()
-    cursor.execute('SELECT id, lab_num, seat_num, reporter_name, issue_category, issue, status, replaced_parts, created_at FROM tickets ORDER BY id DESC')
-    tickets = cursor.fetchall()
-    conn.close()
+    try:
+        tickets = conn.execute(
+            'SELECT id, lab_num, seat_num, reporter_name, issue_category, issue, '
+            'status, replaced_parts, created_at FROM tickets ORDER BY id DESC'
+        ).fetchall()
+    finally:
+        conn.close()
 
-    si = StringIO()
-    writer = csv.writer(si)
-    writer.writerow(['رقم التذكرة', 'رقم المعمل', 'موقع الجهاز', 'اسم المُبلّغ', 'تصنيف العطل', 'وصف العطل', 'حالة التذكرة', 'القطع المستبدلة', 'تاريخ ووقت البلاغ'])
-    for t in tickets:
-        seat_name = "منصة المدرب" if t[2] == 0 else f"جهاز {t[2]}"
-        writer.writerow([t[0], f"معمل {t[1]}", seat_name, t[3], t[4], t[5], t[6], t[7], t[8]])
-
-    output = si.getvalue().encode('utf-8-sig')
-    return Response(
-        output,
-        mimetype="text/csv",
-        headers={"Content-Disposition": "attachment;filename=smart_lab_maintenance_report.csv"}
+    return send_file(
+        build_maintenance_workbook(tickets),
+        mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        as_attachment=True,
+        download_name='smart_lab_maintenance_report.xlsx',
+        max_age=0,
     )
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=False)
