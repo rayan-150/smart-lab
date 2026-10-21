@@ -1652,14 +1652,23 @@ def build_maintenance_workbook(tickets):
         ET.SubElement(properties, tag('pageSetUpPr'), {'fitToPage': '1'})
         table_parts = sheet.find(tag('tableParts'))
         page_index = list(sheet).index(table_parts)
-        sheet.insert(page_index, ET.Element(tag('pageMargins'), {
+        page_margins = sheet.find(tag('pageMargins'))
+        if page_margins is None:
+            page_margins = ET.Element(tag('pageMargins'))
+            sheet.insert(page_index, page_margins)
+        # القالب يحتوي هوامش افتراضية؛ نحدّث العنصر نفسه حتى لا يتكرر.
+        page_margins.attrib.update({
             'left': '0.25', 'right': '0.25', 'top': '0.4', 'bottom': '0.4',
             'header': '0.2', 'footer': '0.2'
-        }))
-        sheet.insert(page_index + 1, ET.Element(tag('pageSetup'), {
+        })
+        page_setup = sheet.find(tag('pageSetup'))
+        if page_setup is None:
+            page_setup = ET.Element(tag('pageSetup'))
+            sheet.insert(list(sheet).index(page_margins) + 1, page_setup)
+        page_setup.attrib.update({
             'paperSize': '8', 'orientation': 'landscape',
             'fitToWidth': '1', 'fitToHeight': '0'
-        }))
+        })
 
         table = ET.fromstring(template.read('xl/tables/table1.xml'))
         table.set('ref', f'A6:I{last_data_row}')
