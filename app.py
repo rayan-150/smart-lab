@@ -53,6 +53,8 @@ USERS = {
 }
 
 LAB_NUMBERS = (1, 2, 3, 4, 5, 6, 7, 9, 10, 11, 12, 13, 14, 22, 23, 24, 26, 27)
+# عدد أجهزة المتدربين في كل معمل؛ منصة المدرب لها الرقم 0 بشكل مستقل.
+LAB_DEVICE_COUNTS = {lab: 30 if lab in (11, 12, 13, 14) else 27 for lab in LAB_NUMBERS}
 ISSUE_CATEGORIES = ('أجهزة', 'برامج', 'شبكة', 'أخرى')
 
 # --- صفحة تسجيل الدخول (اسم المستخدم مخفي افتراضياً + زر رئيس القسم) ---
@@ -552,7 +554,7 @@ DASHBOARD_TEMPLATE = """
                             <span id="active-lab-title">توزيع أجهزة معمل (1)</span>
                             <i class="fa-solid fa-network-wired text-cyan-400"></i>
                         </h2>
-                        <span class="text-[10px] text-slate-400">27 جهاز حاسب + جهاز المدرب</span>
+                        <span id="lab-device-count" class="text-[10px] text-slate-400">{{ lab_device_counts[1] }} جهاز حاسب + جهاز المدرب</span>
                     </div>
                 </div>
 
@@ -867,6 +869,7 @@ DASHBOARD_TEMPLATE = """
     <script>
         const allTickets = {{ tickets|tojson }};
         const labStatuses = {{ lab_statuses|tojson }};
+        const labDeviceCounts = {{ lab_device_counts|tojson }};
         let currentLabId = 1;
         let nocInterval = null;
         let countdown = 30;
@@ -887,6 +890,8 @@ DASHBOARD_TEMPLATE = """
 
         function renderSeatsGrid(labId) {
             currentLabId = labId;
+            const deviceCount = labDeviceCounts[labId];
+            document.getElementById('lab-device-count').textContent = `${deviceCount} جهاز حاسب + جهاز المدرب`;
             const container = document.getElementById('seats-container');
             container.innerHTML = '';
 
@@ -901,7 +906,7 @@ DASHBOARD_TEMPLATE = """
                 trainerText.innerText = 'منصة جهاز المدرب والشاشة الرئيسية (سليم)';
             }
 
-            for (let i = 1; i <= 27; i++) {
+            for (let i = 1; i <= deviceCount; i++) {
                 const activeTicket = allTickets.find(t => t[1] == labId && t[2] == i && t[6] !== 'تم الحل');
                 const seat = document.createElement('div');
                 seat.onclick = () => inspectDevice(labId, i);
@@ -1448,6 +1453,7 @@ def lab_report(lab_num):
     if lab_num not in LAB_NUMBERS:
         abort(404)
 
+    device_count = LAB_DEVICE_COUNTS[lab_num]
     conn = sqlite3.connect(os.path.join(BASE_DIR, 'maintenance.db'))
     cursor = conn.cursor()
     cursor.execute("SELECT seat_num FROM tickets WHERE lab_num = ? AND status != 'تم الحل'", (lab_num,))
@@ -1462,7 +1468,7 @@ def lab_report(lab_num):
         category = values.get('issue_category', '')
         issue = values.get('issue', '').strip()
         
-        if not seat_raw.isdigit() or not 0 <= int(seat_raw) <= 27:
+        if not seat_raw.isdigit() or not 0 <= int(seat_raw) <= device_count:
             error = 'اختر جهازًا صحيحًا أو منصة المدرب.'
         elif int(seat_raw) in occupied_seats:
             error = 'عذراً! هذا الجهاز مسجل عليه بلاغ نشط بالفعل وهو قيد متابعة فريق الصيانة حالياً.'
@@ -1484,7 +1490,7 @@ def lab_report(lab_num):
     success_raw = request.args.get('success', '')
     success = int(success_raw) if success_raw.isdigit() else None
     return render_template_string(
-        REPORT_TEMPLATE, lab_num=lab_num, seats=range(1, 28),
+        REPORT_TEMPLATE, lab_num=lab_num, seats=range(1, device_count + 1),
         occupied_seats=occupied_seats,
         categories=ISSUE_CATEGORIES, values=values, error=error, success=success
     )
@@ -1533,6 +1539,7 @@ def dashboard():
         pending_tickets=pending,
         operational_rate=op_rate,
         lab_statuses=lab_statuses,
+        lab_device_counts=LAB_DEVICE_COUNTS,
         parts_stats=parts_stats
     )
 
