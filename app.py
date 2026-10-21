@@ -303,7 +303,7 @@ LOGIN_TEMPLATE = """
 
     <footer class="page-footer">
         <p>قسم الحاسب الآلي وتقنية المعلومات</p>
-        <p>إشراف: <strong>أ. محمد الدوخي</strong><span class="credit-separator">•</span>إعداد: <strong>ريان المحيطيب</strong></p>
+        <p>إشراف: <strong>م. محمد الدوخي</strong><span class="credit-separator">•</span>إعداد: <strong>ريان المحيطيب</strong></p>
     </footer>
 
     <script>
@@ -503,7 +503,7 @@ DASHBOARD_TEMPLATE = """
             </a>
             <div class="text-left">
                 <h1 class="font-black text-base text-white">النظام الذكي لإدارة ومتابعة صيانة حواسيب المعامل</h1>
-                <p class="text-[11px] text-cyan-400">قسم الحاسب الآلي | إشراف: أ. محمد الدوخي • إعداد: ريان المحيطيب</p>
+                <p class="text-[11px] text-cyan-400">قسم الحاسب الآلي | إشراف: م. محمد الدوخي • إعداد: ريان المحيطيب</p>
             </div>
             <div class="w-10 h-10 rounded-xl bg-cyan-500/20 border border-cyan-400/40 flex items-center justify-center text-cyan-400 text-lg">
                 <i class="fa-solid fa-microchip"></i>
@@ -1192,7 +1192,7 @@ QR_LABELS_TEMPLATE = """
 
                 <div class="qr-card-footer">
                     <p class="instruction">امسح الرمز بكاميرا الجوال للإبلاغ الفوري عن أي عطل</p>
-                    <p class="meta">النظام الذكي لصيانة المعامل • إشراف: أ. محمد الدوخي • إعداد: ريان المحيطيب</p>
+                    <p class="meta">النظام الذكي لصيانة المعامل • إشراف: م. محمد الدوخي • إعداد: ريان المحيطيب</p>
                 </div>
             </div>
         </div>
@@ -1356,7 +1356,7 @@ REPORT_TEMPLATE = """
         <div class="bg-slate-900/60 border border-slate-800/80 backdrop-blur-md px-5 py-2 rounded-full text-xs text-slate-400 inline-flex flex-wrap items-center justify-center gap-2 shadow-lg">
             <span class="font-bold text-slate-200">قسم الحاسب الآلي وتقنية المعلومات</span>
             <span class="text-cyan-500/60">•</span>
-            <span>إشراف: <span class="text-slate-300 font-semibold">أ. محمد الدوخي</span></span>
+            <span>إشراف: <span class="text-slate-300 font-semibold">م. محمد الدوخي</span></span>
             <span class="text-cyan-500/60">•</span>
             <span>إعداد: <span class="text-cyan-400 font-semibold">ريان المحيطيب</span></span>
         </div>
