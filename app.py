@@ -15,7 +15,11 @@ from flask import Flask, abort, render_template_string, request, redirect, send_
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 ON_RENDER = os.environ.get('RENDER') == 'true'
-RENDER_DISK_MOUNT = Path('/var/data')
+DATABASE_URL = os.environ.get('DATABASE_URL', '').strip()
+USE_POSTGRES = bool(DATABASE_URL)
+if USE_POSTGRES:
+    import psycopg
+    from psycopg import sql as pg_sql
 app = Flask(__name__)
 app.secret_key = "smart_lab_secret_key_2026_super_safe"
 
@@ -24,8 +28,7 @@ ISSUE_CATEGORIES = ('أجهزة', 'برامج', 'شبكة', 'أخرى')
 TICKET_STATUSES = ('مفتوح', 'قيد الإصلاح', 'تم الحل')
 REPORT_INTERVAL = timedelta(days=30)
 RIYADH_TZ = timezone(timedelta(hours=3))
-DEFAULT_DATA_DIR = str(RENDER_DISK_MOUNT / 'lab_databases') if ON_RENDER else os.path.join(BASE_DIR, 'lab_databases')
-DATA_DIR = os.path.realpath(os.environ.get('SMART_LAB_DATA_DIR') or DEFAULT_DATA_DIR)
+DATA_DIR = os.path.realpath(os.environ.get('SMART_LAB_DATA_DIR') or os.path.join(BASE_DIR, 'lab_databases'))
 LEGACY_DB_PATH = os.environ.get('SMART_LAB_LEGACY_DB', os.path.join(BASE_DIR, 'maintenance.db'))
 TICKET_COLUMNS = 'id, lab_num, seat_num, reporter_name, issue_category, issue, status, replaced_parts, created_at'
 
@@ -37,7 +40,7 @@ def inject_institution_logo():
     return {'institution_logo': INSTITUTION_LOGO_URI}
 
 def utc_now():
-    # SQLite stores UTC; only the dates shown to the user use Riyadh time.
+    # Databases store UTC; only the dates shown to the user use Riyadh time.
     return datetime.now(timezone.utc).replace(tzinfo=None, microsecond=0)
 
 
@@ -56,48 +59,106 @@ def local_time(value):
     return parse_time(value).replace(tzinfo=timezone.utc).astimezone(RIYADH_TZ).strftime('%Y-%m-%d %H:%M')
 
 
-@contextmanager
-def lab_connection(lab_num):
+class LabDatabase:
+    """Keep lab-scoped queries portable between local SQLite and PostgreSQL."""
+
+    def __init__(self, connection, lab_num, postgres=False):
+        self.connection = connection
+        self.lab_num = lab_num
+        self.postgres = postgres
+
+    def execute(self, statement, parameters=()):
+        if self.postgres:
+            if statement.strip().upper() == 'BEGIN IMMEDIATE':
+                # Serialize a lab's writes, including rechecks after waiting.
+                return self.connection.execute(
+                    'SELECT pg_catalog.pg_advisory_xact_lock(%s, %s)',
+                    (1397506370, self.lab_num)
+                )
+            # All SQL here is application-owned; question marks are parameters.
+            statement = statement.replace('?', '%s')
+        return self.connection.execute(statement, parameters)
+
+    def executemany(self, statement, rows):
+        if self.postgres:
+            with self.connection.cursor() as cursor:
+                cursor.executemany(statement.replace('?', '%s'), rows)
+        else:
+            self.connection.executemany(statement, rows)
+
+    def insert_id(self, statement, parameters):
+        if self.postgres:
+            return self.execute(statement + ' RETURNING id', parameters).fetchone()[0]
+        return self.execute(statement, parameters).lastrowid
+
+    def reset_identity(self, table):
+        if table not in ('tickets', 'report_exports'):
+            raise ValueError('Invalid identity table')
+        if self.postgres:
+            self.execute(
+                f"SELECT setval(pg_get_serial_sequence(?, 'id'), "
+                f"COALESCE(MAX(id), 1), MAX(id) IS NOT NULL) FROM {table}", (table,)
+            )
+
+
+def select_lab_schema(connection, lab_num, initialize=False):
     if lab_num not in LAB_NUMBERS:
         raise ValueError('رقم المعمل غير صحيح')
-    conn = sqlite3.connect(os.path.join(DATA_DIR, f'lab_{lab_num}.db'), timeout=30)
-    try:
-        with conn:
-            yield conn
-    finally:
-        conn.close()
+    schema = pg_sql.Identifier(f'smart_lab_{lab_num}')
+    if initialize:
+        connection.execute(pg_sql.SQL('CREATE SCHEMA IF NOT EXISTS {}').format(schema))
+    # LOCAL works with Neon's transaction pooler and resets at commit/rollback.
+    connection.execute(pg_sql.SQL('SET LOCAL search_path TO {}').format(schema))
+
+
+@contextmanager
+def lab_connection(lab_num, initialize=False):
+    if lab_num not in LAB_NUMBERS:
+        raise ValueError('رقم المعمل غير صحيح')
+    if USE_POSTGRES:
+        with psycopg.connect(DATABASE_URL, connect_timeout=15, prepare_threshold=None) as connection:
+            database = LabDatabase(connection, lab_num, postgres=True)
+            if initialize:
+                database.execute('BEGIN IMMEDIATE')
+            select_lab_schema(connection, lab_num, initialize=initialize)
+            yield database
+    else:
+        connection = sqlite3.connect(os.path.join(DATA_DIR, f'lab_{lab_num}.db'), timeout=30)
+        try:
+            with connection:
+                yield LabDatabase(connection, lab_num)
+        finally:
+            connection.close()
 
 
 def ensure_report_anchor(conn):
     first = conn.execute('SELECT MIN(created_at) FROM tickets').fetchone()[0]
     if first:
-        conn.execute("INSERT OR IGNORE INTO settings (key, value) VALUES ('report_anchor', ?)", (db_time(parse_time(first)),))
+        conn.execute("INSERT INTO settings (key, value) VALUES ('report_anchor', ?) ON CONFLICT (key) DO NOTHING", (db_time(parse_time(first)),))
 
 
 def prepare_storage():
-    # A directory on Render's temporary filesystem is not a persistent disk.
+    if USE_POSTGRES:
+        return
     if ON_RENDER:
-        if not os.path.ismount(RENDER_DISK_MOUNT):
-            raise RuntimeError(
-                'Persistent storage is required on Render. Attach a Persistent Disk '
-                'with mount path /var/data before starting this service.'
-            )
-        if not Path(DATA_DIR).is_relative_to(RENDER_DISK_MOUNT):
-            raise RuntimeError(
-                'SMART_LAB_DATA_DIR must be inside the persistent disk at /var/data '
-                '(recommended: /var/data/lab_databases).'
-            )
+        raise RuntimeError(
+            'Set DATABASE_URL in Render Environment to an external PostgreSQL '
+            'connection URL (for example, Neon Free). No paid Render disk is required.'
+        )
     os.makedirs(DATA_DIR, exist_ok=True)
 
 
 def init_db():
     prepare_storage()
+    identity = 'BIGSERIAL PRIMARY KEY' if USE_POSTGRES else 'INTEGER PRIMARY KEY AUTOINCREMENT'
+    timestamp_default = "(to_char(CURRENT_TIMESTAMP AT TIME ZONE 'UTC', 'YYYY-MM-DD HH24:MI:SS'))" if USE_POSTGRES else 'CURRENT_TIMESTAMP'
+    archive_binary = 'BYTEA' if USE_POSTGRES else 'BLOB'
     for lab_num in LAB_NUMBERS:
-        with lab_connection(lab_num) as conn:
+        with lab_connection(lab_num, initialize=True) as conn:
             # The CHECK also prevents accidentally writing another lab's ticket here.
             conn.execute(f'''
                 CREATE TABLE IF NOT EXISTS tickets (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    id {identity},
                     lab_num INTEGER NOT NULL CHECK (lab_num = {lab_num}),
                     seat_num INTEGER,
                     reporter_name TEXT,
@@ -105,18 +166,18 @@ def init_db():
                     issue TEXT,
                     status TEXT DEFAULT 'مفتوح',
                     replaced_parts TEXT DEFAULT 'لا يوجد',
-                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                    created_at TEXT DEFAULT {timestamp_default}
                 )
             ''')
             conn.execute('CREATE INDEX IF NOT EXISTS ticket_dates ON tickets (created_at)')
             conn.execute('CREATE TABLE IF NOT EXISTS settings (key TEXT PRIMARY KEY, value TEXT NOT NULL)')
-            conn.execute('''CREATE TABLE IF NOT EXISTS report_exports (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
+            conn.execute(f'''CREATE TABLE IF NOT EXISTS report_exports (
+                id {identity},
                 start_at TEXT NOT NULL UNIQUE,
                 end_at TEXT NOT NULL,
                 generated_at TEXT NOT NULL,
                 generated_by TEXT NOT NULL,
-                csv_data BLOB NOT NULL
+                csv_data {archive_binary} NOT NULL
             )''')
             conn.execute('BEGIN IMMEDIATE')
             migrated = conn.execute("SELECT 1 FROM settings WHERE key = 'legacy_migrated_v1'").fetchone()
@@ -126,6 +187,7 @@ def init_db():
                 with closing(sqlite3.connect(legacy_uri, uri=True)) as legacy:
                     rows = legacy.execute(f'SELECT {TICKET_COLUMNS} FROM tickets WHERE lab_num = ?', (lab_num,)).fetchall()
                 conn.executemany(f'INSERT INTO tickets ({TICKET_COLUMNS}) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)', rows)
+                conn.reset_identity('tickets')
                 conn.execute("INSERT INTO settings (key, value) VALUES ('legacy_migrated_v1', 'done')")
             ensure_report_anchor(conn)
 
@@ -1754,11 +1816,10 @@ def lab_report(lab_num):
                     occupied_seats.append(int(seat_raw))
                     error = 'هذا الجهاز مسجل عليه بلاغ نشط بالفعل.'
                 else:
-                    cursor = conn.execute(
+                    ticket_id = conn.insert_id(
                         'INSERT INTO tickets (lab_num, seat_num, reporter_name, issue_category, issue, created_at) VALUES (?, ?, ?, ?, ?, ?)',
                         (lab_num, int(seat_raw), reporter, category, issue, db_time(utc_now()))
                     )
-                    ticket_id = cursor.lastrowid
                     ensure_report_anchor(conn)
                     return redirect(url_for('lab_report', lab_num=lab_num, success=ticket_id))
 
