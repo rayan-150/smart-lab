@@ -14,6 +14,8 @@ import qrcode
 from flask import Flask, abort, render_template_string, request, redirect, send_file, url_for, session, Response
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+ON_RENDER = os.environ.get('RENDER') == 'true'
+RENDER_DISK_MOUNT = Path('/var/data')
 app = Flask(__name__)
 app.secret_key = "smart_lab_secret_key_2026_super_safe"
 
@@ -22,7 +24,8 @@ ISSUE_CATEGORIES = ('أجهزة', 'برامج', 'شبكة', 'أخرى')
 TICKET_STATUSES = ('مفتوح', 'قيد الإصلاح', 'تم الحل')
 REPORT_INTERVAL = timedelta(days=30)
 RIYADH_TZ = timezone(timedelta(hours=3))
-DATA_DIR = os.environ.get('SMART_LAB_DATA_DIR', os.path.join(BASE_DIR, 'lab_databases'))
+DEFAULT_DATA_DIR = str(RENDER_DISK_MOUNT / 'lab_databases') if ON_RENDER else os.path.join(BASE_DIR, 'lab_databases')
+DATA_DIR = os.path.realpath(os.environ.get('SMART_LAB_DATA_DIR') or DEFAULT_DATA_DIR)
 LEGACY_DB_PATH = os.environ.get('SMART_LAB_LEGACY_DB', os.path.join(BASE_DIR, 'maintenance.db'))
 TICKET_COLUMNS = 'id, lab_num, seat_num, reporter_name, issue_category, issue, status, replaced_parts, created_at'
 
@@ -71,8 +74,24 @@ def ensure_report_anchor(conn):
         conn.execute("INSERT OR IGNORE INTO settings (key, value) VALUES ('report_anchor', ?)", (db_time(parse_time(first)),))
 
 
-def init_db():
+def prepare_storage():
+    # A directory on Render's temporary filesystem is not a persistent disk.
+    if ON_RENDER:
+        if not os.path.ismount(RENDER_DISK_MOUNT):
+            raise RuntimeError(
+                'Persistent storage is required on Render. Attach a Persistent Disk '
+                'with mount path /var/data before starting this service.'
+            )
+        if not Path(DATA_DIR).is_relative_to(RENDER_DISK_MOUNT):
+            raise RuntimeError(
+                'SMART_LAB_DATA_DIR must be inside the persistent disk at /var/data '
+                '(recommended: /var/data/lab_databases).'
+            )
     os.makedirs(DATA_DIR, exist_ok=True)
+
+
+def init_db():
+    prepare_storage()
     for lab_num in LAB_NUMBERS:
         with lab_connection(lab_num) as conn:
             # The CHECK also prevents accidentally writing another lab's ticket here.
@@ -1883,4 +1902,4 @@ def download_lab_report(lab_num, report_id):
     return csv_response(saved[2], filename)
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=False)
+    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', '5000')), debug=False)
