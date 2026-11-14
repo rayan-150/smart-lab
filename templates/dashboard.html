@@ -1,488 +1,269 @@
+{% from 'icons.html' import icon, sprite %}
+{% macro panel_heading(symbol, title, subtitle, id) %}
+<div class="panel-heading">
+    <span class="icon-tile">{{ icon(symbol) }}</span>
+    <div><h2 id="{{ id }}">{{ title }}</h2><p>{{ subtitle }}</p></div>
+</div>
+{% endmacro %}
+{% macro metric(symbol, title, value, description, tone, is_rate=false) %}
+<article class="metric card" data-tone="{{ tone }}">
+    <div class="metric-head">
+        <div><h2>{{ title }}</h2><p class="metric-value" dir="ltr">{{ value }}{% if is_rate %}<span>%</span>{% endif %}</p></div>
+        <span class="icon-tile">{{ icon(symbol) }}</span>
+    </div>
+    {% if is_rate %}
+    <progress max="100" value="{{ value }}" aria-labelledby="readiness-description"></progress>
+    {% endif %}
+    <p class="metric-note"{% if is_rate %} id="readiness-description" title="نسبة البلاغات التي ليست في حالة مفتوح من إجمالي البلاغات"{% endif %}>{{ description }}</p>
+</article>
+{% endmacro %}
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>نظام إدارة صيانة المعامل الذكية | لوحة التحكم</title>
-  <!-- Google Fonts: Tajawal -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&display=swap" rel="stylesheet">
-  <!-- Tailwind CSS -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Font Awesome -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
-  <script>
-    tailwind.config = {
-      darkMode: 'class',
-      theme: {
-        extend: {
-          colors: {
-            brand: {
-              dark: '#0a0f1d',
-              card: '#111827',
-              border: '#1f293d',
-              cyan: '#06b6d4',
-              accent: '#3b82f6',
-              danger: '#ef4444',
-              warning: '#f59e0b',
-              success: '#10b981'
-            }
-          },
-          fontFamily: {
-            tajawal: ['Tajawal', 'sans-serif']
-          }
-        }
-      }
-    }
-  </script>
-
-  <style>
-    body {
-      font-family: 'Tajawal', sans-serif;
-      background-color: #080d1a;
-      color: #f3f4f6;
-    }
-    .blueprint-grid {
-      background-image: radial-gradient(rgba(6, 182, 212, 0.1) 1px, transparent 0);
-      background-size: 24px 24px;
-    }
-    .pulse-danger {
-      box-shadow: 0 0 15px rgba(239, 68, 68, 0.6);
-      animation: pulseAlert 1.8s infinite;
-    }
-    .pulse-warning {
-      box-shadow: 0 0 15px rgba(245, 158, 11, 0.6);
-      animation: pulseWarning 1.8s infinite;
-    }
-    @keyframes pulseAlert {
-      0%, 100% { border-color: rgba(239, 68, 68, 0.9); }
-      50% { border-color: rgba(239, 68, 68, 0.3); }
-    }
-    @keyframes pulseWarning {
-      0%, 100% { border-color: rgba(245, 158, 11, 0.9); }
-      50% { border-color: rgba(245, 158, 11, 0.3); }
-    }
-    .room-card {
-      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-    .room-card:hover {
-      transform: translateY(-2px);
-      filter: brightness(1.15);
-    }
-  </style>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#14263c">
+    <title>لوحة متابعة صيانة المعامل</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}">
+    <script src="{{ url_for('static', filename='dashboard.js') }}" defer></script>
 </head>
-<body class="min-h-screen flex flex-col antialiased selection:bg-brand-cyan selection:text-black">
-
-  <!-- شريط التنقل العلوي -->
-  <header class="bg-brand-card/80 backdrop-blur-md border-b border-brand-border sticky top-0 z-50 px-4 lg:px-8 py-3.5">
-    <div class="max-w-7xl mx-auto flex items-center justify-between">
-      <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-500 to-blue-600 flex items-center justify-center text-white shadow-lg shadow-cyan-500/20">
-          <i class="fa-solid fa-microchip text-xl"></i>
-        </div>
-        <div>
-          <h1 class="text-lg font-black text-white tracking-wide">نظام إدارة صيانة المعامل الذكية</h1>
-          <p class="text-xs text-gray-400">المخطط المعماري الميداني للقسم</p>
-        </div>
-      </div>
-
-      <div class="flex items-center gap-4">
-        <div class="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gray-900/60 border border-brand-border text-xs text-gray-300">
-          <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping"></span>
-          <span>الاتصال السحابي متصل</span>
-        </div>
-        <div class="flex items-center gap-2">
-          <div class="text-left hidden md:block">
-            <p class="text-sm font-bold text-gray-200">{{ session.get('user', 'المسؤول') }}</p>
-            <p class="text-[10px] text-cyan-400 font-semibold">{{ session.get('role', 'Admin') }}</p>
-          </div>
-          <a href="/logout" class="p-2 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 transition-colors" title="تسجيل الخروج">
-            <i class="fa-solid fa-arrow-right-from-bracket"></i>
-          </a>
-        </div>
-      </div>
-    </div>
-  </header>
-
-  <!-- المحتوى الرئيسي -->
-  <main class="flex-1 max-w-7xl w-full mx-auto p-4 lg:p-8 space-y-6">
-
-    <!-- الإحصائيات السريعة -->
-    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
-      <div class="bg-brand-card border border-brand-border rounded-2xl p-4 flex items-center justify-between">
-        <div>
-          <p class="text-xs text-gray-400 font-medium">إجمالي المعامل</p>
-          <p class="text-2xl font-black text-white mt-1">18</p>
-        </div>
-        <div class="w-10 h-10 rounded-xl bg-blue-500/10 text-blue-400 flex items-center justify-center border border-blue-500/20">
-          <i class="fa-solid fa-network-wired"></i>
-        </div>
-      </div>
-      <div class="bg-brand-card border border-brand-border rounded-2xl p-4 flex items-center justify-between">
-        <div>
-          <p class="text-xs text-gray-400 font-medium">الأجهزة الجاهزة</p>
-          <p class="text-2xl font-black text-emerald-400 mt-1" id="stat-ready">--</p>
-        </div>
-        <div class="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center border border-emerald-500/20">
-          <i class="fa-solid fa-circle-check"></i>
-        </div>
-      </div>
-      <div class="bg-brand-card border border-brand-border rounded-2xl p-4 flex items-center justify-between">
-        <div>
-          <p class="text-xs text-gray-400 font-medium">بلاغات نشطة</p>
-          <p class="text-2xl font-black text-red-400 mt-1" id="stat-issues">--</p>
-        </div>
-        <div class="w-10 h-10 rounded-xl bg-red-500/10 text-red-400 flex items-center justify-center border border-red-500/20">
-          <i class="fa-solid fa-triangle-exclamation"></i>
-        </div>
-      </div>
-      <div class="bg-brand-card border border-brand-border rounded-2xl p-4 flex items-center justify-between">
-        <div>
-          <p class="text-xs text-gray-400 font-medium">قيد المعالجة</p>
-          <p class="text-2xl font-black text-amber-400 mt-1" id="stat-progress">--</p>
-        </div>
-        <div class="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-400 flex items-center justify-center border border-amber-500/20">
-          <i class="fa-solid fa-screwdriver-wrench"></i>
-        </div>
-      </div>
+<body>
+{{ sprite() }}
+<a href="#content" class="skip-link">انتقل إلى المحتوى</a>
+<nav id="sidebar" class="sidebar" aria-label="مساحة العمل">
+    <div class="sidebar-brand">
+        <img src="{{ institution_logo }}" alt="المؤسسة العامة للتدريب التقني والمهني">
+        <p>نظام صيانة المعامل</p>
+        <small>قسم الحاسب الآلي</small>
     </div>
 
-    <!-- بطاقة المخطط المعماري التفاعلي -->
-    <div class="bg-brand-card border border-brand-border rounded-3xl p-5 lg:p-7 shadow-2xl relative overflow-hidden">
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-brand-border">
-        <div>
-          <h2 class="text-xl font-bold text-white flex items-center gap-2.5">
-            <i class="fa-solid fa-compass-drafting text-brand-cyan"></i>
-            المخطط الميداني للقسم (Floor Blueprint)
-          </h2>
-          <p class="text-xs text-gray-400 mt-1">تخطيط مطابق للواقع: انقر على أي معمل لمشاهدة شبكة الأجهزة والتحكم بالصيانة</p>
-        </div>
-        <div class="flex items-center flex-wrap gap-3 text-xs">
-          <span class="inline-flex items-center gap-1.5 text-gray-300"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span> جاهز</span>
-          <span class="inline-flex items-center gap-1.5 text-gray-300"><span class="w-2.5 h-2.5 rounded-full bg-red-500"></span> بلاغ عطل</span>
-          <span class="inline-flex items-center gap-1.5 text-gray-300"><span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span> صيانة جارية</span>
-          <span class="inline-flex items-center gap-1.5 text-gray-400"><span class="w-2.5 h-2.5 rounded bg-gray-700"></span> مرافق إدارية</span>
-        </div>
-      </div>
-
-      <!-- مساحة الرسم الهندسي المعماري -->
-      <div class="mt-6 blueprint-grid rounded-2xl border border-cyan-900/30 p-4 lg:p-8 bg-[#0b1220]/70 overflow-x-auto">
-        <div class="min-w-[920px] max-w-[1100px] mx-auto space-y-6">
-
-          <!-- 1. الحلقة الخارجية: الضلع العلوي (الشمالي) -->
-          <div class="grid grid-cols-7 gap-2">
-            <div class="bg-gray-800/40 border border-gray-700/50 rounded-xl p-3 text-center text-gray-400 text-xs flex flex-col justify-center">
-              <i class="fa-solid fa-boxes-stacked mb-1 text-gray-500"></i> مستودع
-            </div>
-            <button onclick="selectLab(26, 'معمل 26 (الحوسبة السحابية)')" id="lab-btn-26" class="room-card bg-cyan-950/30 border border-cyan-500/30 hover:border-cyan-400 rounded-xl p-3 text-center cursor-pointer">
-              <span class="text-[10px] text-cyan-400 block font-semibold">شبكات / سحابية</span>
-              <span class="font-extrabold text-sm text-white">معمل (26)</span>
-            </button>
-            <div class="bg-gray-800/40 border border-gray-700/50 rounded-xl p-3 text-center text-gray-400 text-xs flex flex-col justify-center">
-              <i class="fa-solid fa-bolt mb-1 text-amber-500/70"></i> أساسيات الكهرباء
-            </div>
-            <button onclick="selectLab(24, 'معمل 24 (أساسيات الحاسب)')" id="lab-btn-24" class="room-card bg-cyan-950/30 border border-cyan-500/30 hover:border-cyan-400 rounded-xl p-3 text-center cursor-pointer">
-              <span class="text-[10px] text-cyan-400 block font-semibold">أساسيات الحاسب</span>
-              <span class="font-extrabold text-sm text-white">معمل (24)</span>
-            </button>
-            <div class="bg-gray-800/40 border border-gray-700/50 rounded-xl p-3 text-center text-gray-400 text-xs flex flex-col justify-center">
-              <i class="fa-solid fa-boxes-stacked mb-1 text-gray-500"></i> مستودع
-            </div>
-            <div class="bg-gray-800/40 border border-gray-700/50 rounded-xl p-3 text-center text-gray-400 text-xs flex flex-col justify-center">
-              <i class="fa-solid fa-microchip mb-1 text-gray-500"></i> أساسيات الإلكترونيات
-            </div>
-            <div class="bg-gray-800/60 border border-gray-700/60 rounded-xl p-3 text-center text-amber-300 text-xs flex flex-col justify-center font-bold">
-              <i class="fa-solid fa-stairs mb-1"></i> درج رئيسي
-            </div>
-          </div>
-
-          <!-- وسط المبنى: الضلع الغربي الخارجي + الحلقة الداخلية بالفناء + الضلع الشرقي الخارجي -->
-          <div class="grid grid-cols-12 gap-3 items-stretch">
-            
-            <!-- أ) الواجهة الغربية الخارجية (المدخل والمرافق) -->
-            <div class="col-span-2 flex flex-col justify-between gap-2">
-              <div class="bg-gray-800/40 border border-gray-700/50 rounded-xl p-2.5 text-center text-gray-400 text-xs">
-                <i class="fa-solid fa-boxes-stacked block text-gray-500 mb-1"></i> مستودع
-              </div>
-              <div class="bg-gray-800/40 border border-gray-700/50 rounded-xl p-2.5 text-center text-blue-300 text-xs">
-                <i class="fa-solid fa-restroom block text-blue-400 mb-1"></i> دورة مياه المتدربين
-              </div>
-              <div class="bg-gray-800/60 border border-gray-700/60 rounded-xl p-2 text-center text-amber-300 text-xs font-bold">
-                <i class="fa-solid fa-stairs block mb-1"></i> درج
-              </div>
-              <div class="bg-cyan-900/20 border border-cyan-800/40 rounded-xl p-3 text-center text-white text-xs border-dashed">
-                <i class="fa-solid fa-door-open block text-cyan-400 text-base mb-1"></i>
-                <span class="font-bold">المدخل الرئيسي المزدوج</span>
-              </div>
-              <div class="bg-gray-800/40 border border-gray-700/50 rounded-xl p-2.5 text-center text-gray-300 text-xs">
-                <i class="fa-solid fa-id-card-clip block text-cyan-400 mb-1"></i> منسق رايات
-              </div>
-              <button onclick="selectLab(1, 'معمل 1')" id="lab-btn-1" class="room-card bg-cyan-950/30 border border-cyan-500/30 hover:border-cyan-400 rounded-xl p-3 text-center cursor-pointer">
-                <span class="text-[10px] text-cyan-400 block font-semibold">حاسب</span>
-                <span class="font-extrabold text-sm text-white">معمل (1)</span>
-              </button>
-            </div>
-
-            <!-- ب) الحلقة الداخلية المحيطة بالفناء الأوسط -->
-            <div class="col-span-8 bg-black/40 border-2 border-dashed border-cyan-700/40 rounded-2xl p-4 flex flex-col justify-between gap-3 shadow-inner">
-              
-              <!-- الحلقة الداخلية: الضلع الشمالي -->
-              <div class="grid grid-cols-4 gap-2">
-                <button onclick="selectLab(27, 'معمل 27')" id="lab-btn-27" class="room-card bg-cyan-950/40 border border-cyan-500/40 hover:border-cyan-400 rounded-lg p-2.5 text-center">
-                  <span class="font-bold text-xs text-white">معمل (27)</span>
-                </button>
-                <div class="bg-amber-950/20 border border-amber-500/30 rounded-lg p-2.5 text-center text-amber-300 text-xs flex items-center justify-center gap-1">
-                  <i class="fa-solid fa-toolbox text-amber-400"></i> غرفة صيانة
-                </div>
-                <button onclick="selectLab(23, 'معمل 23')" id="lab-btn-23" class="room-card bg-cyan-950/40 border border-cyan-500/40 hover:border-cyan-400 rounded-lg p-2.5 text-center">
-                  <span class="font-bold text-xs text-white">معمل (23)</span>
-                </button>
-                <button onclick="selectLab(22, 'معمل 22')" id="lab-btn-22" class="room-card bg-cyan-950/40 border border-cyan-500/40 hover:border-cyan-400 rounded-lg p-2.5 text-center">
-                  <span class="font-bold text-xs text-white">معمل (22)</span>
-                </button>
-              </div>
-
-              <!-- الحلقة الداخلية: الأجنحة الجانبية + الفناء الأوسط المفتوح -->
-              <div class="grid grid-cols-6 gap-2 items-stretch py-1">
-                
-                <!-- ضلع الحلقة الداخلية الغربي (مكاتب إدارية) -->
-                <div class="col-span-1 flex flex-col justify-between gap-1.5 text-[10px]">
-                  <div class="bg-gray-800/40 border border-gray-700 rounded p-1.5 text-center text-gray-400">تهوية</div>
-                  <div class="bg-blue-950/30 border border-blue-600/30 rounded p-2 text-center text-blue-300 font-medium">مكتب التدريب الإلكتروني</div>
-                  <div class="bg-indigo-950/40 border border-indigo-500/40 rounded p-2 text-center text-indigo-300 font-bold">مكتب رئيس القسم</div>
-                  <div class="bg-blue-950/30 border border-blue-600/30 rounded p-2 text-center text-blue-300 font-medium">شؤون المتدربين</div>
-                  <div class="bg-gray-800/40 border border-gray-700 rounded p-1.5 text-center text-gray-400">تهوية</div>
-                </div>
-
-                <!-- الفناء الأوسط المفتوح (Atrium) -->
-                <div class="col-span-4 bg-gradient-to-b from-cyan-950/20 via-blue-950/10 to-slate-900/30 rounded-xl border border-cyan-500/20 flex flex-col items-center justify-center p-6 text-center">
-                  <div class="w-14 h-14 rounded-full bg-cyan-500/10 border border-cyan-400/30 flex items-center justify-center text-cyan-400 mb-2">
-                    <i class="fa-solid fa-tree text-2xl text-emerald-400/80"></i>
-                  </div>
-                  <h3 class="text-sm font-extrabold text-cyan-200 tracking-wider">الفناء الداخلي الأوسط (البهو)</h3>
-                  <p class="text-[11px] text-gray-400 mt-1">فناء مفتوح يربط أجنحة القسم ومعامل التدريب</p>
-                </div>
-
-                <!-- ضلع الحلقة الداخلية الشرقي -->
-                <div class="col-span-1 flex flex-col justify-between gap-1.5 text-[10px]">
-                  <div class="bg-gray-800/40 border border-gray-700 rounded p-1 text-center text-gray-400">تهوية</div>
-                  <div class="bg-gray-800/30 border border-gray-700/40 rounded p-1 text-center text-gray-400">مستودع 3</div>
-                  <div class="bg-gray-800/30 border border-gray-700/40 rounded p-1 text-center text-gray-400">مستودع 2</div>
-                  <div class="bg-gray-800/30 border border-gray-700/40 rounded p-1 text-center text-gray-400">مستودع 1</div>
-                  <button onclick="selectLab(14, 'معمل 14')" id="lab-btn-14" class="room-card bg-cyan-950/40 border border-cyan-500/40 rounded p-1.5 text-center font-bold text-white">معمل 14</button>
-                  <button onclick="selectLab(12, 'معمل 12')" id="lab-btn-12" class="room-card bg-cyan-950/40 border border-cyan-500/40 rounded p-1.5 text-center font-bold text-white">معمل 12</button>
-                  <div class="bg-gray-800/40 border border-gray-700 rounded p-1 text-center text-gray-400">تهوية</div>
-                </div>
-
-              </div>
-
-              <!-- الحلقة الداخلية: الضلع الجنوبي -->
-              <div class="grid grid-cols-3 gap-2">
-                <button onclick="selectLab(10, 'معمل 10 (ألياف ضوئية)')" id="lab-btn-10" class="room-card bg-cyan-950/40 border border-cyan-500/40 hover:border-cyan-400 rounded-lg p-2.5 text-center">
-                  <span class="text-[10px] text-cyan-400 block font-semibold">كيابل ألياف ضوئية</span>
-                  <span class="font-bold text-xs text-white">معمل (10)</span>
-                </button>
-                <button onclick="selectLab(6, 'معمل 6')" id="lab-btn-6" class="room-card bg-cyan-950/40 border border-cyan-500/40 hover:border-cyan-400 rounded-lg p-2.5 text-center">
-                  <span class="font-bold text-xs text-white">معمل (6)</span>
-                </button>
-                <button onclick="selectLab(4, 'معمل 4')" id="lab-btn-4" class="room-card bg-cyan-950/40 border border-cyan-500/40 hover:border-cyan-400 rounded-lg p-2.5 text-center">
-                  <span class="font-bold text-xs text-white">معمل (4)</span>
-                </button>
-              </div>
-
-            </div>
-
-            <!-- ج) الواجهة الشرقية الخارجية -->
-            <div class="col-span-2 flex flex-col justify-between gap-2">
-              <div class="bg-emerald-950/20 border border-emerald-500/30 rounded-xl p-2.5 text-center text-emerald-300 text-xs">
-                <i class="fa-solid fa-mosque block text-emerald-400 mb-1"></i> مصلى القسم
-              </div>
-              <div class="bg-gray-800/40 border border-gray-700/50 rounded-xl p-2 text-center text-gray-400 text-xs">
-                <i class="fa-solid fa-boxes-stacked block text-gray-500 mb-0.5"></i> مستودع
-              </div>
-              <div class="bg-indigo-950/20 border border-indigo-500/30 rounded-xl p-2 text-center text-indigo-300 text-xs">
-                <i class="fa-solid fa-chalkboard-user block text-indigo-400 mb-0.5"></i> قاعة نظري 1
-              </div>
-              <div class="bg-gray-800/40 border border-gray-700/50 rounded-xl p-2 text-center text-gray-400 text-xs">
-                <i class="fa-solid fa-boxes-stacked block text-gray-500 mb-0.5"></i> مستودع
-              </div>
-              <button onclick="selectLab(13, 'معمل 13')" id="lab-btn-13" class="room-card bg-cyan-950/30 border border-cyan-500/30 hover:border-cyan-400 rounded-xl p-2.5 text-center cursor-pointer">
-                <span class="font-extrabold text-sm text-white">معمل (13)</span>
-              </button>
-              <button onclick="selectLab(11, 'معمل 11')" id="lab-btn-11" class="room-card bg-cyan-950/30 border border-cyan-500/30 hover:border-cyan-400 rounded-xl p-2.5 text-center cursor-pointer">
-                <span class="font-extrabold text-sm text-white">معمل (11)</span>
-              </button>
-              <div class="bg-gray-800/40 border border-gray-700/50 rounded-xl p-2 text-center text-blue-300 text-xs">
-                <i class="fa-solid fa-restroom block text-blue-400 mb-0.5"></i> دورة مياه
-              </div>
-              <div class="bg-gray-800/60 border border-gray-700/60 rounded-xl p-2 text-center text-amber-300 text-xs font-bold">
-                <i class="fa-solid fa-stairs block mb-0.5"></i> درج سفلي
-              </div>
-            </div>
-
-          </div>
-
-          <!-- 3. الحلقة الخارجية: الضلع السفلي (الجنوبي) -->
-          <div class="grid grid-cols-7 gap-2">
-            <button onclick="selectLab(2, 'معمل 2')" id="lab-btn-2" class="room-card bg-cyan-950/30 border border-cyan-500/30 hover:border-cyan-400 rounded-xl p-3 text-center cursor-pointer">
-              <span class="font-extrabold text-sm text-white">معمل (2)</span>
-            </button>
-            <button onclick="selectLab(3, 'معمل 3')" id="lab-btn-3" class="room-card bg-cyan-950/30 border border-cyan-500/30 hover:border-cyan-400 rounded-xl p-3 text-center cursor-pointer">
-              <span class="font-extrabold text-sm text-white">معمل (3)</span>
-            </button>
-            <button onclick="selectLab(5, 'معمل 5')" id="lab-btn-5" class="room-card bg-cyan-950/30 border border-cyan-500/30 hover:border-cyan-400 rounded-xl p-3 text-center cursor-pointer">
-              <span class="font-extrabold text-sm text-white">معمل (5)</span>
-            </button>
-            <button onclick="selectLab(7, 'معمل 7')" id="lab-btn-7" class="room-card bg-cyan-950/30 border border-cyan-500/30 hover:border-cyan-400 rounded-xl p-3 text-center cursor-pointer">
-              <span class="font-extrabold text-sm text-white">معمل (7)</span>
-            </button>
-            <button onclick="selectLab(9, 'معمل 9 (الكيابل النحاسية)')" id="lab-btn-9" class="room-card bg-cyan-950/30 border border-cyan-500/30 hover:border-cyan-400 rounded-xl p-3 text-center cursor-pointer">
-              <span class="text-[10px] text-cyan-400 block font-semibold">الكيابل النحاسية</span>
-              <span class="font-extrabold text-sm text-white">معمل (9)</span>
-            </button>
-            <div class="bg-gray-800/40 border border-gray-700/50 rounded-xl p-3 text-center text-gray-400 text-xs flex flex-col justify-center">
-              <i class="fa-solid fa-boxes-stacked mb-1 text-gray-500"></i> مستودع
-            </div>
-            <div class="bg-gray-800/60 border border-gray-700/60 rounded-xl p-3 text-center text-amber-300 text-xs flex flex-col justify-center font-bold">
-              <i class="fa-solid fa-stairs mb-1"></i> درج
-            </div>
-          </div>
-
-        </div>
-      </div>
+    <div class="sidebar-menu">
+        <p class="sidebar-label">مساحة العمل</p>
+        <a href="#overview" data-section="overview" aria-current="location">{{ icon('grid') }} نظرة عامة</a>
+        <a href="#labs" data-section="labs">{{ icon('map') }} المعامل والأجهزة</a>
+        <a href="#tickets" data-section="tickets">{{ icon('clipboard') }} سجل البلاغات</a>
+        <a href="{{ url_for('reports') }}">{{ icon('calendar') }} تقارير ٣٠ يومًا</a>
+        <a href="{{ url_for('qr_labels') }}">{{ icon('printer') }} طباعة رموز QR</a>
     </div>
 
-    <!-- شبكة مقاعد المعمل المختار (27 جهاز حاسب) -->
-    <div id="seats-container" class="bg-brand-card border border-brand-border rounded-3xl p-5 lg:p-7 shadow-2xl space-y-6">
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-brand-border">
-        <div>
-          <div class="inline-block px-2.5 py-1 rounded-md bg-cyan-500/10 text-cyan-400 text-xs font-bold border border-cyan-500/20 mb-1.5">
-            المعمل النشط حالياً
-          </div>
-          <h3 id="current-lab-title" class="text-xl font-black text-white">معمل (1)</h3>
-        </div>
-
-        <div class="flex items-center gap-2">
-          <a id="qr-direct-link" href="/report?lab=1&seat=1" target="_blank" class="px-3.5 py-2 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 text-cyan-400 text-xs font-bold flex items-center gap-1.5 transition-all">
-            <i class="fa-solid fa-qrcode"></i> تجربة صفحة بلاغ المعمل
-          </a>
-        </div>
-      </div>
-
-      <!-- شبكة الـ 27 جهاز حاسب -->
-      <div class="grid grid-cols-3 sm:grid-cols-6 lg:grid-cols-9 gap-3" id="seats-grid">
-        <!-- يتم توليد المقاعد ديناميكياً بواسطة JavaScript -->
-      </div>
+    <div class="sidebar-foot">
+        <p>إشراف <strong>أ. محمد الدوخي</strong><br>إعداد <strong>ريان المحيطيب</strong></p>
+        <a href="{{ url_for('logout') }}">{{ icon('logout') }} تسجيل الخروج</a>
     </div>
+</nav>
+<button type="button" class="nav-overlay" aria-label="إغلاق القائمة" tabindex="-1" hidden></button>
 
-  </main>
+<div class="workspace">
+    <header class="topbar">
+        <div class="topbar-start">
+            <button type="button" id="nav-toggle" class="button icon-button nav-toggle" aria-expanded="false" aria-controls="sidebar" aria-label="فتح القائمة">{{ icon('menu') }}</button>
+            <a href="#overview" class="breadcrumb">{{ icon('grid') }} لوحة الصيانة</a>
+            {{ icon('chevron', 'icon breadcrumb-chevron') }}
+            <span id="section-name" class="section-name">نظرة عامة</span>
+        </div>
+        <div class="profile">
+            <span class="icon-tile">{{ icon('user') }}</span>
+            <div><strong>{{ session['name'] }}</strong><small>{{ session['role'] }}</small></div>
+        </div>
+    </header>
 
-  <script>
-    let activeLab = 1;
+    <main id="content" class="content">
+        <section class="hero" id="overview" aria-labelledby="page-title">
+            <div class="hero-copy">
+                <p class="department"><span></span> قسم الحاسب الآلي</p>
+                <h1 id="page-title">لوحة متابعة صيانة المعامل</h1>
+                <p class="hero-subtitle">حالة الأجهزة وبلاغات الصيانة في مكان واحد.</p>
+            </div>
+            <div class="hero-actions">
+                <button class="button" type="button" id="monitor-toggle" aria-pressed="false">{{ icon('monitor') }} <span>شاشة المراقبة</span></button>
+                <a class="button button-primary" href="{{ url_for('export_excel') }}">{{ icon('download') }} تصدير Excel</a>
+                <p class="monitor-status" id="monitor-status" hidden><span class="status-dot"></span><span>تحديث تلقائي خلال <b id="countdown">30</b> ث</span></p>
+            </div>
+            <svg class="hero-traces" viewBox="0 0 640 166" preserveAspectRatio="xMinYMid slice" aria-hidden="true">
+                <path d="M-12 28h170L187 0m-199 63h304l37-16h88l31-31h114M-12 125h101l32 31m-36 10 23-23h80l24-24h103l35 35h156l37-37h96M411 166l47-46h99l36-36h67"/>
+                <circle cx="417" cy="47" r="5"/><circle cx="562" cy="16" r="5"/><circle cx="212" cy="119" r="5"/><circle cx="557" cy="120" r="5"/>
+            </svg>
+        </section>
 
-    // جلب بيانات حالة المعامل والأجهزة
-    async function loadLabStatus() {
-      try {
-        const response = await fetch('/api/status');
-        const data = await response.json();
-        
-        let totalReady = 0;
-        let totalIssues = 0;
-        let totalProgress = 0;
+        {% if due_reports %}
+        <aside class="report-reminder" aria-labelledby="report-reminder-title">
+            {{ icon('calendar') }}
+            <div>
+                <h2 id="report-reminder-title">تقارير صيانة مستحقة</h2>
+                <div class="reminder-links">
+                    {% for report in due_reports %}
+                    <a href="{{ url_for('reports') }}#lab-{{ report.lab_num }}">معمل {{ report.lab_num }} · {{ report.window.due_count }} تقرير</a>
+                    {% endfor %}
+                </div>
+            </div>
+        </aside>
+        {% endif %}
 
-        // مصفوفة المعامل
-        const labIds = [1, 2, 3, 4, 5, 6, 7, 9, 10, 11, 12, 13, 14, 22, 23, 24, 26, 27];
+        <section class="metrics" aria-label="مؤشرات الصيانة">
+            {{ metric('clipboard', 'إجمالي البلاغات', total_tickets, 'كافة البلاغات المسجلة', 'teal') }}
+            {{ metric('alert', 'أعطال نشطة', active_tickets, 'بانتظار بدء الصيانة', 'danger') }}
+            {{ metric('wrench', 'قيد الإصلاح', pending_tickets, 'بلاغات يجري العمل عليها', 'warning') }}
+            {{ metric('shield', 'الجاهزية التشغيلية', operational_rate, 'بحسب البلاغات المفتوحة', 'ok', true) }}
+        </section>
 
-        labIds.forEach(labId => {
-          const labData = data[labId] || {};
-          let labHasDanger = false;
-          let labHasWarning = false;
+        <section class="lab-layout" id="labs" aria-label="المعامل والأجهزة">
+            <section class="card panel map-panel" aria-labelledby="map-heading">
+                <div class="panel-header">
+                    {{ panel_heading('map', 'مخطط المعامل', 'جناح قسم الحاسب الآلي', 'map-heading') }}
+                    <span class="count-badge">{{ lab_numbers|length }} معملًا</span>
+                </div>
+                <ul class="map-legend" aria-label="مفتاح ألوان المخطط">
+                    <li><i class="swatch swatch-ok"></i> سليم</li>
+                    <li><i class="swatch swatch-warning"></i> قيد الإصلاح</li>
+                    <li><i class="swatch swatch-danger"></i> عطل نشط</li>
+                    <li><i class="swatch swatch-selected"></i> المعمل المحدد</li>
+                </ul>
+                <div class="map-canvas">
+                    <div class="map-viewport" id="map-viewport" tabindex="0" aria-label="مخطط تفاعلي قابل للتمرير عند التكبير">
+                        <div class="map-stage">{% include 'lab_map.html' %}</div>
+                    </div>
+                    <div class="map-controls" aria-label="التحكم في المخطط">
+                        <button type="button" class="button icon-button" id="zoom-out" aria-label="تصغير المخطط" title="تصغير المخطط" disabled>{{ icon('minus') }}</button>
+                        <button type="button" class="button icon-button" id="zoom-in" aria-label="تكبير المخطط" title="تكبير المخطط">{{ icon('plus') }}</button>
+                        <button type="button" class="button icon-button zoom-reset" id="zoom-reset" aria-label="إعادة ضبط المخطط" title="إعادة ضبط المخطط" hidden>{{ icon('reset') }}</button>
+                    </div>
+                </div>
+                <p class="map-hint">{{ icon('info') }} اختر معملًا من المخطط لعرض أجهزته.</p>
+            </section>
 
-          for (let s = 1; s <= 27; s++) {
-            const status = labData[s] ? labData[s].status : 'Ready';
-            if (status === 'Broken') {
-              labHasDanger = true;
-              totalIssues++;
-            } else if (status === 'In-Progress') {
-              labHasWarning = true;
-              totalProgress++;
-            } else {
-              totalReady++;
-            }
-          }
+            <section class="card panel device-panel" id="devices" aria-labelledby="devices-heading">
+                <div class="panel-header">
+                    <div class="panel-heading">
+                        <span class="icon-tile">{{ icon('monitor') }}</span>
+                        <div><h2 id="devices-heading" tabindex="-1">أجهزة معمل ({{ initial_lab }})</h2><p>{{ seats|length }} جهاز حاسب ومنصة المدرب</p></div>
+                    </div>
+                    <a class="button button-small" id="lab-qr-link" href="{{ lab_links[initial_lab].qr }}">{{ icon('printer') }} طباعة QR</a>
+                </div>
 
-          // تطبيق تأثيرات النبض الراداري على المخطط
-          const btn = document.getElementById(`lab-btn-${labId}`);
-          if (btn) {
-            btn.classList.remove('pulse-danger', 'pulse-warning', 'border-red-500', 'border-amber-500');
-            if (labHasDanger) {
-              btn.classList.add('pulse-danger', 'border-red-500');
-            } else if (labHasWarning) {
-              btn.classList.add('pulse-warning', 'border-amber-500');
-            }
-          }
-        });
+                <div class="lab-picker">
+                    <label for="lab-select">اختيار المعمل</label>
+                    <div class="select-wrap">
+                        <select id="lab-select">
+                            {% for number in lab_numbers %}
+                            <option value="{{ number }}"{% if number == initial_lab %} selected{% endif %}>معمل {{ number }}</option>
+                            {% endfor %}
+                        </select>
+                        {{ icon('down') }}
+                    </div>
+                </div>
 
-        // تحديث أرقام الإحصائيات في الأعلى
-        document.getElementById('stat-ready').innerText = totalReady;
-        document.getElementById('stat-issues').innerText = totalIssues;
-        document.getElementById('stat-progress').innerText = totalProgress;
+                {% set trainer_state = initial_device_states.get(0, 'ok') %}
+                <button id="trainer-device" class="trainer-device" type="button" data-seat="0" data-state="{{ trainer_state }}">
+                    {{ icon('monitor') }}
+                    <span class="trainer-label"><strong>منصة المدرب</strong><small>جهاز المدرب والشاشة الرئيسية</small></span>
+                    <span class="status-pill" data-tone="{{ trainer_state }}">{{ device_labels[trainer_state] }}</span>
+                </button>
 
-        // تحديث شبكة المقاعد للمعلم الحالي
-        renderSeats(data[activeLab] || {});
-      } catch (err) {
-        console.error("فشل في تحميل حالة المعامل:", err);
-      }
-    }
+                <div class="device-list-heading"><h3>أجهزة المتدربين</h3><p id="device-count" aria-live="polite">{{ initial_ready }} من {{ seats|length }} جاهزة</p></div>
+                <div class="device-grid" id="device-grid">
+                    {% for seat in seats %}
+                    {% set state = initial_device_states.get(seat, 'ok') %}
+                    <button type="button" class="device" data-seat="{{ seat }}" data-state="{{ state }}">
+                        {{ icon('monitor') }}
+                        <span>جهاز {{ seat }}</span>
+                        <small>{{ device_labels[state] }}</small>
+                    </button>
+                    {% endfor %}
+                </div>
+                <a href="{{ lab_links[initial_lab].report }}" class="button button-primary report-button" id="lab-report-link">{{ icon('plus') }} <span>بلاغ جديد لمعمل ({{ initial_lab }})</span></a>
+            </section>
+        </section>
 
-    function selectLab(labNumber, title) {
-      activeLab = labNumber;
-      document.getElementById('current-lab-title').innerText = title;
-      document.getElementById('qr-direct-link').href = `/report?lab=${labNumber}&seat=1`;
-      loadLabStatus();
-      
-      // التمرير لأسفل لرؤية شبكة المقاعد بسلاسة
-      document.getElementById('seats-container').scrollIntoView({ behavior: 'smooth' });
-    }
+        <section class="lower-layout" aria-label="سجل الصيانة وقطع الغيار">
+            <section class="card tickets-panel" id="tickets" aria-labelledby="tickets-heading">
+                <div class="panel panel-header">
+                    {{ panel_heading('clipboard', 'سجل البلاغات', 'حالات البلاغات وسجل صيانة كل جهاز', 'tickets-heading') }}
+                    <span id="ticket-count" class="count-badge" aria-live="polite">{{ total_tickets }} بلاغ</span>
+                </div>
+                {% if tickets %}
+                <div class="ticket-toolbar">
+                    <div class="search-wrap">
+                        {{ icon('search') }}
+                        <label for="ticket-search" class="sr-only">بحث في البلاغات</label>
+                        <input id="ticket-search" type="search" placeholder="ابحث برقم البلاغ أو المعمل أو وصف العطل">
+                    </div>
+                    <div class="select-wrap">
+                        <label for="ticket-filter" class="sr-only">تصفية حسب الحالة</label>
+                        <select id="ticket-filter"><option value="">كل الحالات</option>{% for status in statuses %}<option>{{ status }}</option>{% endfor %}</select>
+                        {{ icon('down') }}
+                    </div>
+                </div>
+                {% endif %}
+                <div class="ticket-table-wrap">
+                    <table class="ticket-table" aria-labelledby="tickets-heading">
+                        <thead><tr><th scope="col">رقم البلاغ</th><th scope="col">الموقع</th><th scope="col">المبلّغ</th><th scope="col">نوع العطل وتفاصيله</th><th scope="col">القطع المستبدلة</th><th scope="col">الحالة</th><th scope="col">الإجراء</th></tr></thead>
+                        <tbody>
+                            {% for t in tickets %}
+                            {% set tone = status_tones.get(t[6], 'neutral') %}
+                            <tr data-ticket-row data-status="{{ t[6] }}">
+                                <td class="ticket-number" data-label="رقم البلاغ"><bdi dir="ltr">#{{ t[1] }}-{{ t[0] }}</bdi></td>
+                                <td data-label="الموقع"><strong>معمل {{ t[1] }}</strong><small>{% if t[2] == 0 %}منصة المدرب{% elif t[2] is number %}جهاز {{ t[2] }}{% else %}جهاز غير محدد{% endif %}</small></td>
+                                <td data-label="المبلّغ">{{ t[3] or '—' }}</td>
+                                <td class="ticket-issue" data-label="نوع العطل وتفاصيله"><strong>{{ t[4] or '—' }}</strong><small>{{ t[5] or '—' }}</small></td>
+                                <td data-label="القطع المستبدلة">{{ t[7] or 'لا يوجد' }}</td>
+                                <td data-label="الحالة"><span class="status-pill" data-tone="{{ tone }}">{{ t[6] or 'غير محددة' }}</span></td>
+                                <td data-label="الإجراء"><button class="button button-small" type="button" data-ticket-lab="{{ t[1] }}" data-seat="{{ t[2] if t[2] is number else '' }}">سجل الجهاز</button></td>
+                            </tr>
+                            {% else %}
+                            <tr><td colspan="7" class="table-empty"><span class="icon-tile">{{ icon('clipboard') }}</span><strong>لا توجد بلاغات مسجلة</strong><small>تظهر هنا بلاغات الصيانة الجديدة.</small></td></tr>
+                            {% endfor %}
+                            {% if tickets %}<tr id="no-matches" hidden><td colspan="7" class="table-empty">لا توجد بلاغات تطابق البحث.</td></tr>{% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </section>
 
-    function renderSeats(labSeats) {
-      const grid = document.getElementById('seats-grid');
-      grid.innerHTML = '';
+            <section class="card panel parts-panel" aria-labelledby="parts-heading">
+                <div class="panel-header">{{ panel_heading('box', 'قطع الغيار', 'القطع الأكثر استبدالًا', 'parts-heading') }}</div>
+                {% if parts_stats %}
+                <ul class="part-list">{% for part, count in parts_stats.items() %}<li><span>{{ part }}</span><strong class="count-badge">{{ count }}</strong></li>{% endfor %}</ul>
+                {% else %}
+                <p class="parts-empty">لا توجد قطع مستبدلة مسجلة.</p>
+                {% endif %}
+            </section>
+        </section>
+    </main>
+</div>
 
-      for (let i = 1; i <= 27; i++) {
-        const seatInfo = labSeats[i] || { status: 'Ready' };
-        let statusBg = "bg-emerald-950/30 border-emerald-500/30 text-emerald-400";
-        let statusIcon = "fa-circle-check";
-        let statusLabel = "جاهز";
+<dialog class="device-dialog" id="device-dialog" aria-labelledby="dialog-heading">
+    <div class="dialog-content">
+        <header class="panel-header">
+            <div class="panel-heading">
+                <span class="icon-tile">{{ icon('monitor') }}</span>
+                <div><h2 id="dialog-heading">سجل الجهاز</h2><p id="dialog-device"></p></div>
+            </div>
+            <form method="dialog"><button class="button icon-button" id="dialog-close" aria-label="إغلاق سجل الجهاز" autofocus>{{ icon('close') }}</button></form>
+        </header>
 
-        if (seatInfo.status === 'Broken') {
-          statusBg = "bg-red-950/40 border-red-500/60 text-red-400 animate-pulse";
-          statusIcon = "fa-triangle-exclamation";
-          statusLabel = "عطل";
-        } else if (seatInfo.status === 'In-Progress') {
-          statusBg = "bg-amber-950/40 border-amber-500/60 text-amber-400";
-          statusIcon = "fa-wrench";
-          statusLabel = "صيانة";
-        }
+        <div id="active-ticket" class="active-ticket" hidden>
+            <div class="active-ticket-head"><span id="dialog-status" class="status-pill"></span><bdi id="dialog-ticket-id" dir="ltr"></bdi></div>
+            <dl><div><dt>المبلّغ</dt><dd id="dialog-reporter"></dd></div><div><dt>نوع العطل</dt><dd id="dialog-category"></dd></div></dl>
+            <p id="dialog-issue"></p>
+        </div>
+        <p id="no-active-ticket" class="ready-notice" hidden>{{ icon('check') }} لا يوجد بلاغ نشط على هذا الجهاز.</p>
+        <form id="status-form" method="post" hidden>
+            <input type="hidden" name="dashboard_lab" id="status-dashboard-lab">
+            <label for="ticket-status">حالة البلاغ</label>
+            <div class="select-wrap"><select name="status" id="ticket-status">{% for status in statuses %}<option>{{ status }}</option>{% endfor %}</select>{{ icon('down') }}</div>
+            <label for="ticket-parts">القطع المستبدلة</label>
+            <input id="ticket-parts" name="replaced_parts" type="text" placeholder="مثل كابل عرض أو لوحة مفاتيح">
+            <button class="button button-primary" type="submit">حفظ التعديل</button>
+        </form>
 
-        const seatCard = `
-          <div class="border rounded-2xl p-3 flex flex-col items-center justify-center gap-2 ${statusBg} transition-all hover:scale-105">
-            <i class="fa-solid fa-desktop text-xl"></i>
-            <span class="text-xs font-black">جهاز #${i}</span>
-            <span class="text-[10px] px-2 py-0.5 rounded-full bg-black/40 flex items-center gap-1 font-semibold">
-              <i class="fa-solid ${statusIcon}"></i> ${statusLabel}
-            </span>
-          </div>
-        `;
-        grid.insertAdjacentHTML('beforeend', seatCard);
-      }
-    }
+        <section class="device-history" aria-labelledby="history-heading">
+            <h3 id="history-heading">{{ icon('history') }} سجل البلاغات السابقة</h3>
+            <ul id="history-list"></ul>
+            <p class="history-empty" id="history-empty" hidden>لا توجد بلاغات سابقة لهذا الجهاز.</p>
+        </section>
+        <a class="button" id="device-report-link" hidden>{{ icon('plus') }} بلاغ جديد لهذا الجهاز</a>
+    </div>
+</dialog>
 
-    // التحميل التلقائي والتحديث الدوري كل 10 ثوانٍ
-    loadLabStatus();
-    setInterval(loadLabStatus, 10000);
-  </script>
+<script id="dashboard-data" type="application/json">{{ dashboard_data|tojson }}</script>
 </body>
 </html>

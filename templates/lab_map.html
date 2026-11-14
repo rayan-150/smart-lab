@@ -1,0 +1,120 @@
+{% macro map_lab(lab, x, y, width, height, radius, label_x, label_y, subtitle='', subtitle_y=0) -%}
+{% set state = lab_statuses[lab] %}
+<a href="{{ url_for('dashboard', lab=lab, _anchor='labs') }}" data-lab="{{ lab }}" class="lab-node"
+   data-state="{{ state }}" aria-label="معمل {{ lab }}، {{ lab_labels[state] }}"{% if initial_lab == lab %} aria-current="true"{% endif %}>
+    <rect class="svg-lab" x="{{ x }}" y="{{ y }}" width="{{ width }}" height="{{ height }}" rx="{{ radius }}" />
+    <text x="{{ label_x }}" y="{{ label_y }}" class="svg-text-title">معمل ({{ lab }})</text>
+    {% if subtitle %}<text x="{{ label_x }}" y="{{ subtitle_y }}" class="svg-text-sub">{{ subtitle }}</text>{% endif %}
+</a>
+{%- endmacro %}
+<svg viewBox="55 14 740 932" class="floor-plan" role="group" aria-label="مخطط جناح قسم الحاسب الآلي" xmlns="http://www.w3.org/2000/svg">
+    <rect x="70" y="30" width="710" height="900" fill="#e9f0f5" stroke="#8da6ba" stroke-width="3" rx="8" />
+
+    <!-- 1. الضلع العلوي الخارجي -->
+    <rect x="235" y="35" width="80" height="75" class="svg-room" />
+    <text x="275" y="72" class="svg-facility-text">شبكات</text><text x="275" y="87" class="svg-facility-text">الحاسب</text>
+
+    {{ map_lab(26, 320, 35, 85, 75, 4, 362, 72, 'الحوسبة', 88) }}
+
+    <rect x="410" y="35" width="85" height="75" class="svg-room" />
+    <text x="452" y="72" class="svg-facility-text">أساسيات</text><text x="452" y="87" class="svg-facility-text">الكهرباء</text>
+
+    {{ map_lab(24, 500, 35, 85, 75, 4, 542, 72, 'الأساسيات', 88) }}
+
+    <rect x="590" y="35" width="65" height="75" class="svg-room" /><text x="622" y="78" class="svg-facility-text">مستودع</text>
+    <rect x="660" y="35" width="80" height="75" class="svg-room" /><text x="700" y="72" class="svg-facility-text">أساسيات</text><text x="700" y="86" class="svg-facility-text">الإلكترونيات</text>
+
+    <g>
+        <rect x="745" y="35" width="30" height="75" fill="#e0e9f0" stroke="#99adbe" stroke-width="1.2" />
+        <line x1="745" y1="48" x2="775" y2="48" stroke="#9baebd" /><line x1="745" y1="60" x2="775" y2="60" stroke="#9baebd" /><line x1="745" y1="72" x2="775" y2="72" stroke="#9baebd" /><line x1="745" y1="84" x2="775" y2="84" stroke="#9baebd" /><line x1="745" y1="96" x2="775" y2="96" stroke="#9baebd" />
+    </g>
+
+    <!-- 2. الضلع الأيسر الخارجي -->
+    <rect x="75" y="115" width="125" height="70" class="svg-room" /><text x="137" y="155" class="svg-facility-text">مستودع</text>
+    <rect x="75" y="190" width="125" height="75" class="svg-room" /><text x="137" y="232" class="svg-facility-text">دورة مياه المتدربين</text>
+
+    <g>
+        <rect x="75" y="270" width="125" height="75" fill="#fff0d6" stroke="#bb863a" stroke-width="2" rx="4" />
+        <line x1="85" y1="285" x2="165" y2="285" stroke="#b57b36" stroke-width="3" /><line x1="85" y1="298" x2="165" y2="298" stroke="#b57b36" stroke-width="3" /><line x1="85" y1="311" x2="165" y2="311" stroke="#b57b36" stroke-width="3" /><line x1="85" y1="324" x2="165" y2="324" stroke="#b57b36" stroke-width="3" /><line x1="85" y1="337" x2="165" y2="337" stroke="#b57b36" stroke-width="3" />
+        <path d="M 180 330 L 180 280 L 175 290 M 180 280 L 185 290" stroke="#905c20" stroke-width="2.5" fill="none" stroke-linecap="round" />
+    </g>
+
+    <g>
+        <rect x="70" y="380" width="130" height="95" fill="#e1f0ea" stroke="#5d9c8d" stroke-width="1.8" stroke-dasharray="4" rx="4" />
+        <path d="M 70 410 A 30 30 0 0 1 100 440" stroke="#5d9c8d" stroke-width="1.5" fill="none" /><line x1="70" y1="410" x2="70" y2="440" stroke="#5d9c8d" stroke-width="2" />
+        <path d="M 70 470 A 30 30 0 0 0 100 440" stroke="#5d9c8d" stroke-width="1.5" fill="none" /><line x1="70" y1="470" x2="70" y2="440" stroke="#5d9c8d" stroke-width="2" />
+        <text x="135" y="425" fill="#196b60" font-size="11" font-weight="bold" text-anchor="middle">المدخل الرئيسي</text><text x="135" y="445" fill="#245e58" font-size="9" text-anchor="middle">المزدوج</text>
+    </g>
+
+    <rect x="75" y="520" width="125" height="90" class="svg-room" /><text x="137" y="572" class="svg-facility-text" font-weight="bold">منسق رايات</text>
+
+    {{ map_lab(1, 75, 620, 125, 90, 4, 137, 665, 'الشبكات والأنظمة', 682) }}
+
+    <!-- 3. المبنى الداخلي وقسم الحاسب -->
+    <rect x="250" y="200" width="415" height="490" fill="#f4f8fb" stroke="#8ea8bc" stroke-width="1.8" rx="6" />
+
+    {{ map_lab(27, 255, 205, 95, 80, 3, 302, 250) }}
+    <rect x="355" y="205" width="90" height="80" class="svg-room" />
+    <text x="400" y="245" fill="#7e5221" font-size="10" font-weight="bold" text-anchor="middle">غرفة صيانة</text><text x="400" y="260" fill="#885b2b" font-size="8" text-anchor="middle">صيانة الأجهزة</text>
+
+    {{ map_lab(23, 450, 205, 100, 80, 3, 500, 250) }}
+    {{ map_lab(22, 555, 205, 105, 80, 3, 607, 250) }}
+
+    <rect x="255" y="290" width="70" height="35" class="svg-room" /><text x="290" y="312" class="svg-facility-text" font-size="9">تهوية</text>
+    <rect x="255" y="330" width="70" height="75" class="svg-room" /><text x="290" y="365" class="svg-facility-text">مكتب التدريب</text><text x="290" y="380" class="svg-facility-text">الإلكتروني</text>
+    <rect x="255" y="410" width="70" height="80" class="svg-room" /><text x="290" y="445" fill="#395675" font-size="10" font-weight="bold" text-anchor="middle">مكتب</text><text x="290" y="460" fill="#395675" font-size="10" font-weight="bold" text-anchor="middle">رئيس القسم</text>
+    <rect x="255" y="495" width="70" height="75" class="svg-room" /><text x="290" y="532" class="svg-facility-text">شؤون</text><text x="290" y="547" class="svg-facility-text">المتدربين</text>
+    <rect x="255" y="575" width="70" height="35" class="svg-room" /><text x="290" y="597" class="svg-facility-text" font-size="9">تهوية</text>
+
+    <!-- قسم الحاسب الوسطي -->
+    <g>
+        <rect x="335" y="295" width="235" height="295" fill="#deede9" stroke="#6ca696" stroke-dasharray="5 5" stroke-width="1.5" rx="8" />
+        <circle cx="355" cy="315" r="7" fill="#a9cfc3" stroke="#5d9c8d" stroke-width="1.5" />
+        <circle cx="550" cy="315" r="7" fill="#a9cfc3" stroke="#5d9c8d" stroke-width="1.5" />
+        <circle cx="355" cy="570" r="7" fill="#a9cfc3" stroke="#5d9c8d" stroke-width="1.5" />
+        <circle cx="550" cy="570" r="7" fill="#a9cfc3" stroke="#5d9c8d" stroke-width="1.5" />
+        <text x="452" y="440" fill="#184f4a" font-size="19" font-weight="bold" text-anchor="middle">قسم الحاسب</text>
+        <text x="452" y="462" fill="#406b64" font-size="10" text-anchor="middle">الفناء الداخلي</text>
+    </g>
+
+    <rect x="580" y="290" width="80" height="30" class="svg-room" /><text x="620" y="310" class="svg-facility-text" font-size="9">تهوية</text>
+    <rect x="580" y="325" width="80" height="28" class="svg-room" /><text x="620" y="343" class="svg-facility-text" font-size="9">مستودع 3</text>
+    <rect x="580" y="357" width="80" height="28" class="svg-room" /><text x="620" y="375" class="svg-facility-text" font-size="9">مستودع 2</text>
+    <rect x="580" y="389" width="80" height="28" class="svg-room" /><text x="620" y="407" class="svg-facility-text" font-size="9">مستودع 1</text>
+
+    {{ map_lab(14, 580, 423, 80, 75, 3, 620, 465) }}
+    {{ map_lab(12, 580, 503, 80, 75, 3, 620, 545) }}
+    <rect x="580" y="582" width="80" height="30" class="svg-room" /><text x="620" y="602" class="svg-facility-text" font-size="9">تهوية</text>
+
+    <!-- الضلع السفلي الداخلي بالمقاسات الهندسية المضبوطة -->
+    {{ map_lab(4, 255, 600, 98, 85, 4, 304, 648) }}
+    {{ map_lab(6, 357, 600, 98, 85, 4, 406, 648) }}
+    <rect x="459" y="600" width="100" height="85" class="svg-room" />
+    <text x="509" y="635" class="svg-facility-text">كيابل</text><text x="509" y="651" class="svg-facility-text">الألياف</text><text x="509" y="667" class="svg-facility-text">الضوئية</text>
+
+    {{ map_lab(10, 563, 600, 100, 85, 4, 613, 648) }}
+
+    <!-- 4. الضلع الأيمن الخارجي -->
+    <rect x="715" y="140" width="60" height="90" class="svg-room" /><text x="745" y="190" fill="#245e58" font-size="10" font-weight="bold" text-anchor="middle">مصلى</text>
+    <rect x="715" y="235" width="60" height="40" class="svg-room" /><text x="745" y="260" class="svg-facility-text" font-size="9">مستودع</text>
+    <rect x="715" y="280" width="60" height="100" class="svg-room" /><text x="745" y="325" class="svg-facility-text">قاعة</text><text x="745" y="340" class="svg-facility-text">نظري 1</text>
+    <rect x="715" y="385" width="60" height="40" class="svg-room" /><text x="745" y="410" class="svg-facility-text" font-size="9">مستودع</text>
+
+    {{ map_lab(13, 715, 430, 60, 90, 3, 745, 480) }}
+    {{ map_lab(11, 715, 525, 60, 90, 3, 745, 575) }}
+    <rect x="715" y="620" width="60" height="60" class="svg-room" /><text x="745" y="645" class="svg-facility-text" font-size="9">دورة مياه</text><text x="745" y="660" class="svg-facility-text" font-size="9">المتدربين</text>
+
+    <g>
+        <rect x="715" y="685" width="60" height="45" fill="#e0e9f0" stroke="#99adbe" />
+        <line x1="715" y1="696" x2="775" y2="696" stroke="#9baebd" /><line x1="715" y1="707" x2="775" y2="707" stroke="#9baebd" /><line x1="715" y1="718" x2="775" y2="718" stroke="#9baebd" />
+    </g>
+
+    <!-- 5. الضلع السفلي الخارجي -->
+    {{ map_lab(2, 200, 740, 80, 85, 4, 240, 788) }}
+    {{ map_lab(3, 285, 740, 80, 85, 4, 325, 788) }}
+    {{ map_lab(5, 370, 740, 80, 85, 4, 410, 788) }}
+    {{ map_lab(7, 455, 740, 80, 85, 4, 495, 788) }}
+    {{ map_lab(9, 540, 740, 80, 85, 4, 580, 788) }}
+    <rect x="625" y="740" width="85" height="85" class="svg-room" /><text x="667" y="778" class="svg-facility-text">الكيابل</text><text x="667" y="794" class="svg-facility-text">النحاسية</text>
+    <rect x="715" y="740" width="60" height="85" class="svg-room" /><text x="745" y="788" class="svg-facility-text">مستودع</text>
+</svg>
