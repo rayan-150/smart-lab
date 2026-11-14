@@ -4,55 +4,388 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="theme-color" content="#0a6c65">
-    <title>تقديم بلاغ صيانة | معمل {{ lab_num }}</title>
+    <meta name="theme-color" content="#14263c">
+    <title>بلاغ صيانة | معمل {{ lab_num }}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}">
+    <style>
+        .maintenance-page {
+            min-height: 100vh;
+            padding: clamp(16px, 5vw, 54px) 16px 24px;
+            background: radial-gradient(ellipse at 90% 0%, #e4f1ef 0%, transparent 52%), #f2f5f9;
+        }
+        .maintenance-shell {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        .maintenance-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            margin: 0 0 14px;
+            padding: 12px 16px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+        }
+        .maintenance-identity {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            min-width: 0;
+        }
+        .maintenance-page .icon-tile {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .maintenance-identity strong {
+            display: block;
+            white-space: nowrap;
+            font-size: 14px;
+        }
+        .maintenance-identity p {
+            color: var(--muted);
+            font-size: 11px;
+        }
+        .maintenance-logo {
+            display: block;
+            width: 182px;
+            max-width: 38%;
+            height: auto;
+        }
+        .maintenance-frame {
+            display: flex;
+            overflow: hidden;
+            border: 1px solid var(--border);
+            border-radius: 19px;
+            background: var(--surface);
+            box-shadow: 0 12px 30px #1f395313;
+        }
+        .maintenance-location {
+            position: relative;
+            isolation: isolate;
+            flex: 0 0 auto;
+            width: 228px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 12px;
+            min-width: 0;
+            padding: 26px 19px 20px;
+            background: radial-gradient(#6ca5aa45 1px, transparent 1px) 0 0 / 16px 16px,
+                        linear-gradient(155deg, #14263c 25%, #143c47 100%);
+            color: #fff;
+        }
+        .maintenance-location::after {
+            position: absolute;
+            z-index: -1;
+            inset: auto -72px 54px auto;
+            width: 276px;
+            height: 276px;
+            border-radius: 50%;
+            background: repeating-radial-gradient(circle, transparent 0 24px, #85c3bf15 25px 26px, transparent 27px 38px);
+            content: "";
+            pointer-events: none;
+        }
+        .maintenance-location-icon {
+            flex: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 50px;
+            height: 50px;
+            color: #a1e2d6;
+            border: 1px solid #93d5c552;
+            border-radius: 13px;
+            background: #7bc1b41d;
+        }
+        .maintenance-location-icon .icon { width: 24px; height: 24px; }
+        .maintenance-location-label {
+            color: #c9e3e7;
+            font-size: 12px;
+        }
+        .maintenance-location h2 {
+            font-size: 27px;
+            line-height: 1.38;
+            margin-top: 3px;
+        }
+        .maintenance-location h2 bdi { font-variant-numeric: tabular-nums; }
+        .maintenance-location-note {
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            width: 100%;
+            margin-top: auto;
+            padding-top: 14px;
+            border-top: 1px solid #c6e9e435;
+            color: #d6e8ea;
+            font-size: 12px;
+        }
+        .maintenance-location-note .icon { margin-top: 3px; color: #a1e2d6; }
+        .maintenance-content {
+            flex: 1 1 0;
+            min-width: 0;
+            padding: clamp(20px, 3.75vw, 32px);
+        }
+        .maintenance-intro {
+            margin-bottom: 20px;
+        }
+        .maintenance-content h1 {
+            font-size: clamp(22px, 3.8vw, 31px);
+            line-height: 1.42;
+            margin-bottom: 6px;
+        }
+        .maintenance-intro p, .maintenance-success p {
+            color: var(--muted);
+            font-size: 13px;
+        }
+        .maintenance-form { width: 100%; }
+        .maintenance-form-row {
+            display: flex;
+            gap: 14px;
+            margin-bottom: 14px;
+        }
+        .maintenance-form-row > .maintenance-field { flex: 1 1 0; margin: 0; }
+        .maintenance-field { min-width: 0; margin-bottom: 14px; }
+        .maintenance-field label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 13px;
+            font-weight: 700;
+        }
+        .maintenance-field input, .maintenance-field select, .maintenance-field textarea {
+            width: 100%;
+            min-height: 45px;
+            border: 1px solid var(--strong-border);
+            border-radius: 9px;
+            background-color: #fbfcfe;
+            font-size: 13px;
+        }
+        .maintenance-field input, .maintenance-field textarea {
+            display: block;
+            padding: 9px 11px;
+        }
+        .maintenance-field select { padding-inline: 11px 32px; }
+        .maintenance-field .select-wrap > .icon { color: #4e6982; }
+        .maintenance-field textarea { min-height: 104px; resize: vertical; }
+        .maintenance-field :is(input, select, textarea):focus { background-color: var(--surface); }
+        .maintenance-description-label {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            gap: 10px;
+        }
+        .maintenance-description-label > span {
+            color: var(--muted);
+            font-size: 11px;
+        }
+        .maintenance-actions {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 8px;
+            padding-top: 4px;
+        }
+        .maintenance-actions .button {
+            min-height: 44px;
+            padding: 8px 16px;
+            font-size: 13px;
+        }
+        .maintenance-actions .button-primary { min-width: 160px; }
+        .maintenance-error {
+            display: flex;
+            align-items: flex-start;
+            gap: 9px;
+            padding: 9px 11px;
+            margin-bottom: 15px;
+            border: 1px solid #f0c4cc;
+            border-radius: 9px;
+            color: var(--danger);
+            background: var(--danger-tint);
+        }
+        .maintenance-error .icon { margin-top: 2px; }
+        .maintenance-error strong { display: block; }
+        .maintenance-success .icon-tile {
+            width: 48px;
+            height: 48px;
+            margin-bottom: 12px;
+            color: var(--ready);
+            background: var(--ready-tint);
+        }
+        .maintenance-success .icon-tile .icon { width: 23px; height: 23px; }
+        .maintenance-receipt {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 6px 12px;
+            padding: 12px 14px;
+            margin: 17px 0 13px;
+            border: 1px solid #c5e1d9;
+            border-radius: 11px;
+            background: #eef7f4;
+            color: var(--accent-dark);
+        }
+        .maintenance-receipt strong { font-size: 17px; font-variant-numeric: tabular-nums; }
+        .maintenance-credits {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 4px 11px;
+            margin-top: 17px;
+            color: var(--muted);
+            font-size: 12px;
+            text-align: center;
+        }
+        .maintenance-credits strong { color: var(--ink); }
+        .maintenance-credits .credit-dot { color: var(--accent); }
+
+        @media (max-width: 710px) {
+            .maintenance-frame { flex-direction: column; }
+            .maintenance-content, .maintenance-location { flex: 0 0 auto; }
+            .maintenance-location {
+                width: 100%;
+                flex-direction: row;
+                align-items: center;
+                padding: 13px 16px;
+            }
+            .maintenance-location h2 { font-size: 22px; }
+            .maintenance-location::after { inset: -112px auto auto -45px; }
+            .maintenance-location-note {
+                margin: 0 auto 0 0;
+                padding: 0;
+                border: 0;
+                max-width: 185px;
+            }
+        }
+        @media (max-width: 500px) {
+            .maintenance-header { padding: 10px 11px; }
+            .maintenance-identity { gap: 7px; }
+            .maintenance-identity .icon-tile { display: none; }
+            .maintenance-content { padding: 17px; }
+            .maintenance-intro { margin-bottom: 15px; }
+            .maintenance-location { flex-wrap: wrap; gap: 8px 10px; }
+            .maintenance-location-note { flex-basis: 100%; max-width: none; }
+            .maintenance-location-note .icon { width: 15px; height: 15px; }
+            .maintenance-form-row { display: block; margin: 0; }
+            .maintenance-form-row > .maintenance-field, .maintenance-field { margin-bottom: 11px; }
+            .maintenance-field input, .maintenance-field select, .maintenance-field textarea { font-size: 16px; }
+            .maintenance-field ::placeholder { font-size: 13px; }
+            .maintenance-actions .button { flex: 1 1 100%; }
+            .maintenance-credits { font-size: 11px; gap: 3px 6px; }
+        }
+    </style>
 </head>
-<body class="report-page">
+<body class="maintenance-page">
 {{ sprite() }}
-<main class="card report-card">
-    <header>
-        <img class="brand-logo" src="{{ institution_logo }}" alt="المؤسسة العامة للتدريب التقني والمهني">
-        <h1>بلاغ صيانة لمعمل ({{ lab_num }})</h1>
-        <p>اختر الجهاز واكتب وصفًا للعطل.</p>
+<main class="maintenance-shell">
+    <header class="maintenance-header">
+        <div class="maintenance-identity">
+            <span class="icon-tile">{{ icon('wrench') }}</span>
+            <div>
+                <strong>نظام صيانة المعامل</strong>
+                <p>قسم الحاسب الآلي</p>
+            </div>
+        </div>
+        <img class="maintenance-logo" src="{{ institution_logo }}" alt="المؤسسة العامة للتدريب التقني والمهني">
     </header>
-    {% if success is not none %}
-    <div class="report-success" role="status">
-        <span class="icon-tile">{{ icon('check') }}</span>
-        <h2>تم تسجيل البلاغ <bdi dir="ltr">#{{ lab_num }}-{{ success }}</bdi></h2>
-        <p>وصل البلاغ إلى سجل الصيانة الخاص بالمعمل.</p>
-        <a class="button button-primary" href="{{ url_for('lab_report', lab_num=lab_num) }}">{{ icon('plus') }} بلاغ آخر لهذا المعمل</a>
+
+    <div class="maintenance-frame">
+        <aside class="maintenance-location" aria-labelledby="maintenance-lab">
+            <span class="maintenance-location-icon">{{ icon('monitor') }}</span>
+            <div>
+                <p class="maintenance-location-label">موقع البلاغ</p>
+                <h2 id="maintenance-lab">معمل <bdi dir="ltr">{{ lab_num }}</bdi></h2>
+            </div>
+            {% if success is none %}
+            <p class="maintenance-location-note">{{ icon('info') }} <span>يظهر تنبيه «بلاغ نشط» بجانب الأجهزة التي لها بلاغ قيد المتابعة.</span></p>
+            {% endif %}
+        </aside>
+
+        <section class="maintenance-content" aria-labelledby="maintenance-title">
+            {% if success is not none %}
+                <div class="maintenance-success" role="status">
+                    <span class="icon-tile">{{ icon('check') }}</span>
+                    <h1 id="maintenance-title">تم تسجيل بلاغ الصيانة</h1>
+                    <p>احتفظ برقم البلاغ للرجوع إليه عند المتابعة.</p>
+                    <div class="maintenance-receipt"><span>رقم البلاغ</span><strong><bdi dir="ltr">#{{ lab_num }}-{{ success }}</bdi></strong></div>
+                </div>
+                <div class="maintenance-actions">
+                    <a class="button button-primary" href="{{ url_for('lab_report', lab_num=lab_num) }}">{{ icon('plus') }} تقديم بلاغ آخر</a>
+                    {% if session.get('user') %}
+                    <a class="button" href="{{ url_for('dashboard', lab=lab_num, _anchor='labs') }}">العودة لأجهزة المعمل</a>
+                    {% endif %}
+                </div>
+            {% else %}
+                <header class="maintenance-intro">
+                    <h1 id="maintenance-title">تقديم بلاغ صيانة</h1>
+                    <p>حدد الجهاز ونوع العطل، واذكر متى يبدأ أو رسالة الخطأ إن ظهرت.</p>
+                </header>
+
+                {% if error %}
+                <div class="maintenance-error" role="alert">
+                    {{ icon('alert') }}
+                    <div><strong>تعذّر إرسال البلاغ</strong><p>{{ error }}</p></div>
+                </div>
+                {% endif %}
+
+                <form class="maintenance-form" method="post" action="{{ url_for('lab_report', lab_num=lab_num) }}">
+                    <div class="maintenance-form-row">
+                        <div class="maintenance-field">
+                            <label for="seat">الجهاز المتعطل</label>
+                            <div class="select-wrap">
+                                {% set selected = values.get('seat_num', '') %}
+                                <select id="seat" name="seat_num" required>
+                                    <option value="" disabled{% if not selected or selected|int(-1) in occupied_seats %} selected{% endif %}>اختر الجهاز</option>
+                                    <option value="0"{% if 0 in occupied_seats %} disabled{% elif selected == '0' %} selected{% endif %}>منصة المدرب والشاشة الرئيسية{% if 0 in occupied_seats %} · بلاغ نشط{% endif %}</option>
+                                    {% for seat in seats %}
+                                    <option value="{{ seat }}"{% if seat in occupied_seats %} disabled{% elif selected == seat|string %} selected{% endif %}>جهاز {{ seat }}{% if seat in occupied_seats %} · بلاغ نشط{% endif %}</option>
+                                    {% endfor %}
+                                </select>
+                                {{ icon('down') }}
+                            </div>
+                        </div>
+                        <div class="maintenance-field">
+                            <label for="category">نوع العطل</label>
+                            <div class="select-wrap">
+                                <select id="category" name="issue_category" required>
+                                    {% for category in categories %}
+                                    <option value="{{ category }}"{% if values.get('issue_category') == category %} selected{% endif %}>{{ category }}</option>
+                                    {% endfor %}
+                                </select>
+                                {{ icon('down') }}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="maintenance-field">
+                        <label for="reporter">اسم المبلّغ</label>
+                        <input id="reporter" name="reporter_name" maxlength="80" autocomplete="name" placeholder="اكتب اسمك" value="{{ values.get('reporter_name', '') }}" required>
+                    </div>
+                    <div class="maintenance-field">
+                        <div class="maintenance-description-label">
+                            <label for="issue">وصف العطل</label>
+                            <span id="issue-length"><bdi dir="ltr">5–1000</bdi> حرف</span>
+                        </div>
+                        <textarea id="issue" name="issue" minlength="5" maxlength="1000" aria-describedby="issue-length" placeholder="مثلًا، الشاشة لا تعمل بعد تشغيل الجهاز." required>{{ values.get('issue', '') }}</textarea>
+                    </div>
+                    <div class="maintenance-actions">
+                        <button type="submit" class="button button-primary">{{ icon('send') }} إرسال البلاغ</button>
+                        {% if session.get('user') %}
+                        <a class="button" href="{{ url_for('dashboard', lab=lab_num, _anchor='labs') }}">العودة لأجهزة المعمل</a>
+                        {% endif %}
+                    </div>
+                </form>
+            {% endif %}
+        </section>
     </div>
-    {% else %}
-        {% if error %}<p class="report-error" role="alert">{{ error }}</p>{% endif %}
-        <form class="report-form" method="post" action="{{ url_for('lab_report', lab_num=lab_num) }}">
-            <label for="seat">الجهاز المتعطل</label>
-            <div class="select-wrap">
-                {% set selected = values.get('seat_num', '') %}
-                <select id="seat" name="seat_num" required>
-                    <option value="" disabled{% if not selected or selected|int(-1) in occupied_seats %} selected{% endif %}>اختر الجهاز</option>
-                    <option value="0"{% if 0 in occupied_seats %} disabled{% elif selected == '0' %} selected{% endif %}>منصة المدرب والشاشة الرئيسية{% if 0 in occupied_seats %} · بلاغ نشط{% endif %}</option>
-                    {% for seat in seats %}
-                    <option value="{{ seat }}"{% if seat in occupied_seats %} disabled{% elif selected == seat|string %} selected{% endif %}>جهاز {{ seat }}{% if seat in occupied_seats %} · بلاغ نشط{% endif %}</option>
-                    {% endfor %}
-                </select>
-                {{ icon('down') }}
-            </div>
-            <label for="reporter">اسم المبلّغ</label>
-            <input id="reporter" name="reporter_name" maxlength="80" autocomplete="name" value="{{ values.get('reporter_name', '') }}" required>
-            <label for="category">نوع العطل</label>
-            <div class="select-wrap">
-                <select id="category" name="issue_category" required>
-                    {% for category in categories %}<option{% if values.get('issue_category') == category %} selected{% endif %}>{{ category }}</option>{% endfor %}
-                </select>
-                {{ icon('down') }}
-            </div>
-            <label for="issue">وصف العطل</label>
-            <textarea id="issue" name="issue" minlength="5" maxlength="1000" placeholder="مثلًا، الشاشة لا تعمل عند تشغيل الجهاز." required>{{ values.get('issue', '') }}</textarea>
-            <button type="submit" class="button button-primary">{{ icon('send') }} إرسال البلاغ</button>
-        </form>
-    {% endif %}
-    {% if session.get('user') %}<a class="report-back" href="{{ url_for('dashboard', lab=lab_num, _anchor='labs') }}">العودة لأجهزة المعمل</a>{% endif %}
+
+    <footer class="maintenance-credits" aria-label="الإشراف والإعداد">
+        <span>إشراف: <strong>أ. محمد الدوخي</strong></span>
+        <span class="credit-dot" aria-hidden="true">•</span>
+        <span>إعداد: <strong>ريان المحيطيب</strong></span>
+    </footer>
 </main>
 </body>
 </html>
