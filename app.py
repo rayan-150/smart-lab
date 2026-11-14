@@ -491,7 +491,7 @@ LOGIN_TEMPLATE = """
 
     <footer class="page-footer">
         <p>قسم الحاسب الآلي وتقنية المعلومات</p>
-        <p>إشراف: <strong>أ. محمد الدوخي</strong><span class="credit-separator">•</span>إعداد: <strong>ريان المحيطيب</strong></p>
+        <p>إشراف: <strong>م. محمد الدوخي</strong><span class="credit-separator">•</span>إعداد: <strong>ريان المحيطيب</strong></p>
     </footer>
 
     <script>
@@ -695,7 +695,7 @@ QR_LABELS_TEMPLATE = """
 
                 <div class="qr-card-footer">
                     <p class="instruction">امسح الرمز بكاميرا الجوال للإبلاغ الفوري عن أي عطل</p>
-                    <p class="meta">النظام الذكي لصيانة المعامل • إشراف: أ. محمد الدوخي • إعداد: ريان المحيطيب</p>
+                    <p class="meta">النظام الذكي لصيانة المعامل • إشراف: م. محمد الدوخي • إعداد: ريان المحيطيب</p>
                 </div>
             </div>
         </div>
@@ -877,7 +877,7 @@ REPORTS_TEMPLATE = """
         </article>
     {% endfor %}
     </div>
-    <footer>قسم الحاسب الآلي وتقنية المعلومات · إشراف: أ. محمد الدوخي · إعداد: ريان المحيطيب</footer>
+    <footer>قسم الحاسب الآلي وتقنية المعلومات · إشراف: م. محمد الدوخي · إعداد: ريان المحيطيب</footer>
 </main>
 <dialog id="report-preview" class="device-dialog report-preview" aria-labelledby="preview-title">
     <div class="panel-header report-preview-heading">

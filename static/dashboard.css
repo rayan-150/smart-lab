@@ -49,6 +49,17 @@ body {
     font-size: 13px;
     line-height: 1.6;
 }
+.dashboard-page {
+    min-height: 100vh;
+    background-color: #edf4f8;
+    background-image:
+        radial-gradient(ellipse 900px 570px at 93% 10%, #b7dfde8c, transparent 74%),
+        radial-gradient(ellipse 730px 580px at 8% 64%, #cadcf08a, transparent 78%),
+        linear-gradient(#799bad24 1px, transparent 1px),
+        linear-gradient(90deg, #799bad24 1px, transparent 1px),
+        linear-gradient(145deg, #edf6f6 0%, #eaf1f8 62%, #f5f7fb 100%);
+    background-size: auto, auto, 28px 28px, 28px 28px, auto;
+}
 h1, h2, h3, p, ul, dl, dd { margin: 0; }
 svg { display: block; }
 a { color: inherit; text-decoration: none; }
@@ -84,6 +95,11 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
     flex-direction: column;
     overflow-y: auto;
     padding: 24px 15px 14px;
+}
+.dashboard-page .sidebar {
+    background-image:
+        radial-gradient(ellipse 260px 310px at 110% 4%, #27686c70, transparent 82%),
+        linear-gradient(172deg, #152b42, #14263c 58%, #102435);
 }
 .sidebar-brand { padding: 0 7px 19px; border-bottom: 1px solid #ffffff1a; }
 .sidebar-brand img { display: block; width: 100%; height: 67px; object-fit: contain; border-radius: 11px; background: var(--surface); padding: 9px 12px; }
@@ -158,6 +174,13 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
     justify-content: space-between;
     gap: 16px;
 }
+.dashboard-page .hero {
+    border-color: #b5d6d7;
+    background:
+        linear-gradient(90deg, transparent 40%, #f4faf9cf 79%),
+        radial-gradient(circle at 8% 38%, #85c7c26b, transparent 47%),
+        linear-gradient(110deg, #cde8e7, #e8f5f3 59%, #f3faf9);
+}
 .hero h1 { margin: 2px 0 5px; font-size: clamp(27px, 2.45vw, 40px); line-height: 1.48; font-weight: 700; }
 .department { color: var(--accent-dark); display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 700; }
 .department span { width: 7px; height: 7px; border-radius: 50%; background: #2b9b91; }
@@ -165,6 +188,8 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .hero-actions { position: relative; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
 .hero-traces { position: absolute; inset: 0 auto 0 0; height: 100%; width: min(48%, 625px); z-index: -1; color: #7fcec3; fill: none; stroke: currentColor; stroke-width: 1.35; opacity: .48; pointer-events: none; }
 .hero-traces circle { fill: #edf7f5; }
+.dashboard-page .hero-traces { color: #48978e; opacity: .54; }
+.dashboard-page .hero-traces circle { fill: #e2f3ef; }
 .button {
     display: inline-flex;
     justify-content: center;
@@ -256,7 +281,21 @@ body.monitor-active .content [id] { scroll-margin-top: 12px; }
 .swatch-warning { background: #ffebc6; border-color: #c58629; }
 .swatch-danger { background: #fae1e5; border-color: #cf5c70; }
 .swatch-selected { background: var(--accent); border-color: var(--accent); }
-.map-canvas { flex: 1; position: relative; min-height: 495px; border: 1px solid var(--border); border-radius: 12px; background: #f7fafc radial-gradient(#becee2 1px, transparent 1px) 0 0 / 15px 15px; }
+.map-canvas {
+    flex: 1;
+    position: relative;
+    min-height: 495px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: #f7fafc radial-gradient(#becee2 1px, transparent 1px) 0 0 / 15px 15px;
+}
+.dashboard-page .map-canvas {
+    background-color: #f2f8fa;
+    background-image:
+        radial-gradient(ellipse at 58% 46%, #dceced9c, transparent 78%),
+        radial-gradient(#90aabf 1px, transparent 1px);
+    background-size: auto, 16px 16px;
+}
 .map-viewport { position: absolute; inset: 0; direction: ltr; display: block; overflow: hidden; border-radius: inherit; overscroll-behavior: contain; }
 .map-viewport.is-zoomed { overflow: auto; cursor: grab; }
 .map-viewport.is-dragging { cursor: grabbing; }
@@ -476,6 +515,7 @@ input::placeholder, textarea::placeholder { color: #64788f; opacity: 1; }
     .hero h1 { font-size: clamp(22px, 6vw, 32px); }
     .hero-subtitle { font-size: 12px; }
     .hero-traces { width: 78%; opacity: .3; }
+    .dashboard-page .hero-traces { opacity: .24; }
     .hero-actions { position: static; width: 100%; }
     .monitor-status { position: static; flex-basis: 100%; }
     .metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; }
