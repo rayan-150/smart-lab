@@ -16,7 +16,7 @@ from math import ceil
 import secrets
 
 import qrcode
-from flask import Flask, abort, render_template, render_template_string, request, redirect, send_file, url_for, session, Response
+from flask import Flask, abort, jsonify, render_template, render_template_string, request, redirect, send_file, url_for, session, Response
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 ON_RENDER = os.environ.get('RENDER') == 'true'
@@ -707,6 +707,16 @@ QR_LABELS_TEMPLATE = """
 """
 
 REPORTS_TEMPLATE = """
+{% from 'icons.html' import icon, sprite %}
+{% macro preview_button(url, label) -%}
+<button class="button icon-button report-eye" type="button" data-preview-url="{{ url }}"
+        aria-label="{{ label }}" title="{{ label }}" aria-haspopup="dialog" aria-controls="report-preview">
+    <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M2 12s3.6-6 10-6 10 6 10 6-3.6 6-10 6-10-6-10-6Z"/>
+        <circle cx="12" cy="12" r="2.5"/>
+    </svg>
+</button>
+{%- endmacro %}
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -729,16 +739,89 @@ REPORTS_TEMPLATE = """
         .badge { padding: 3px 9px; border-radius: 20px; background: var(--accent-tint); color: var(--accent-dark); font-size: 11px; font-weight: 700; }
         .due .badge { background: var(--warning-tint); color: var(--warning); }
         dd { margin: 0 0 7px; } time { font-variant-numeric: tabular-nums; display: inline-block; direction: ltr; }
-        form .button { width: 100%; } button:disabled { opacity: .6; cursor: wait; }
+        .report-actions { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+        .report-actions > a { min-width: 0; overflow-wrap: anywhere; }
+        .report-eye { flex: none; width: 44px; min-height: 44px; color: var(--accent-dark); }
+        .export-form .button-primary { flex: 1; min-width: 0; white-space: normal; }
+        .export-form button:disabled { opacity: .6; cursor: wait; }
         details { border-top: 1px solid var(--border); padding-top: 11px; } summary { cursor: pointer; }
-        ul { padding-inline-start: 18px; } li { margin-block: 6px; } .message { color: var(--danger); }
+        .archive-list { padding: 0; list-style: none; }
+        .archive-list li { margin-top: 7px; }
+        .message { color: var(--danger); }
         .report-summary a { color: var(--accent-dark); text-decoration: underline; text-underline-offset: 3px; }
-        .report-summary > a { margin-top: auto; } footer { text-align: center; margin-top: 24px; }
+        .report-summary > .report-actions { margin-top: auto; }
+        footer { text-align: center; margin-top: 24px; }
+        html:has(.report-preview[open]) { overflow: hidden; }
+        .report-preview {
+            width: min(1080px, calc(100% - 24px));
+            max-height: calc(100vh - 30px);
+            max-height: calc(100dvh - 30px);
+            overscroll-behavior: contain;
+        }
+        .report-preview-heading {
+            position: sticky;
+            top: 0;
+            z-index: 1;
+            padding: 13px 16px;
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+        }
+        .report-preview-heading p { color: var(--muted); margin: 4px 0 0; }
+        .report-preview-heading .button { flex: none; width: 40px; min-height: 40px; }
+        .report-preview-body { padding: 12px 16px 16px; }
+        #preview-message { color: var(--muted); margin: 0; }
+        #preview-message[data-state="error"] { color: var(--danger); }
+        .preview-table-wrap {
+            margin-top: 10px;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            overflow-x: auto;
+        }
+        .preview-table { width: 100%; min-width: 820px; border-collapse: collapse; }
+        .preview-table th, .preview-table td {
+            text-align: start;
+            vertical-align: top;
+            padding: 8px 10px;
+            border-bottom: 1px solid var(--border);
+            overflow-wrap: anywhere;
+        }
+        .preview-table th { background: var(--subtle); color: var(--muted); font-weight: 700; }
+        .preview-table td { white-space: pre-wrap; }
+        .preview-table tbody tr:last-child td { border-bottom: 0; }
+        .preview-table td[data-format="issue"] { min-width: 150px; }
+        .preview-table bdi { font-variant-numeric: tabular-nums; }
         @media (max-width: 950px) { .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+        @media (max-width: 860px) {
+            .preview-table, .preview-table tbody { display: block; min-width: 0; }
+            .preview-table thead {
+                position: absolute;
+                width: 1px;
+                height: 1px;
+                overflow: hidden;
+                clip-path: inset(50%);
+            }
+            .preview-table tbody tr {
+                display: grid;
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                padding: 5px;
+                border-bottom: 1px solid var(--border);
+            }
+            .preview-table tbody tr:last-child { border-bottom: 0; }
+            .preview-table td { display: block; border: 0; padding: 5px 7px; }
+            .preview-table td::before {
+                display: block;
+                color: var(--muted);
+                font-size: 11px;
+                content: attr(data-label);
+            }
+            .preview-table td[data-format="issue"] { grid-column: 1 / -1; min-width: 0; }
+        }
         @media (max-width: 600px) { main { padding: 20px 14px; } .grid { grid-template-columns: 1fr; } }
     </style>
 </head>
-<body><main>
+<body>
+{{ sprite() }}
+<main>
     <header>
         <div><img class="logo" src="{{ institution_logo }}" alt="شعار المؤسسة"><h1>تقارير صيانة المعامل</h1></div>
         <a class="button" href="{{ url_for('dashboard') }}">العودة للوحة المتابعة</a>
@@ -765,7 +848,10 @@ REPORTS_TEMPLATE = """
                 <form class="export-form" method="post" action="{{ url_for('generate_lab_report', lab_num=report.lab_num) }}" data-filename="lab_{{ report.lab_num }}_{{ window.filename }}">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
                     <input type="hidden" name="period_start" value="{{ window.start }}">
-                    <button type="submit" class="button button-primary">استخراج تقرير ٣٠ يومًا وتنزيله (Excel)</button>
+                    <div class="report-actions">
+                        <button type="submit" class="button button-primary">استخراج تقرير ٣٠ يومًا وتنزيله (Excel)</button>
+                        {{ preview_button(url_for('preview_lab_report', lab_num=report.lab_num, period_start=window.start), 'معاينة تقرير ٣٠ يومًا لمعمل ' ~ report.lab_num) }}
+                    </div>
                     <div class="message" role="status" aria-live="polite"></div>
                 </form>
             {% else %}
@@ -774,11 +860,17 @@ REPORTS_TEMPLATE = """
             {% else %}
                 <p class="muted">لا توجد بلاغات لهذا المعمل. تبدأ أول فترة من وقت تسجيل أول بلاغ.</p>
             {% endif %}
-            <a href="{{ url_for('export_excel', lab=report.lab_num) }}">تنزيل جميع بلاغات هذا المعمل (Excel)</a>
+            <div class="report-actions">
+                <a href="{{ url_for('export_excel', lab=report.lab_num) }}">تنزيل جميع بلاغات هذا المعمل (Excel)</a>
+                {{ preview_button(url_for('preview_lab_report', lab_num=report.lab_num), 'معاينة جميع بلاغات معمل ' ~ report.lab_num) }}
+            </div>
             <details>
                 <summary>التقارير السابقة ({{ report.archives|length }})</summary>
-                <ul>{% for archive in report.archives %}
-                    <li><a href="{{ url_for('download_lab_report_excel', lab_num=report.lab_num, report_id=archive[0]) }}"><time>{{ local_time(archive[1]) }}</time> إلى <time>{{ local_time(archive[2]) }}</time> (Excel)</a></li>
+                <ul class="archive-list">{% for archive in report.archives %}
+                    <li class="report-actions">
+                        <a href="{{ url_for('download_lab_report_excel', lab_num=report.lab_num, report_id=archive[0]) }}"><time>{{ local_time(archive[1]) }}</time> إلى <time>{{ local_time(archive[2]) }}</time> (Excel)</a>
+                        {{ preview_button(url_for('preview_lab_report', lab_num=report.lab_num, report_id=archive[0]), 'معاينة تقرير معمل ' ~ report.lab_num ~ ' للفترة التي تبدأ في ' ~ local_time(archive[1])) }}
+                    </li>
                     {% else %}<li class="muted">لم يُستخرج أي تقرير بعد.</li>{% endfor %}
                 </ul>
             </details>
@@ -787,11 +879,134 @@ REPORTS_TEMPLATE = """
     </div>
     <footer>قسم الحاسب الآلي وتقنية المعلومات · إشراف: أ. محمد الدوخي · إعداد: ريان المحيطيب</footer>
 </main>
+<dialog id="report-preview" class="device-dialog report-preview" aria-labelledby="preview-title">
+    <div class="panel-header report-preview-heading">
+        <div>
+            <h2 id="preview-title">معاينة التقرير</h2>
+            <p id="preview-period" hidden>الفترة من <bdi dir="ltr"></bdi> إلى <bdi dir="ltr"></bdi> بتوقيت الرياض</p>
+            <p id="preview-generated" hidden>وقت استخراج التقرير <bdi dir="ltr"></bdi></p>
+        </div>
+        <form method="dialog">
+            <button class="button icon-button" type="submit" aria-label="إغلاق المعاينة" autofocus>{{ icon('close') }}</button>
+        </form>
+    </div>
+    <div class="report-preview-body">
+        <p id="preview-message" role="status"></p>
+        <div class="preview-table-wrap" id="preview-table-wrap" tabindex="0" aria-label="جدول البلاغات" hidden>
+            <table class="preview-table">
+                <thead>
+                    <tr>
+                        <th scope="col" data-format="ltr">رقم البلاغ</th>
+                        <th scope="col">المعمل</th>
+                        <th scope="col">موقع الجهاز</th>
+                        <th scope="col">المبلّغ</th>
+                        <th scope="col">نوع العطل</th>
+                        <th scope="col" data-format="issue">وصف العطل</th>
+                        <th scope="col" data-format="status">الحالة</th>
+                        <th scope="col">القطع المستبدلة</th>
+                        <th scope="col" data-format="ltr">وقت البلاغ (الرياض)</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+</dialog>
 <script>
+const reportPreview = document.getElementById('report-preview');
+const previewTitle = document.getElementById('preview-title');
+const previewMessage = document.getElementById('preview-message');
+const previewPeriod = document.getElementById('preview-period');
+const previewGenerated = document.getElementById('preview-generated');
+const previewTable = document.getElementById('preview-table-wrap');
+const previewRows = previewTable.querySelector('tbody');
+const previewHeaders = [...previewTable.querySelectorAll('th')];
+const statusTones = {{ status_tones|tojson }};
+let pendingPreview;
+
+function previewRow(values) {
+    const row = document.createElement('tr');
+    previewHeaders.forEach((header, index) => {
+        const cell = row.insertCell();
+        const format = header.dataset.format;
+        const value = values[index];
+        cell.dataset.label = header.textContent;
+        if (format) cell.dataset.format = format;
+        const content = document.createElement(format === 'ltr' ? 'bdi' : 'span');
+        content.textContent = value ?? '';
+        if (!content.textContent) content.textContent = '—';
+        if (format === 'ltr') content.dir = 'ltr';
+        if (format === 'status') {
+            content.className = 'status-pill';
+            content.dataset.tone = statusTones[value] || 'neutral';
+        }
+        cell.appendChild(content);
+    });
+    return row;
+}
+
+document.querySelectorAll('[data-preview-url]').forEach(button => {
+    button.addEventListener('click', async () => {
+        pendingPreview?.abort();
+        const request = new AbortController();
+        pendingPreview = request;
+        previewTitle.textContent = button.getAttribute('aria-label');
+        previewMessage.textContent = 'جارٍ تحميل المعاينة…';
+        previewMessage.removeAttribute('data-state');
+        previewPeriod.hidden = true;
+        previewGenerated.hidden = true;
+        previewTable.hidden = true;
+        previewRows.replaceChildren();
+        reportPreview.showModal();
+        try {
+            const response = await fetch(button.dataset.previewUrl, {signal: request.signal});
+            if (request.signal.aborted) return;
+            if (!response.ok || response.redirected) {
+                let message = 'تعذّرت معاينة التقرير.';
+                if (response.redirected) message = 'سجّل الدخول من جديد ثم أعد المحاولة.';
+                else if (response.status === 409) message = 'تغيّرت فترة التقرير. حدّث الصفحة ثم أعد المحاولة.';
+                previewMessage.dataset.state = 'error';
+                previewMessage.textContent = message;
+                return;
+            }
+            const preview = await response.json();
+            if (request.signal.aborted) return;
+            previewTitle.textContent = preview.title;
+            if (preview.period) {
+                previewPeriod.querySelectorAll('bdi').forEach((date, index) => {
+                    date.textContent = preview.period[index];
+                });
+                previewPeriod.hidden = false;
+            }
+            if (preview.generated_at) {
+                previewGenerated.querySelector('bdi').textContent = preview.generated_at;
+                previewGenerated.hidden = false;
+            }
+            const rows = document.createDocumentFragment();
+            for (const values of preview.rows) rows.appendChild(previewRow(values));
+            previewRows.appendChild(rows);
+            previewTable.hidden = !preview.rows.length;
+            previewMessage.textContent = preview.rows.length
+                ? `${preview.rows.length} بلاغ`
+                : 'لا توجد بلاغات في هذا التقرير.';
+        } catch (error) {
+            if (request.signal.aborted) return;
+            previewMessage.dataset.state = 'error';
+            previewMessage.textContent = 'تعذّر تحميل المعاينة. أعد المحاولة.';
+        }
+    });
+});
+reportPreview.addEventListener('close', () => {
+    if (!reportPreview.open) pendingPreview?.abort();
+});
+reportPreview.addEventListener('click', event => {
+    if (event.target === reportPreview) reportPreview.close();
+});
+
 document.querySelectorAll('.export-form').forEach(form => {
     form.addEventListener('submit', async event => {
         event.preventDefault();
-        const button = form.querySelector('button');
+        const button = form.querySelector('button[type="submit"]');
         const message = form.querySelector('.message');
         if (button.disabled) return;
         button.disabled = true;
@@ -841,10 +1056,7 @@ def ticket_csv(tickets, lab_num=None, window=None, generated_at=None):
             writer.writerow([status, sum(ticket[6] == status for ticket in tickets)])
         writer.writerow([])
     writer.writerow(['رقم التذكرة', 'رقم المعمل', 'موقع الجهاز', 'اسم المُبلّغ', 'تصنيف العطل', 'وصف العطل', 'حالة التذكرة وقت الاستخراج', 'القطع المستبدلة', 'وقت البلاغ (بتوقيت الرياض)'])
-    for ticket in tickets:
-        seat = 'منصة المدرب' if ticket[2] == 0 else f'جهاز {ticket[2]}'
-        writer.writerow([f'{ticket[1]}-{ticket[0]}', f'معمل {ticket[1]}', seat,
-                         *[csv_cell(value) for value in ticket[3:8]], local_time(ticket[8])])
+    writer.writerows(ticket_report_rows(tickets, escape_csv=True))
     return output.getvalue().encode('utf-8-sig')
 
 
@@ -978,21 +1190,29 @@ def excel_report(rows, lab_num=None, period=None, generated_at=None):
     return output.getvalue()
 
 
-def ticket_excel(tickets, lab_num=None):
-    rows = [[f'{ticket[1]}-{ticket[0]}', f'معمل {ticket[1]}',
+def ticket_report_rows(tickets, escape_csv=False):
+    text_field = csv_cell if escape_csv else lambda value: value
+    return [[f'{ticket[1]}-{ticket[0]}', f'معمل {ticket[1]}',
              'منصة المدرب' if ticket[2] == 0 else f'جهاز {ticket[2]}',
-             *ticket[3:8], local_time(ticket[8])] for ticket in tickets]
-    return excel_report(rows, lab_num)
+             *[text_field(value) for value in ticket[3:8]], local_time(ticket[8])] for ticket in tickets]
 
 
-def archived_ticket_excel(data, lab_num, start_at, end_at, generated_at):
+def ticket_excel(tickets, lab_num=None):
+    return excel_report(ticket_report_rows(tickets), lab_num)
+
+
+def archived_report_rows(data):
     # Format the immutable snapshot, rather than rereading tickets that may have changed.
     source = list(csv.reader(StringIO(bytes(data).decode('utf-8-sig'))))
     header = next(index for index, row in enumerate(source) if row and row[0] == 'رقم التذكرة')
     rows = [row for row in source[header + 1:] if row]
     if any(len(row) != 9 for row in rows):
         raise ValueError('Invalid archived report columns')
-    return excel_report(rows, lab_num, (start_at, end_at), generated_at)
+    return rows
+
+
+def archived_ticket_excel(data, lab_num, start_at, end_at, generated_at):
+    return excel_report(archived_report_rows(data), lab_num, (start_at, end_at), generated_at)
 
 
 def excel_response(data, filename):
@@ -1268,7 +1488,62 @@ def reports():
     if 'report_csrf' not in session:
         session['report_csrf'] = secrets.token_urlsafe(32)
     return render_template_string(REPORTS_TEMPLATE, reports=report_summaries(),
-                                  csrf_token=session['report_csrf'], local_time=local_time)
+                                  csrf_token=session['report_csrf'], local_time=local_time,
+                                  status_tones=STATUS_TONES)
+
+
+def period_tickets(conn, start_at, end_at):
+    return conn.execute(
+        f'SELECT {TICKET_COLUMNS} FROM tickets WHERE created_at >= ? AND created_at < ? ORDER BY created_at, id',
+        (start_at, end_at),
+    ).fetchall()
+
+
+@app.route('/reports/lab/<int:lab_num>/preview')
+def preview_lab_report(lab_num):
+    if 'user' not in session:
+        return redirect(url_for('login'))
+    if lab_num not in LAB_NUMBERS:
+        abort(404)
+    report_id = request.args.get('report_id', type=int)
+    period_start = request.args.get('period_start')
+    if 'report_id' in request.args:
+        if report_id is None or not 0 < report_id < 2**63 or period_start is not None:
+            abort(400)
+
+    preview = {'title': f'جميع بلاغات معمل {lab_num}', 'period': None, 'generated_at': None}
+    if report_id is None and period_start is None:
+        preview['rows'] = ticket_report_rows(all_tickets(lab_num))
+    else:
+        with lab_connection(lab_num) as conn:
+            if report_id is not None:
+                saved = conn.execute(
+                    'SELECT start_at, end_at, csv_data, generated_at FROM report_exports WHERE id = ?',
+                    (report_id,),
+                ).fetchone()
+                if saved is None:
+                    abort(404)
+            else:
+                saved = conn.execute(
+                    'SELECT start_at, end_at, csv_data, generated_at FROM report_exports WHERE start_at = ?',
+                    (period_start,),
+                ).fetchone()
+
+            if saved is not None:
+                start_at, end_at, data, generated_at = saved
+                preview['rows'] = archived_report_rows(data)
+                preview['generated_at'] = local_time(generated_at)
+            else:
+                window = report_window(conn)
+                if not window or not window['due'] or period_start != window['start']:
+                    abort(409, description='الفترة لم تكتمل أو تغيّرت حالة التقرير.')
+                start_at, end_at = window['start'], window['end']
+                preview['rows'] = ticket_report_rows(period_tickets(conn, start_at, end_at), escape_csv=True)
+        preview['title'] = f'تقرير ٣٠ يومًا لمعمل {lab_num}'
+        preview['period'] = [local_time(start_at), local_time(end_at)]
+    response = jsonify(preview)
+    response.headers['Cache-Control'] = 'no-store'
+    return response
 
 
 @app.route('/reports/lab/<int:lab_num>/export', methods=['POST'])
@@ -1294,7 +1569,7 @@ def generate_lab_report(lab_num):
             if not window or not window['due'] or period_start != window['start']:
                 abort(409, description='الفترة لم تكتمل أو تغيّرت حالة التقرير. حدّث صفحة التقارير.')
             start_at, end_at = window['start'], window['end']
-            tickets = conn.execute(f'SELECT {TICKET_COLUMNS} FROM tickets WHERE created_at >= ? AND created_at < ? ORDER BY created_at, id', (start_at, end_at)).fetchall()
+            tickets = period_tickets(conn, start_at, end_at)
             generated_at = db_time(now)
             data = ticket_csv(tickets, lab_num, window, generated_at)
             conn.execute('INSERT INTO report_exports (start_at, end_at, generated_at, generated_by, csv_data) VALUES (?, ?, ?, ?, ?)',
