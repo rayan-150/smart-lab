@@ -245,9 +245,9 @@ USERS = {
     "trainer": {"password": "123", "role": "رئيس قسم الحاسب", "name": "رئيس القسم"}
 }
 
-# --- صفحة تسجيل الدخول (اسم المستخدم مخفي افتراضياً + زر رئيس القسم) ---
+# --- صفحة تسجيل الدخول ---
 LOGIN_TEMPLATE = """
-{% from 'site_theme.html' import theme_assets, theme_picker %}
+{% from 'site_theme.html' import theme_assets %}
 <!DOCTYPE html>
 <html dir="rtl" lang="ar">
 <head>
@@ -296,8 +296,6 @@ LOGIN_TEMPLATE = """
         .institution-brand { width: min(100%, 320px); aspect-ratio: 10 / 3; margin: 0 auto; overflow: hidden; border-radius: 9px; padding: 8px 12px; background: var(--logo-paper); }
         .institution-brand img { display: block; width: 100%; height: 100%; object-fit: contain; object-position: center; }
         .card-content { padding: 25px 30px 28px; }
-        .login-heading { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px; margin-bottom: 9px; }
-        .login-heading .eyebrow { margin: 0; }
         .eyebrow { display: flex; align-items: center; gap: 6px; margin: 0 0 9px; color: var(--accent); font-size: 12px; font-weight: 700; }
         .eyebrow .icon { width: 15px; height: 15px; }
         .card-content h2 { font-size: 23px; line-height: 1.4; font-weight: 800; margin: 0 0 6px; letter-spacing: -0.3px; }
@@ -347,16 +345,6 @@ LOGIN_TEMPLATE = """
         .submit-button:disabled { opacity: .75; cursor: wait; transform: none; }
         .button-spinner { width: 17px; height: 17px; border: 2px solid transparent; border-top-color: currentColor; border-inline-end-color: currentColor; border-radius: 50%; animation: spin .8s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
-        .quick-login { margin-top: 25px; padding-top: 19px; border-top: 1px solid var(--border); }
-        .quick-heading { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 12px; }
-        .quick-heading strong { font-size: 12px; color: var(--ink); }
-        .quick-heading span { font-size: 11px; color: var(--muted); }
-        .role-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
-        .role-button { min-height: 65px; padding: 11px 4px 9px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 7px; border: 1px solid var(--border); border-radius: var(--control-radius); color: var(--ink); background: var(--subtle); font-size: 11px; font-weight: 700; transition: border-color .18s, background .18s, color .18s; }
-        .role-button .icon { width: 19px; height: 19px; color: var(--accent); }
-        .role-button:hover, .role-button[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-tint); color: var(--accent); }
-        .role-button:hover .icon, .role-button[aria-pressed="true"] .icon { color: var(--accent); }
-        .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
         .intro-panel { grid-column: 2; grid-row: 1; color: var(--ink); padding-bottom: 10px; }
         .product-kicker { display: inline-flex; align-items: center; gap: 9px; margin: 0 0 26px; color: var(--muted); font-size: 13px; font-weight: 500; }
         .product-kicker .icon { color: var(--accent); }
@@ -385,9 +373,6 @@ LOGIN_TEMPLATE = """
             .brand-header { padding: 15px 21px 10px; }
             .card-content h2 { font-size: 21px; }
             .card-subtitle { font-size: 12px; }
-            .quick-heading span { font-size: 10px; }
-            .role-grid { gap: 6px; }
-            .role-button { font-size: 10px; }
         }
         @media (prefers-reduced-motion: reduce) {
             *, *::before, *::after { transition: none !important; animation: none !important; }
@@ -401,9 +386,6 @@ LOGIN_TEMPLATE = """
         <symbol id="icon-eye" viewBox="0 0 24 24"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></symbol>
         <symbol id="icon-eye-off" viewBox="0 0 24 24"><path d="m3 3 18 18M10.6 5.1A12 12 0 0 1 12 5c6.5 0 10 7 10 7a18 18 0 0 1-3.1 4.1M6 6.6A20 20 0 0 0 2 12s3.5 7 10 7a11 11 0 0 0 5.4-1.4M10 10a3 3 0 0 0 4 4"/></symbol>
         <symbol id="icon-arrow" viewBox="0 0 24 24"><path d="M20 12H4m6-6-6 6 6 6"/></symbol>
-        <symbol id="icon-wrench" viewBox="0 0 24 24"><path d="M14.7 6.3a5 5 0 0 0-6.4 6.4l-5 5a2.1 2.1 0 0 0 3 3l5-5a5 5 0 0 0 6.4-6.4l-3 3-3-3 3-3Z"/></symbol>
-        <symbol id="icon-headset" viewBox="0 0 24 24"><path d="M4 13V11a8 8 0 0 1 16 0v2M20 17v1a3 3 0 0 1-3 3h-4"/><rect x="3" y="12" width="4" height="7" rx="2"/><rect x="17" y="12" width="4" height="7" rx="2"/></symbol>
-        <symbol id="icon-building" viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 7h1m4 0h1M9 11h1m4 0h1M10 21v-5h4v5"/></symbol>
         <symbol id="icon-monitor" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="13" rx="2"/><path d="M12 16v5m-5 0h10M7 7h5m-5 4h9"/></symbol>
         <symbol id="icon-ticket" viewBox="0 0 24 24"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V2h6v2M9 10h6m-6 4h6m-6 4h3"/></symbol>
         <symbol id="icon-chart" viewBox="0 0 24 24"><path d="M4 3v18h17M8 17v-5m5 5V7m5 10v-8"/></symbol>
@@ -417,10 +399,7 @@ LOGIN_TEMPLATE = """
                 </div>
             </header>
             <div class="card-content">
-                <div class="login-heading">
-                    <p class="eyebrow"><svg class="icon" aria-hidden="true"><use href="#icon-lock"/></svg> بوابة فريق الصيانة</p>
-                    {{ theme_picker() }}
-                </div>
+                <p class="eyebrow"><svg class="icon" aria-hidden="true"><use href="#icon-lock"/></svg> بوابة فريق الصيانة</p>
                 <h2 id="login-title">نظام إدارة صيانة المعامل</h2>
                 <p class="card-subtitle">سجّل الدخول لمتابعة البلاغات وإدارة المعامل.</p>
 
@@ -455,16 +434,6 @@ LOGIN_TEMPLATE = """
                         <span id="btn-spinner" class="button-spinner" aria-hidden="true" hidden></span>
                     </button>
                 </form>
-
-                <div class="quick-login">
-                    <div class="quick-heading"><strong>دخول سريع</strong><span>تعبئة البيانات حسب الدور</span></div>
-                    <div class="role-grid">
-                        <button type="button" class="role-button" data-user="admin" aria-pressed="false" onclick="fastFill('admin', '123')"><svg class="icon" aria-hidden="true"><use href="#icon-wrench"/></svg><span>مشرف الصيانة</span></button>
-                        <button type="button" class="role-button" data-user="tech" aria-pressed="false" onclick="fastFill('tech', '123')"><svg class="icon" aria-hidden="true"><use href="#icon-headset"/></svg><span>الدعم الفني</span></button>
-                        <button type="button" class="role-button" data-user="trainer" aria-pressed="false" onclick="fastFill('trainer', '123')"><svg class="icon" aria-hidden="true"><use href="#icon-building"/></svg><span>رئيس القسم</span></button>
-                    </div>
-                    <p id="fill-notice" class="sr-only" role="status" aria-live="polite"></p>
-                </div>
             </div>
         </section>
 
@@ -486,16 +455,6 @@ LOGIN_TEMPLATE = """
     </footer>
 
     <script>
-        function fastFill(user, pass) {
-            document.getElementById('username-input').value = user;
-            document.getElementById('password-input').value = pass;
-            document.querySelectorAll('.role-button').forEach(function(button) {
-                button.setAttribute('aria-pressed', String(button.dataset.user === user));
-            });
-            const selected = document.querySelector('.role-button[aria-pressed="true"]');
-            document.getElementById('fill-notice').textContent = selected ? 'تمت تعبئة بيانات ' + selected.textContent.trim() : '';
-        }
-
         function toggleFieldVisibility(inputId, buttonId, iconId, label) {
             const input = document.getElementById(inputId);
             const button = document.getElementById(buttonId);
