@@ -247,18 +247,17 @@ USERS = {
 
 # --- صفحة تسجيل الدخول (اسم المستخدم مخفي افتراضياً + زر رئيس القسم) ---
 LOGIN_TEMPLATE = """
+{% from 'site_theme.html' import theme_assets, theme_picker %}
 <!DOCTYPE html>
 <html dir="rtl" lang="ar">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#071523">
     <title>تسجيل الدخول | نظام صيانة حواسيب المعامل</title>
-    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+    {{ theme_assets() }}
     <style>
         * { box-sizing: border-box; }
         [hidden] { display: none !important; }
-        :root { color-scheme: light; --ink: #142f42; --teal: #087f8b; --muted: #64748b; }
         body {
             margin: 0;
             min-height: 100vh;
@@ -267,23 +266,10 @@ LOGIN_TEMPLATE = """
             display: flex;
             flex-direction: column;
             gap: 24px;
-            font-family: 'Tajawal', 'Noto Sans Arabic', Tahoma, Arial, sans-serif;
-            background: radial-gradient(ellipse at 12% 20%, #123c49 0, transparent 48%),
-                        radial-gradient(ellipse at 90% 85%, #122f49 0, transparent 46%), #071523;
             color: var(--ink);
-        }
-        body::before {
-            content: '';
-            position: fixed;
-            inset: 0;
-            pointer-events: none;
-            background-image: linear-gradient(#ffffff05 1px, transparent 1px),
-                              linear-gradient(90deg, #ffffff05 1px, transparent 1px);
-            background-size: 64px 64px;
         }
         button, input { font: inherit; }
         button { cursor: pointer; }
-        button:focus-visible { outline: 3px solid #16afbe; outline-offset: 3px; }
         .icon { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
         .icon-definitions { position: absolute; width: 0; height: 0; overflow: hidden; }
         .login-shell {
@@ -300,43 +286,45 @@ LOGIN_TEMPLATE = """
             grid-column: 1;
             grid-row: 1;
             width: 100%;
-            border-radius: 26px;
-            background: #ffffff;
-            border: 1px solid #ffffffb3;
+            border-radius: var(--card-radius);
+            background: var(--surface);
+            border: 1px solid var(--border);
             overflow: hidden;
-            box-shadow: 0 32px 90px #00000040, 0 1px 0 #ffffff80 inset;
+            box-shadow: var(--shadow);
         }
-        .brand-header { padding: 20px 30px 12px; border-bottom: 1px solid #edf1f5; }
-        .institution-brand { width: min(100%, 320px); aspect-ratio: 10 / 3; margin: 0 auto; overflow: hidden; background: white; }
+        .brand-header { padding: 20px 30px 12px; border-bottom: 1px solid var(--border); }
+        .institution-brand { width: min(100%, 320px); aspect-ratio: 10 / 3; margin: 0 auto; overflow: hidden; border-radius: 9px; padding: 8px 12px; background: var(--logo-paper); }
         .institution-brand img { display: block; width: 100%; height: 100%; object-fit: contain; object-position: center; }
         .card-content { padding: 25px 30px 28px; }
-        .eyebrow { display: flex; align-items: center; gap: 6px; margin: 0 0 9px; color: var(--teal); font-size: 12px; font-weight: 700; }
+        .login-heading { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px; margin-bottom: 9px; }
+        .login-heading .eyebrow { margin: 0; }
+        .eyebrow { display: flex; align-items: center; gap: 6px; margin: 0 0 9px; color: var(--accent); font-size: 12px; font-weight: 700; }
         .eyebrow .icon { width: 15px; height: 15px; }
         .card-content h2 { font-size: 23px; line-height: 1.4; font-weight: 800; margin: 0 0 6px; letter-spacing: -0.3px; }
         .card-subtitle { font-size: 13px; line-height: 1.7; color: var(--muted); margin: 0 0 24px; }
-        .error-message { padding: 12px 14px; margin-bottom: 18px; border: 1px solid #fecaca; border-radius: 12px; background: #fff5f5; color: #b42318; font-size: 13px; line-height: 1.7; }
+        .error-message { padding: 12px 14px; margin-bottom: 18px; border: 1px solid var(--danger-border); border-radius: var(--control-radius); background: var(--danger-tint); color: var(--danger); font-size: 13px; line-height: 1.7; }
         .field + .field { margin-top: 18px; }
-        .field label { display: block; margin-bottom: 8px; font-size: 13px; font-weight: 700; color: #334155; }
+        .field label { display: block; margin-bottom: 8px; font-size: 13px; font-weight: 700; color: var(--ink); }
         .input-wrap { position: relative; }
         .input-wrap input {
             width: 100%;
             height: 50px;
             padding: 0 44px 0 50px;
-            border: 1px solid #dbe3eb;
-            border-radius: 12px;
-            background: #f8fafc;
-            color: #142f42;
+            border: 1px solid var(--strong-border);
+            border-radius: var(--control-radius);
+            background: var(--subtle);
+            color: var(--ink);
             font-size: 14px;
             text-align: right;
             direction: ltr;
             outline: none;
             transition: border-color .18s, background .18s, box-shadow .18s;
         }
-        .input-wrap input::placeholder { color: #a0acb9; opacity: 1; letter-spacing: 2px; }
-        .input-wrap input:focus { border-color: #098c9a; background: #ffffff; box-shadow: 0 0 0 3px #098c9a1a; }
-        .field-icon { position: absolute; right: 15px; top: 15px; width: 19px; height: 19px; color: #788a9a; pointer-events: none; }
-        .visibility-button { position: absolute; left: 3px; top: 3px; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; background: transparent; color: #64748b; border: none; border-radius: 9px; }
-        .visibility-button:hover { color: #087f8b; background: #eaf5f6; }
+        .input-wrap input::placeholder { color: var(--muted); opacity: 1; letter-spacing: 2px; }
+        .input-wrap input:focus { border-color: var(--accent); background: var(--surface); box-shadow: 0 0 0 3px var(--accent-tint); }
+        .field-icon { position: absolute; right: 15px; top: 15px; width: 19px; height: 19px; color: var(--muted); pointer-events: none; }
+        .visibility-button { position: absolute; left: 3px; top: 3px; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; background: transparent; color: var(--muted); border: none; border-radius: var(--control-radius); }
+        .visibility-button:hover { color: var(--accent); background: var(--accent-tint); }
         .submit-button {
             width: 100%;
             height: 50px;
@@ -346,44 +334,44 @@ LOGIN_TEMPLATE = """
             justify-content: center;
             gap: 10px;
             border: 0;
-            border-radius: 12px;
-            color: #ffffff;
-            background: linear-gradient(105deg, #17577c, #087f8b);
-            box-shadow: 0 7px 18px #087f8b24;
+            border-radius: var(--control-radius);
+            color: var(--on-primary);
+            background: var(--primary-background);
+            box-shadow: var(--button-shadow);
             font-size: 15px;
             font-weight: 800;
             transition: filter .18s, transform .18s, box-shadow .18s;
         }
-        .submit-button:hover { filter: brightness(1.08); transform: translateY(-1px); box-shadow: 0 9px 22px #087f8b33; }
+        .submit-button:hover { filter: brightness(1.08); transform: translateY(-1px); box-shadow: var(--button-shadow); }
         .submit-button:active { transform: translateY(0); }
         .submit-button:disabled { opacity: .75; cursor: wait; transform: none; }
-        .button-spinner { width: 17px; height: 17px; border: 2px solid #ffffff55; border-top-color: #ffffff; border-radius: 50%; animation: spin .8s linear infinite; }
+        .button-spinner { width: 17px; height: 17px; border: 2px solid transparent; border-top-color: currentColor; border-inline-end-color: currentColor; border-radius: 50%; animation: spin .8s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
-        .quick-login { margin-top: 25px; padding-top: 19px; border-top: 1px solid #e9eef3; }
+        .quick-login { margin-top: 25px; padding-top: 19px; border-top: 1px solid var(--border); }
         .quick-heading { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 12px; }
-        .quick-heading strong { font-size: 12px; color: #334155; }
+        .quick-heading strong { font-size: 12px; color: var(--ink); }
         .quick-heading span { font-size: 11px; color: var(--muted); }
         .role-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
-        .role-button { min-height: 65px; padding: 11px 4px 9px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 7px; border: 1px solid #dfe7ef; border-radius: 11px; color: #475569; background: #f8fafc; font-size: 11px; font-weight: 700; transition: border-color .18s, background .18s, color .18s; }
-        .role-button .icon { width: 19px; height: 19px; color: #648198; }
-        .role-button:hover, .role-button[aria-pressed="true"] { border-color: #8fc7cc; background: #edf8f8; color: #0a6c76; }
-        .role-button:hover .icon, .role-button[aria-pressed="true"] .icon { color: #087f8b; }
+        .role-button { min-height: 65px; padding: 11px 4px 9px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 7px; border: 1px solid var(--border); border-radius: var(--control-radius); color: var(--ink); background: var(--subtle); font-size: 11px; font-weight: 700; transition: border-color .18s, background .18s, color .18s; }
+        .role-button .icon { width: 19px; height: 19px; color: var(--accent); }
+        .role-button:hover, .role-button[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-tint); color: var(--accent); }
+        .role-button:hover .icon, .role-button[aria-pressed="true"] .icon { color: var(--accent); }
         .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
-        .intro-panel { grid-column: 2; grid-row: 1; color: #ffffff; padding-bottom: 10px; }
-        .product-kicker { display: inline-flex; align-items: center; gap: 9px; margin: 0 0 26px; color: #a6c4d1; font-size: 13px; font-weight: 500; }
-        .product-kicker .icon { color: #6bd3cd; }
+        .intro-panel { grid-column: 2; grid-row: 1; color: var(--ink); padding-bottom: 10px; }
+        .product-kicker { display: inline-flex; align-items: center; gap: 9px; margin: 0 0 26px; color: var(--muted); font-size: 13px; font-weight: 500; }
+        .product-kicker .icon { color: var(--accent); }
         .intro-panel h1 { font-size: clamp(34px, 3.4vw, 44px); line-height: 1.5; margin: 0 0 18px; font-weight: 800; letter-spacing: -.5px; }
-        .intro-panel h1 span { color: #73d9d0; }
-        .intro-description { max-width: 400px; color: #adc3d0; font-size: 15px; line-height: 1.95; margin: 0 0 34px; }
+        .intro-panel h1 span { color: var(--accent); }
+        .intro-description { max-width: 400px; color: var(--muted); font-size: 15px; line-height: 1.95; margin: 0 0 34px; }
         .feature-list { display: flex; flex-direction: column; gap: 21px; }
         .feature { display: flex; gap: 14px; align-items: center; }
-        .feature-mark { width: 43px; height: 43px; display: flex; align-items: center; justify-content: center; border: 1px solid #8dcee326; border-radius: 12px; background: #ffffff06; color: #77d6d3; }
+        .feature-mark { width: 43px; height: 43px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border); border-radius: var(--control-radius); background: var(--accent-tint); color: var(--accent); }
         .feature h3 { margin: 0 0 4px; font-size: 14px; font-weight: 700; }
-        .feature p { margin: 0; color: #97b4c4; font-size: 12px; line-height: 1.7; }
-        .page-footer { position: relative; z-index: 1; text-align: center; color: #8fa9ba; font-size: 11px; line-height: 1.9; }
+        .feature p { margin: 0; color: var(--muted); font-size: 12px; line-height: 1.7; }
+        .page-footer { position: relative; z-index: 1; text-align: center; color: var(--muted); font-size: 11px; line-height: 1.9; }
         .page-footer p { margin: 0; }
-        .page-footer strong { color: #c5d7e3; font-weight: 500; }
-        .credit-separator { margin: 0 7px; color: #527584; }
+        .page-footer strong { color: var(--ink); font-weight: 700; }
+        .credit-separator { margin: 0 7px; color: var(--accent); }
         @media (max-width: 800px) {
             body { padding: 22px 16px 18px; gap: 20px; }
             .login-shell { display: block; max-width: 430px; }
@@ -406,7 +394,7 @@ LOGIN_TEMPLATE = """
         }
     </style>
 </head>
-<body>
+<body class="login-page">
     <svg class="icon-definitions" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
         <symbol id="icon-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.5"/><path d="M5 21v-2a7 7 0 0 1 14 0v2"/></symbol>
         <symbol id="icon-lock" viewBox="0 0 24 24"><rect x="5" y="10" width="14" height="11" rx="2.5"/><path d="M8 10V7a4 4 0 0 1 8 0v3M12 14v3"/></symbol>
@@ -429,7 +417,10 @@ LOGIN_TEMPLATE = """
                 </div>
             </header>
             <div class="card-content">
-                <p class="eyebrow"><svg class="icon" aria-hidden="true"><use href="#icon-lock"/></svg> بوابة فريق الصيانة</p>
+                <div class="login-heading">
+                    <p class="eyebrow"><svg class="icon" aria-hidden="true"><use href="#icon-lock"/></svg> بوابة فريق الصيانة</p>
+                    {{ theme_picker() }}
+                </div>
                 <h2 id="login-title">نظام إدارة صيانة المعامل</h2>
                 <p class="card-subtitle">سجّل الدخول لمتابعة البلاغات وإدارة المعامل.</p>
 
@@ -548,13 +539,14 @@ LOGIN_TEMPLATE = """
 # --- صفحة لوحة العمليات ومخطط الرادار التفاعلي ---
 # --- نموذج باركودات QR الموحدة (مقاس 15×15 سم على A4) ---
 QR_LABELS_TEMPLATE = """
+{% from 'site_theme.html' import theme_assets, theme_picker %}
 <!DOCTYPE html>
 <html dir="rtl" lang="ar">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>طباعة باركودات المعامل (A4 - 15x15 سم)</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}">
+    {{ theme_assets() }}
     <style>
         .institution-brand {
             width: min(100%, 320px);
@@ -574,7 +566,8 @@ QR_LABELS_TEMPLATE = """
         }
         body { padding: clamp(12px, 3vw, 30px); }
         .tools { max-width: 850px; margin: 0 auto 24px; padding: clamp(14px, 3vw, 24px); }
-        .tools h1 { margin: 0 0 6px; font-size: clamp(19px, 4vw, 23px); }
+        .qr-heading { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 6px; }
+        .tools h1 { margin: 0; font-size: clamp(19px, 4vw, 23px); }
         .tools p { font-size: 13px; color: var(--muted); margin: 0 0 14px; }
         .tools form { display: flex; gap: 10px; align-items: end; flex-wrap: wrap; }
         .tools label { flex: 1; min-width: min(260px, 100%); font-size: 13px; font-weight: bold; }
@@ -632,6 +625,14 @@ QR_LABELS_TEMPLATE = """
         .qr-card-footer .instruction { font-size: 12px; font-weight: 800; color: #0f172a; margin: 0 0 3px; }
         .qr-card-footer .meta { font-size: 9px; color: #64748b; margin: 0; }
 
+        @media screen {
+            .a4-sheet { background: var(--surface); box-shadow: var(--shadow); border: 1px solid var(--border); border-radius: var(--card-radius); }
+            .qr-card-15cm { background: var(--surface); border-color: var(--accent); outline-color: var(--strong-border); border-radius: var(--card-radius); }
+            .qr-card-header .dept-title { color: var(--accent); }
+            .qr-card-header .lab-title, .qr-card-footer .instruction { color: var(--ink); }
+            .qr-card-footer .meta { color: var(--muted); }
+            .qr-image-wrapper { background: var(--logo-paper); }
+        }
         @media screen and (max-width: 600px) {
             .a4-sheet { min-height: 0; padding-block: 14px; }
             .qr-card-15cm { height: auto; padding: 18px 12px 14px; gap: 12px; }
@@ -643,7 +644,7 @@ QR_LABELS_TEMPLATE = """
             margin: 0;
         }
         @media print {
-            body { margin: 0; padding: 0; background: white; }
+            body.qr-page { margin: 0; padding: 0; min-height: 0; background: white; color: #0f172a; }
             .tools { display: none !important; }
             .pages-container { gap: 0; }
             .a4-sheet {
@@ -651,15 +652,19 @@ QR_LABELS_TEMPLATE = """
                 height: 297mm;
                 margin: 0;
                 box-shadow: none;
-                page-break-after: always !important;
-                break-after: page !important;
+                page-break-after: always;
+                break-after: page;
             }
+            .a4-sheet:last-child { page-break-after: auto; break-after: auto; }
         }
     </style>
 </head>
-<body>
+<body class="qr-page">
     <div class="tools card">
-        <h1>{% if selected_lab %}طباعة رمز QR لمعمل ({{ selected_lab }}){% else %}طباعة رموز QR للمعامل{% endif %}</h1>
+        <div class="qr-heading">
+            <h1>{% if selected_lab %}طباعة رمز QR لمعمل ({{ selected_lab }}){% else %}طباعة رموز QR للمعامل{% endif %}</h1>
+            {{ theme_picker() }}
+        </div>
         <p>يُطبع كل رمز في منتصف ورقة A4 بمقاس 15 × 15 سم.</p>
         <form method="GET">
             {% if selected_lab %}<input type="hidden" name="lab" value="{{ selected_lab }}">{% endif %}
@@ -708,6 +713,7 @@ QR_LABELS_TEMPLATE = """
 
 REPORTS_TEMPLATE = """
 {% from 'icons.html' import icon, sprite %}
+{% from 'site_theme.html' import theme_assets, theme_picker %}
 {% macro preview_button(url, label) -%}
 <button class="button icon-button report-eye" type="button" data-preview-url="{{ url }}"
         aria-label="{{ label }}" title="{{ label }}" aria-haspopup="dialog" aria-controls="report-preview">
@@ -723,18 +729,19 @@ REPORTS_TEMPLATE = """
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>تقارير المعامل | كل ٣٠ يومًا</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}">
+    {{ theme_assets() }}
     <style>
         main { max-width: 1200px; margin: auto; padding: 28px 20px; }
         header { display: flex; gap: 16px; align-items: center; justify-content: space-between; flex-wrap: wrap; margin-bottom: 20px; }
+        .reports-header-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
         h1 { font-size: clamp(22px, 4vw, 28px); } h2 { font-size: 17px; } p { margin: 6px 0; }
-        .logo { width: 205px; max-width: 100%; border-radius: 10px; background: white; padding: 8px; }
+        .logo { width: 205px; max-width: 100%; border-radius: var(--control-radius); background: var(--logo-paper); padding: 8px; }
         .intro, .report-summary { padding: 17px; }
-        .intro { border: 1px solid #c6e2df; border-radius: 15px; background: #eaf5f3; margin-bottom: 18px; }
+        .intro { border: 1px solid var(--border); border-radius: var(--card-radius); background: var(--hero-background); margin-bottom: 18px; }
         .muted, dt, footer { color: var(--muted); }
         .grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
         .report-summary { scroll-margin-top: 18px; display: flex; flex-direction: column; gap: 11px; }
-        .due { border-color: #d6a662; }
+        .due { border-color: var(--warning-border); }
         .heading { display: flex; justify-content: space-between; align-items: center; gap: 7px; }
         .badge { padding: 3px 9px; border-radius: 20px; background: var(--accent-tint); color: var(--accent-dark); font-size: 11px; font-weight: 700; }
         .due .badge { background: var(--warning-tint); color: var(--warning); }
@@ -774,7 +781,7 @@ REPORTS_TEMPLATE = """
         .preview-table-wrap {
             margin-top: 10px;
             border: 1px solid var(--border);
-            border-radius: 10px;
+            border-radius: var(--control-radius);
             overflow-x: auto;
         }
         .preview-table { width: 100%; min-width: 820px; border-collapse: collapse; }
@@ -819,12 +826,15 @@ REPORTS_TEMPLATE = """
         @media (max-width: 600px) { main { padding: 20px 14px; } .grid { grid-template-columns: 1fr; } }
     </style>
 </head>
-<body>
+<body class="reports-page">
 {{ sprite() }}
 <main>
     <header>
         <div><img class="logo" src="{{ institution_logo }}" alt="شعار المؤسسة"><h1>تقارير صيانة المعامل</h1></div>
-        <a class="button" href="{{ url_for('dashboard') }}">العودة للوحة المتابعة</a>
+        <div class="reports-header-actions">
+            {{ theme_picker() }}
+            <a class="button" href="{{ url_for('dashboard') }}">العودة للوحة المتابعة</a>
+        </div>
     </header>
     <section class="intro">
         <h2>تقرير مستقل لكل معمل، كل ٣٠ يومًا</h2>

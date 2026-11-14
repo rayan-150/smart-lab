@@ -1,17 +1,16 @@
 {% from 'icons.html' import icon, sprite %}
+{% from 'site_theme.html' import theme_assets, theme_picker %}
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="theme-color" content="#14263c">
     <title>بلاغ صيانة | معمل {{ lab_num }}</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}">
+    {{ theme_assets() }}
     <style>
         .maintenance-page {
             min-height: 100vh;
             padding: clamp(16px, 5vw, 54px) 16px 24px;
-            background: radial-gradient(ellipse at 90% 0%, #e4f1ef 0%, transparent 52%), #f2f5f9;
         }
         .maintenance-shell {
             max-width: 900px;
@@ -26,7 +25,7 @@
             padding: 12px 16px;
             background: var(--surface);
             border: 1px solid var(--border);
-            border-radius: 14px;
+            border-radius: var(--card-radius);
         }
         .maintenance-identity {
             display: flex;
@@ -48,19 +47,30 @@
             color: var(--muted);
             font-size: 11px;
         }
+        .maintenance-header-actions {
+            display: flex;
+            align-items: center;
+            justify-content: end;
+            flex-wrap: wrap;
+            gap: 7px;
+            min-width: 0;
+        }
         .maintenance-logo {
             display: block;
-            width: 182px;
-            max-width: 38%;
+            width: clamp(120px, 22vw, 182px);
+            max-width: 100%;
             height: auto;
+            padding: 4px 7px;
+            border-radius: var(--control-radius);
+            background: var(--logo-paper);
         }
         .maintenance-frame {
             display: flex;
             overflow: hidden;
             border: 1px solid var(--border);
-            border-radius: 19px;
+            border-radius: var(--card-radius);
             background: var(--surface);
-            box-shadow: 0 12px 30px #1f395313;
+            box-shadow: var(--shadow);
         }
         .maintenance-location {
             position: relative;
@@ -73,9 +83,8 @@
             gap: 12px;
             min-width: 0;
             padding: 26px 19px 20px;
-            background: radial-gradient(#6ca5aa45 1px, transparent 1px) 0 0 / 16px 16px,
-                        linear-gradient(155deg, #14263c 25%, #143c47 100%);
-            color: #fff;
+            background: var(--nav-background);
+            color: var(--nav-ink);
         }
         .maintenance-location::after {
             position: absolute;
@@ -84,7 +93,8 @@
             width: 276px;
             height: 276px;
             border-radius: 50%;
-            background: repeating-radial-gradient(circle, transparent 0 24px, #85c3bf15 25px 26px, transparent 27px 38px);
+            background: repeating-radial-gradient(circle, transparent 0 24px, var(--nav-marker) 25px 26px, transparent 27px 38px);
+            opacity: .12;
             content: "";
             pointer-events: none;
         }
@@ -95,14 +105,14 @@
             justify-content: center;
             width: 50px;
             height: 50px;
-            color: #a1e2d6;
-            border: 1px solid #93d5c552;
-            border-radius: 13px;
-            background: #7bc1b41d;
+            color: var(--nav-marker);
+            border: 1px solid var(--nav-edge);
+            border-radius: var(--control-radius);
+            background: var(--nav-active);
         }
         .maintenance-location-icon .icon { width: 24px; height: 24px; }
         .maintenance-location-label {
-            color: #c9e3e7;
+            color: var(--nav-muted);
             font-size: 12px;
         }
         .maintenance-location h2 {
@@ -118,11 +128,11 @@
             width: 100%;
             margin-top: auto;
             padding-top: 14px;
-            border-top: 1px solid #c6e9e435;
-            color: #d6e8ea;
+            border-top: 1px solid var(--nav-edge);
+            color: var(--nav-muted);
             font-size: 12px;
         }
-        .maintenance-location-note .icon { margin-top: 3px; color: #a1e2d6; }
+        .maintenance-location-note .icon { margin-top: 3px; color: var(--nav-marker); }
         .maintenance-content {
             flex: 1 1 0;
             min-width: 0;
@@ -158,8 +168,8 @@
             width: 100%;
             min-height: 45px;
             border: 1px solid var(--strong-border);
-            border-radius: 9px;
-            background-color: #fbfcfe;
+            border-radius: var(--control-radius);
+            background-color: var(--subtle);
             font-size: 13px;
         }
         .maintenance-field input, .maintenance-field textarea {
@@ -167,7 +177,7 @@
             padding: 9px 11px;
         }
         .maintenance-field select { padding-inline: 11px 32px; }
-        .maintenance-field .select-wrap > .icon { color: #4e6982; }
+        .maintenance-field .select-wrap > .icon { color: var(--muted); }
         .maintenance-field textarea { min-height: 104px; resize: vertical; }
         .maintenance-field :is(input, select, textarea):focus { background-color: var(--surface); }
         .maintenance-description-label {
@@ -199,8 +209,8 @@
             gap: 9px;
             padding: 9px 11px;
             margin-bottom: 15px;
-            border: 1px solid #f0c4cc;
-            border-radius: 9px;
+            border: 1px solid var(--danger-border);
+            border-radius: var(--control-radius);
             color: var(--danger);
             background: var(--danger-tint);
         }
@@ -222,10 +232,10 @@
             gap: 6px 12px;
             padding: 12px 14px;
             margin: 17px 0 13px;
-            border: 1px solid #c5e1d9;
-            border-radius: 11px;
-            background: #eef7f4;
-            color: var(--accent-dark);
+            border: 1px solid var(--ready-border);
+            border-radius: var(--control-radius);
+            background: var(--ready-tint);
+            color: var(--ready);
         }
         .maintenance-receipt strong { font-size: 17px; font-variant-numeric: tabular-nums; }
         .maintenance-credits {
@@ -261,7 +271,8 @@
             }
         }
         @media (max-width: 500px) {
-            .maintenance-header { padding: 10px 11px; }
+            .maintenance-header { padding: 10px 11px; flex-wrap: wrap; }
+            .maintenance-header-actions { flex: 1 1 100%; justify-content: space-between; }
             .maintenance-identity { gap: 7px; }
             .maintenance-identity .icon-tile { display: none; }
             .maintenance-content { padding: 17px; }
@@ -289,7 +300,10 @@
                 <p>قسم الحاسب الآلي</p>
             </div>
         </div>
-        <img class="maintenance-logo" src="{{ institution_logo }}" alt="المؤسسة العامة للتدريب التقني والمهني">
+        <div class="maintenance-header-actions">
+            {{ theme_picker() }}
+            <img class="maintenance-logo" src="{{ institution_logo }}" alt="المؤسسة العامة للتدريب التقني والمهني">
+        </div>
     </header>
 
     <div class="maintenance-frame">

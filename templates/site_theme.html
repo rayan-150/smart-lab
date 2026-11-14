@@ -1,0 +1,22 @@
+{% macro theme_assets() -%}
+<meta name="theme-color" content="#ecf3f7">
+<script src="{{ url_for('static', filename='site-theme.js', v=1) }}"></script>
+<link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css', v='site-themes-1') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='themes.css', v=1) }}">
+{%- endmacro %}
+
+{% macro theme_picker() -%}
+<label class="theme-picker" data-theme-picker hidden>
+    <span class="theme-swatch" aria-hidden="true"></span>
+    <span class="theme-picker-label">الثيم</span>
+    <span class="theme-select">
+        <select data-site-theme-select>
+            <option value="grid" selected>تقني</option>
+            <option value="light">كلاسيكي</option>
+            <option value="navy">ليلي</option>
+            <option value="emerald">زمردي</option>
+            <option value="sand">رملي</option>
+        </select>
+    </span>
+</label>
+{%- endmacro %}

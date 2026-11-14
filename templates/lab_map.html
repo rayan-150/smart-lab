@@ -8,7 +8,7 @@
 </a>
 {%- endmacro %}
 <svg viewBox="55 14 740 932" class="floor-plan" role="group" aria-label="مخطط جناح قسم الحاسب الآلي" xmlns="http://www.w3.org/2000/svg">
-    <rect x="70" y="30" width="710" height="900" fill="#e9f0f5" stroke="#8da6ba" stroke-width="3" rx="8" />
+    <rect x="70" y="30" width="710" height="900" class="plan-base" stroke-width="3" rx="8" />
 
     <!-- 1. الضلع العلوي الخارجي -->
     <rect x="235" y="35" width="80" height="75" class="svg-room" />
@@ -25,8 +25,8 @@
     <rect x="660" y="35" width="80" height="75" class="svg-room" /><text x="700" y="72" class="svg-facility-text">أساسيات</text><text x="700" y="86" class="svg-facility-text">الإلكترونيات</text>
 
     <g>
-        <rect x="745" y="35" width="30" height="75" fill="#e0e9f0" stroke="#99adbe" stroke-width="1.2" />
-        <line x1="745" y1="48" x2="775" y2="48" stroke="#9baebd" /><line x1="745" y1="60" x2="775" y2="60" stroke="#9baebd" /><line x1="745" y1="72" x2="775" y2="72" stroke="#9baebd" /><line x1="745" y1="84" x2="775" y2="84" stroke="#9baebd" /><line x1="745" y1="96" x2="775" y2="96" stroke="#9baebd" />
+        <rect x="745" y="35" width="30" height="75" class="plan-elevator" stroke-width="1.2" />
+        <line x1="745" y1="48" x2="775" y2="48" class="plan-elevator-line" /><line x1="745" y1="60" x2="775" y2="60" class="plan-elevator-line" /><line x1="745" y1="72" x2="775" y2="72" class="plan-elevator-line" /><line x1="745" y1="84" x2="775" y2="84" class="plan-elevator-line" /><line x1="745" y1="96" x2="775" y2="96" class="plan-elevator-line" />
     </g>
 
     <!-- 2. الضلع الأيسر الخارجي -->
@@ -34,16 +34,16 @@
     <rect x="75" y="190" width="125" height="75" class="svg-room" /><text x="137" y="232" class="svg-facility-text">دورة مياه المتدربين</text>
 
     <g>
-        <rect x="75" y="270" width="125" height="75" fill="#fff0d6" stroke="#bb863a" stroke-width="2" rx="4" />
-        <line x1="85" y1="285" x2="165" y2="285" stroke="#b57b36" stroke-width="3" /><line x1="85" y1="298" x2="165" y2="298" stroke="#b57b36" stroke-width="3" /><line x1="85" y1="311" x2="165" y2="311" stroke="#b57b36" stroke-width="3" /><line x1="85" y1="324" x2="165" y2="324" stroke="#b57b36" stroke-width="3" /><line x1="85" y1="337" x2="165" y2="337" stroke="#b57b36" stroke-width="3" />
-        <path d="M 180 330 L 180 280 L 175 290 M 180 280 L 185 290" stroke="#905c20" stroke-width="2.5" fill="none" stroke-linecap="round" />
+        <rect x="75" y="270" width="125" height="75" class="plan-stairs" stroke-width="2" rx="4" />
+        <line x1="85" y1="285" x2="165" y2="285" class="plan-stairs-line" stroke-width="3" /><line x1="85" y1="298" x2="165" y2="298" class="plan-stairs-line" stroke-width="3" /><line x1="85" y1="311" x2="165" y2="311" class="plan-stairs-line" stroke-width="3" /><line x1="85" y1="324" x2="165" y2="324" class="plan-stairs-line" stroke-width="3" /><line x1="85" y1="337" x2="165" y2="337" class="plan-stairs-line" stroke-width="3" />
+        <path d="M 180 330 L 180 280 L 175 290 M 180 280 L 185 290" class="plan-stairs-line" stroke-width="2.5" fill="none" stroke-linecap="round" />
     </g>
 
     <g>
-        <rect x="70" y="380" width="130" height="95" fill="#e1f0ea" stroke="#5d9c8d" stroke-width="1.8" stroke-dasharray="4" rx="4" />
-        <path d="M 70 410 A 30 30 0 0 1 100 440" stroke="#5d9c8d" stroke-width="1.5" fill="none" /><line x1="70" y1="410" x2="70" y2="440" stroke="#5d9c8d" stroke-width="2" />
-        <path d="M 70 470 A 30 30 0 0 0 100 440" stroke="#5d9c8d" stroke-width="1.5" fill="none" /><line x1="70" y1="470" x2="70" y2="440" stroke="#5d9c8d" stroke-width="2" />
-        <text x="135" y="425" fill="#196b60" font-size="11" font-weight="bold" text-anchor="middle">المدخل الرئيسي</text><text x="135" y="445" fill="#245e58" font-size="9" text-anchor="middle">المزدوج</text>
+        <rect x="70" y="380" width="130" height="95" class="plan-entrance" stroke-width="1.8" stroke-dasharray="4" rx="4" />
+        <path class="plan-accent-line" d="M 70 410 A 30 30 0 0 1 100 440" stroke-width="1.5" fill="none" /><line class="plan-accent-line" x1="70" y1="410" x2="70" y2="440" stroke-width="2" />
+        <path class="plan-accent-line" d="M 70 470 A 30 30 0 0 0 100 440" stroke-width="1.5" fill="none" /><line class="plan-accent-line" x1="70" y1="470" x2="70" y2="440" stroke-width="2" />
+        <text x="135" y="425" class="plan-accent-text" font-size="11" font-weight="bold" text-anchor="middle">المدخل الرئيسي</text><text x="135" y="445" class="plan-accent-text" font-size="9" text-anchor="middle">المزدوج</text>
     </g>
 
     <rect x="75" y="520" width="125" height="90" class="svg-room" /><text x="137" y="572" class="svg-facility-text" font-weight="bold">منسق رايات</text>
@@ -51,30 +51,30 @@
     {{ map_lab(1, 75, 620, 125, 90, 4, 137, 665, 'الشبكات والأنظمة', 682) }}
 
     <!-- 3. المبنى الداخلي وقسم الحاسب -->
-    <rect x="250" y="200" width="415" height="490" fill="#f4f8fb" stroke="#8ea8bc" stroke-width="1.8" rx="6" />
+    <rect x="250" y="200" width="415" height="490" class="plan-interior" stroke-width="1.8" rx="6" />
 
     {{ map_lab(27, 255, 205, 95, 80, 3, 302, 250) }}
     <rect x="355" y="205" width="90" height="80" class="svg-room" />
-    <text x="400" y="245" fill="#7e5221" font-size="10" font-weight="bold" text-anchor="middle">غرفة صيانة</text><text x="400" y="260" fill="#885b2b" font-size="8" text-anchor="middle">صيانة الأجهزة</text>
+    <text x="400" y="245" class="plan-warning-text" font-size="10" font-weight="bold" text-anchor="middle">غرفة صيانة</text><text x="400" y="260" class="plan-warning-text" font-size="8" text-anchor="middle">صيانة الأجهزة</text>
 
     {{ map_lab(23, 450, 205, 100, 80, 3, 500, 250) }}
     {{ map_lab(22, 555, 205, 105, 80, 3, 607, 250) }}
 
     <rect x="255" y="290" width="70" height="35" class="svg-room" /><text x="290" y="312" class="svg-facility-text" font-size="9">تهوية</text>
     <rect x="255" y="330" width="70" height="75" class="svg-room" /><text x="290" y="365" class="svg-facility-text">مكتب التدريب</text><text x="290" y="380" class="svg-facility-text">الإلكتروني</text>
-    <rect x="255" y="410" width="70" height="80" class="svg-room" /><text x="290" y="445" fill="#395675" font-size="10" font-weight="bold" text-anchor="middle">مكتب</text><text x="290" y="460" fill="#395675" font-size="10" font-weight="bold" text-anchor="middle">رئيس القسم</text>
+    <rect x="255" y="410" width="70" height="80" class="svg-room" /><text x="290" y="445" class="plan-text" font-size="10" font-weight="bold" text-anchor="middle">مكتب</text><text x="290" y="460" class="plan-text" font-size="10" font-weight="bold" text-anchor="middle">رئيس القسم</text>
     <rect x="255" y="495" width="70" height="75" class="svg-room" /><text x="290" y="532" class="svg-facility-text">شؤون</text><text x="290" y="547" class="svg-facility-text">المتدربين</text>
     <rect x="255" y="575" width="70" height="35" class="svg-room" /><text x="290" y="597" class="svg-facility-text" font-size="9">تهوية</text>
 
     <!-- قسم الحاسب الوسطي -->
     <g>
-        <rect x="335" y="295" width="235" height="295" fill="#deede9" stroke="#6ca696" stroke-dasharray="5 5" stroke-width="1.5" rx="8" />
-        <circle cx="355" cy="315" r="7" fill="#a9cfc3" stroke="#5d9c8d" stroke-width="1.5" />
-        <circle cx="550" cy="315" r="7" fill="#a9cfc3" stroke="#5d9c8d" stroke-width="1.5" />
-        <circle cx="355" cy="570" r="7" fill="#a9cfc3" stroke="#5d9c8d" stroke-width="1.5" />
-        <circle cx="550" cy="570" r="7" fill="#a9cfc3" stroke="#5d9c8d" stroke-width="1.5" />
-        <text x="452" y="440" fill="#184f4a" font-size="19" font-weight="bold" text-anchor="middle">قسم الحاسب</text>
-        <text x="452" y="462" fill="#406b64" font-size="10" text-anchor="middle">الفناء الداخلي</text>
+        <rect x="335" y="295" width="235" height="295" class="plan-courtyard" stroke-dasharray="5 5" stroke-width="1.5" rx="8" />
+        <circle cx="355" cy="315" r="7" class="plan-courtyard-dot" stroke-width="1.5" />
+        <circle cx="550" cy="315" r="7" class="plan-courtyard-dot" stroke-width="1.5" />
+        <circle cx="355" cy="570" r="7" class="plan-courtyard-dot" stroke-width="1.5" />
+        <circle cx="550" cy="570" r="7" class="plan-courtyard-dot" stroke-width="1.5" />
+        <text x="452" y="440" class="plan-accent-text" font-size="19" font-weight="bold" text-anchor="middle">قسم الحاسب</text>
+        <text x="452" y="462" class="plan-accent-text" font-size="10" text-anchor="middle">الفناء الداخلي</text>
     </g>
 
     <rect x="580" y="290" width="80" height="30" class="svg-room" /><text x="620" y="310" class="svg-facility-text" font-size="9">تهوية</text>
@@ -95,7 +95,7 @@
     {{ map_lab(10, 563, 600, 100, 85, 4, 613, 648) }}
 
     <!-- 4. الضلع الأيمن الخارجي -->
-    <rect x="715" y="140" width="60" height="90" class="svg-room" /><text x="745" y="190" fill="#245e58" font-size="10" font-weight="bold" text-anchor="middle">مصلى</text>
+    <rect x="715" y="140" width="60" height="90" class="svg-room" /><text x="745" y="190" class="plan-accent-text" font-size="10" font-weight="bold" text-anchor="middle">مصلى</text>
     <rect x="715" y="235" width="60" height="40" class="svg-room" /><text x="745" y="260" class="svg-facility-text" font-size="9">مستودع</text>
     <rect x="715" y="280" width="60" height="100" class="svg-room" /><text x="745" y="325" class="svg-facility-text">قاعة</text><text x="745" y="340" class="svg-facility-text">نظري 1</text>
     <rect x="715" y="385" width="60" height="40" class="svg-room" /><text x="745" y="410" class="svg-facility-text" font-size="9">مستودع</text>
@@ -105,8 +105,8 @@
     <rect x="715" y="620" width="60" height="60" class="svg-room" /><text x="745" y="645" class="svg-facility-text" font-size="9">دورة مياه</text><text x="745" y="660" class="svg-facility-text" font-size="9">المتدربين</text>
 
     <g>
-        <rect x="715" y="685" width="60" height="45" fill="#e0e9f0" stroke="#99adbe" />
-        <line x1="715" y1="696" x2="775" y2="696" stroke="#9baebd" /><line x1="715" y1="707" x2="775" y2="707" stroke="#9baebd" /><line x1="715" y1="718" x2="775" y2="718" stroke="#9baebd" />
+        <rect x="715" y="685" width="60" height="45" class="plan-elevator" />
+        <line x1="715" y1="696" x2="775" y2="696" class="plan-elevator-line" /><line x1="715" y1="707" x2="775" y2="707" class="plan-elevator-line" /><line x1="715" y1="718" x2="775" y2="718" class="plan-elevator-line" />
     </g>
 
     <!-- 5. الضلع السفلي الخارجي -->
